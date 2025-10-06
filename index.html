@@ -384,6 +384,34 @@
     <!-- Scripts -->
     <script src="assets/js/app.js"></script>
     <script>
+        // Funções globais para uso no HTML
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.parentNode.querySelector('.toggle-password i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                button.className = 'fas fa-eye';
+            }
+        }
+
+        function showLogin() {
+            const REGISTER_FORM = document.getElementById('registerForm');
+            const LOGIN_FORM = document.getElementById('loginForm');
+            REGISTER_FORM.classList.remove('active');
+            LOGIN_FORM.classList.add('active');
+        }
+
+        function showRegister() {
+            const LOGIN_FORM = document.getElementById('loginForm');
+            const REGISTER_FORM = document.getElementById('registerForm');
+            LOGIN_FORM.classList.remove('active');
+            REGISTER_FORM.classList.add('active');
+        }
+
         // Aguardar DOM carregar completamente
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🔍 DOM carregado, NotificationManager disponível:', !!window.NotificationManager);
@@ -404,31 +432,6 @@
             // Variáveis globais
             const LOGIN_FORM = document.getElementById('loginForm');
             const REGISTER_FORM = document.getElementById('registerForm');
-
-        // Função para mostrar/ocultar senha
-        function togglePassword(inputId) {
-            const input = document.getElementById(inputId);
-            const button = input.parentNode.querySelector('.toggle-password i');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                button.className = 'fas fa-eye-slash';
-            } else {
-                input.type = 'password';
-                button.className = 'fas fa-eye';
-            }
-        }
-
-        // Função para alternar entre formulários
-        function showLogin() {
-            REGISTER_FORM.classList.remove('active');
-            LOGIN_FORM.classList.add('active');
-        }
-
-        function showRegister() {
-            LOGIN_FORM.classList.remove('active');
-            REGISTER_FORM.classList.add('active');
-        }
 
         // Manipuladores de formulário
         LOGIN_FORM.addEventListener('submit', async (e) => {

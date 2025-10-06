@@ -289,6 +289,16 @@ class ApiClient {
             skipAuth: true
         });
     }
+
+    static async changePassword(currentPassword, newPassword) {
+        return this.request('/api/users/change-password', {
+            method: 'PUT',
+            body: JSON.stringify({
+                currentPassword,
+                newPassword
+            })
+        });
+    }
     
     // Sensor endpoints
     static async getSensorsHistory() {

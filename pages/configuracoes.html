@@ -656,10 +656,10 @@
                             class="form-control"
                             required 
                             placeholder="Digite a nova senha"
-                            minlength="8"
+                            minlength="6"
                         >
                         <small style="color: var(--text-gray); font-size: 0.75rem; margin-top: var(--spacing-xs); display: block;">
-                            Mínimo 8 caracteres
+                            Mínimo 6 caracteres
                         </small>
                     </div>
 
@@ -1182,9 +1182,14 @@
                 const newPassword = formData.get('new_password');
                 const confirmPassword = formData.get('confirm_password');
                 
-                // Validações
-                if (newPassword.length < 8) {
-                    showNotification('error', 'Erro', 'A nova senha deve ter pelo menos 8 caracteres');
+                // Validações no frontend
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    showNotification('error', 'Erro', 'Todos os campos são obrigatórios');
+                    return;
+                }
+
+                if (newPassword.length < 6) {
+                    showNotification('error', 'Erro', 'A nova senha deve ter pelo menos 6 caracteres');
                     return;
                 }
                 
@@ -1197,13 +1202,13 @@
                 LoadingManager.show(submitButton);
 
                 try {
-                    // Simular alteração de senha
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    // Chamar API para alterar senha usando ApiClient
+                    const response = await ApiClient.changePassword(currentPassword, newPassword);
                     
                     showNotification(
                         'success',
                         'Senha alterada!', 
-                        'Sua senha foi atualizada com sucesso'
+                        response.message || 'Sua senha foi atualizada com sucesso'
                     );
                     
                     ModalManager.close('changePasswordModal');
@@ -1211,7 +1216,22 @@
                     
                 } catch (error) {
                     console.error('Erro ao alterar senha:', error);
-                    showNotification('error', 'Erro', 'Falha ao alterar senha');
+                    
+                    // ApiClient já trata erros HTTP específicos, então tratamos os erros de validação
+                    if (error.message.includes('Senha atual incorreta')) {
+                        showNotification('error', 'Senha Incorreta', 'A senha atual não está correta');
+                    } else if (error.message.includes('nova senha deve ser diferente')) {
+                        showNotification('error', 'Senha Inválida', 'A nova senha deve ser diferente da atual');
+                    } else if (error.message.includes('pelo menos 6 caracteres')) {
+                        showNotification('error', 'Senha Muito Curta', 'A nova senha deve ter pelo menos 6 caracteres');
+                    } else if (error.message.includes('obrigatórias')) {
+                        showNotification('error', 'Campos Obrigatórios', 'Todos os campos devem ser preenchidos');
+                    } else if (error.message.includes('Sessão expirada')) {
+                        showNotification('error', 'Sessão Expirada', 'Faça login novamente');
+                        AuthManager.logout();
+                    } else {
+                        showNotification('error', 'Erro', error.message || 'Falha ao alterar senha');
+                    }
                 } finally {
                     LoadingManager.hide(submitButton);
                 }

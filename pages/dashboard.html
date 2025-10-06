@@ -412,6 +412,137 @@
         .content-header {
             position: relative !important;
         }
+        
+        /* MELHORIAS PARA GRÁFICOS EM DISPOSITIVOS MÓVEIS */
+        
+        /* Garantir que o layout de colunas funcione corretamente */
+        .row {
+            display: flex !important;
+            gap: var(--spacing-lg) !important;
+            margin-bottom: var(--spacing-lg) !important;
+        }
+        
+        .col-8 {
+            flex: 2 !important;
+            min-width: 0 !important;
+        }
+        
+        .col-4 {
+            flex: 1 !important;
+            min-width: 0 !important;
+        }
+        
+        @media (max-width: 1024px) {
+            /* Fazer gráficos ocuparem largura total em tablets */
+            .row {
+                flex-direction: column !important;
+                gap: var(--spacing-md) !important;
+            }
+            
+            .col-8, .col-4 {
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: none !important;
+            }
+            
+            /* Aumentar altura dos containers de gráfico em tablets */
+            .chart-container {
+                height: 500px !important;
+                margin-bottom: var(--spacing-lg) !important;
+            }
+            
+            .chart-container canvas {
+                max-height: 400px !important;
+                height: 400px !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            /* Otimizações específicas para smartphones */
+            .chart-container {
+                height: 450px !important;
+                padding: var(--spacing-md) !important;
+            }
+            
+            .chart-container canvas {
+                max-height: 350px !important;
+                height: 350px !important;
+            }
+            
+            /* Melhorar header dos gráficos em mobile */
+            .chart-header {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: var(--spacing-sm) !important;
+                min-height: auto !important;
+                margin-bottom: var(--spacing-md) !important;
+            }
+            
+            .chart-title {
+                font-size: 1rem !important;
+                max-width: 100% !important;
+            }
+            
+            .chart-actions {
+                width: 100% !important;
+            }
+            
+            .filter-selector {
+                width: 100% !important;
+                min-width: auto !important;
+            }
+            
+            /* Melhorar grid de estatísticas em mobile */
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+                gap: var(--spacing-md) !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            /* Otimizações para telas muito pequenas */
+            .chart-container {
+                height: 400px !important;
+                padding: var(--spacing-sm) !important;
+            }
+            
+            .chart-container canvas {
+                max-height: 300px !important;
+                height: 300px !important;
+            }
+            
+            .chart-title {
+                font-size: 0.9rem !important;
+            }
+            
+            /* Grid de uma coluna em telas muito pequenas */
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            /* Melhorar scroll horizontal se necessário */
+            .chart-container {
+                overflow-x: auto !important;
+            }
+            
+            /* Garantir que os filtros sejam visíveis */
+            .chart-actions {
+                display: flex !important;
+                justify-content: stretch !important;
+            }
+        }
+        
+        /* Media query adicional para telas médias (tablets em landscape) */
+        @media (max-width: 1200px) and (min-width: 769px) {
+            .chart-container {
+                height: 480px !important;
+            }
+            
+            .chart-container canvas {
+                max-height: 380px !important;
+                height: 380px !important;
+            }
+        }
     </style>
 </head>
 
