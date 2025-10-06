@@ -194,6 +194,120 @@
             padding: 2px 6px;
             border-radius: 10px;
         }
+        
+        /* Menu Hamburger */
+        .btn-hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 44px;
+            height: 44px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .btn-hamburger:hover {
+            background: var(--light-gray);
+        }
+        
+        .btn-hamburger:active {
+            background: var(--medium-gray);
+        }
+        
+        .hamburger-line {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background: var(--dark-gray);
+            border-radius: 2px;
+            transition: var(--transition);
+            transform-origin: center;
+        }
+        
+        /* Animação do hamburguer para X */
+        .btn-hamburger.active .hamburger-line:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+        
+        .btn-hamburger.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .btn-hamburger.active .hamburger-line:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+        
+        /* Overlay do Sidebar */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(2px);
+        }
+        
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Sidebar móvel */
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -300px;
+                width: 280px;
+                height: 100vh;
+                z-index: 999;
+                transition: left 0.3s ease;
+                background: var(--white);
+                box-shadow: var(--shadow-lg);
+            }
+            
+            .sidebar.show {
+                left: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 260px;
+                left: -260px;
+            }
+        }
+        
+        /* Mostrar botão hamburger em dispositivos móveis */
+        @media (max-width: 1024px) {
+            .btn-hamburger {
+                display: flex !important;
+                position: absolute !important;
+                right: 20px !important;
+                top: 20px !important;
+                z-index: 100 !important;
+            }
+        }
+        
+        /* Garantir que o header tenha position relative */
+        .content-header {
+            position: relative !important;
+        }
     </style>
 </head>
 
@@ -259,26 +373,37 @@
         </div>
     </aside>
 
+    <!-- Overlay para dispositivos móveis -->
+    <div class="sidebar-overlay" data-sidebar-overlay style="display: none;"></div>
+
     <!-- Conteúdo Principal -->
     <main class="main-content">
         <div class="content-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1>Dispositivos</h1>
-                    <p class="mb-0 text-muted">Gerenciar sensores e dispositivos IoT</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-secondary" onclick="loadDevices()">
-                        <i class="fas fa-sync-alt"></i>
-                        Atualizar
-                    </button>
-                    <button class="btn btn-primary" onclick="showAddDeviceModal()">
-                        <i class="fas fa-plus"></i>
-                        Adicionar Dispositivo
-                    </button>
-                    <button class="btn btn-primary" data-sidebar-toggle style="display: none;">
-                        <i class="fas fa-bars"></i>
-                    </button>
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="mb-1">Dispositivos</h1>
+                            <p class="mb-0 text-muted">Gerenciar sensores e dispositivos IoT</p>
+                        </div>
+                        <div class="ml-auto">
+                            <button class="btn-hamburger" data-sidebar-toggle>
+                                <div class="hamburger-line"></div>
+                                <div class="hamburger-line"></div>
+                                <div class="hamburger-line"></div>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" onclick="showAddDeviceModal()">
+                            <i class="fas fa-plus"></i>
+                            Adicionar Dispositivo
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="loadDevices()">
+                            <i class="fas fa-sync-alt"></i>
+                            Atualizar
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -294,14 +419,20 @@
     <div id="addDeviceModal" class="modal" style="display: none;">
         <div class="modal-dialog">
             <div class="modal-header">
-                <h5 class="modal-title">Adicionar Novo Dispositivo</h5>
-                <button type="button" onclick="ModalManager.close('addDeviceModal')" style="background: none; border: none; font-size: 18px; cursor: pointer;">×</button>
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Adicionar Novo Dispositivo
+                </h5>
+                <button type="button" class="modal-close" onclick="closeAddDeviceModal()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <form id="addDeviceForm">
                     <div class="form-group">
                         <label class="form-label" for="sensorName">
-                            <i class="fas fa-tag"></i> Nome do Sensor
+                            <i class="fas fa-tag"></i>
+                            Nome do Sensor
                         </label>
                         <input 
                             type="text" 
@@ -310,9 +441,28 @@
                             class="form-control"
                             required 
                             placeholder="Ex: Sensor Jardim Norte"
+                            autocomplete="off"
                         >
                         <small style="color: var(--text-gray); font-size: 0.75rem; margin-top: var(--spacing-xs); display: block;">
                             Nome para identificar o sensor na sua fazenda
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="sensorLocation">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Localização
+                        </label>
+                        <input 
+                            type="text" 
+                            id="sensorLocation" 
+                            name="sensor_location" 
+                            class="form-control"
+                            placeholder="Ex: Estufa A - Setor 1"
+                            autocomplete="off"
+                        >
+                        <small style="color: var(--text-gray); font-size: 0.75rem; margin-top: var(--spacing-xs); display: block;">
+                            Descrição da localização do sensor (opcional)
                         </small>
                     </div>
 
@@ -326,7 +476,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="ModalManager.close('addDeviceModal')">
+                <button type="button" class="btn btn-secondary" onclick="closeAddDeviceModal()">
+                    <i class="fas fa-times"></i>
                     Cancelar
                 </button>
                 <button type="submit" form="addDeviceForm" class="btn btn-primary">
@@ -345,7 +496,9 @@
                     <i class="fas fa-key"></i>
                     Chave do Dispositivo Criada
                 </h5>
-                <button type="button" onclick="ModalManager.close('deviceKeyModal')" style="background: none; border: none; font-size: 18px; cursor: pointer;">×</button>
+                <button type="button" class="modal-close" onclick="closeDeviceKeyModal()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-success">
@@ -388,7 +541,7 @@
                     <i class="fas fa-copy"></i>
                     Copiar Chave
                 </button>
-                <button type="button" class="btn btn-primary" onclick="ModalManager.close('deviceKeyModal'); loadDevices();">
+                <button type="button" class="btn btn-primary" onclick="closeDeviceKeyModal(); loadDevices();">
                     <i class="fas fa-check"></i>
                     Entendi
                 </button>
@@ -600,8 +753,129 @@
         }
 
         function showAddDeviceModal() {
-            ModalManager.open('addDeviceModal');
-            document.getElementById('sensorName').focus();
+            const modal = document.getElementById('addDeviceModal');
+            const form = document.getElementById('addDeviceForm');
+            const nameInput = document.getElementById('sensorName');
+            
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+            
+            if (form) {
+                form.reset();
+            }
+            
+            // Focar no campo nome com um pequeno delay para garantir que o modal esteja visível
+            if (nameInput) {
+                setTimeout(() => {
+                    nameInput.focus();
+                }, 100);
+            }
+        }
+
+        function closeAddDeviceModal() {
+            const modal = document.getElementById('addDeviceModal');
+            const form = document.getElementById('addDeviceForm');
+            
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            
+            if (form) {
+                form.reset();
+            }
+        }
+
+        function closeDeviceKeyModal() {
+            const modal = document.getElementById('deviceKeyModal');
+            
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function submitAddDevice(event) {
+            console.log('submitAddDevice called', event);
+            event.preventDefault();
+            
+            try {
+                const formData = new FormData(event.target);
+                const sensorName = formData.get('sensor_name');
+                const sensorLocation = formData.get('sensor_location') || 'Localização não informada';
+                
+                console.log('Form data:', { sensorName, sensorLocation });
+                
+                if (!sensorName || sensorName.trim() === '') {
+                    showNotification('error', 'Erro', 'Nome do sensor é obrigatório');
+                    return;
+                }
+
+                // Encontrar o botão de submit no modal footer
+                const submitButton = document.querySelector('#addDeviceModal button[type="submit"]');
+                console.log('Submit button found:', submitButton);
+                
+                if (!submitButton) {
+                    console.error('Botão de submit não encontrado');
+                    showNotification('error', 'Erro', 'Botão de envio não encontrado');
+                    return;
+                }
+                
+                // Simular loading
+                const originalText = submitButton.innerHTML;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+                submitButton.disabled = true;
+
+            // Simular delay da API
+            setTimeout(() => {
+                // Simular criação de device key
+                const deviceKey = generateMockDeviceKey();
+                
+                // Mostrar modal com device key
+                const deviceKeyElement = document.getElementById('generatedDeviceKey');
+                if (deviceKeyElement) {
+                    deviceKeyElement.textContent = deviceKey;
+                    currentDeviceKey = deviceKey;
+                }
+                
+                closeAddDeviceModal();
+                
+                const deviceKeyModal = document.getElementById('deviceKeyModal');
+                if (deviceKeyModal) {
+                    deviceKeyModal.style.display = 'flex';
+                }
+                
+                // Restaurar botão
+                if (submitButton) {
+                    submitButton.innerHTML = originalText;
+                    submitButton.disabled = false;
+                }
+                
+                // Mostrar notificação de sucesso
+                showNotification('success', 'Sensor Criado!', `Sensor "${sensorName}" foi criado com sucesso.`);
+                
+                // Recarregar lista (quando implementado)
+                // loadDevices();
+                
+            }, 1500);
+                
+            } catch (error) {
+                console.error('Erro em submitAddDevice:', error);
+                showNotification('error', 'Erro', 'Ocorreu um erro ao processar o formulário');
+                
+                // Restaurar botão em caso de erro
+                const submitButton = document.querySelector('#addDeviceModal button[type="submit"]');
+                if (submitButton) {
+                    submitButton.innerHTML = '<i class="fas fa-plus"></i> Criar Sensor';
+                    submitButton.disabled = false;
+                }
+            }
+        }
+
+        function generateMockDeviceKey() {
+            // Gerar uma chave similar à estrutura real
+            const companyId = '68dfe63619feeaed6bd640ea';
+            const randomHash = Math.random().toString(16).substring(2) + Math.random().toString(16).substring(2);
+            return `${companyId}-${randomHash}`;
         }
 
         function showDeviceKey(deviceKey) {
@@ -627,11 +901,177 @@
         }
 
         async function copyDeviceKey() {
-            if (currentDeviceKey) {
-                const success = await Utils.copyToClipboard(currentDeviceKey);
-                if (success) {
-                    NotificationManager.success('Copiado!', 'Chave do dispositivo copiada para a área de transferência');
+            if (!currentDeviceKey) {
+                showNotification('error', 'Erro', 'Nenhuma chave disponível para copiar');
+                return;
+            }
+
+            try {
+                // Tentar usar a API moderna de clipboard
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(currentDeviceKey);
+                    showNotification('success', 'Copiado!', 'Chave copiada para a área de transferência');
+                } else {
+                    // Fallback para método antigo
+                    const textArea = document.createElement('textarea');
+                    textArea.value = currentDeviceKey;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = '0';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    
+                    try {
+                        const successful = document.execCommand('copy');
+                        if (successful) {
+                            showNotification('success', 'Copiado!', 'Chave copiada para a área de transferência');
+                        } else {
+                            showNotification('error', 'Erro', 'Não foi possível copiar a chave');
+                        }
+                    } catch (err) {
+                        showNotification('error', 'Erro', 'Não foi possível copiar a chave');
+                    }
+                    
+                    document.body.removeChild(textArea);
                 }
+            } catch (err) {
+                console.error('Erro ao copiar:', err);
+                showNotification('error', 'Erro', 'Não foi possível copiar a chave');
+            }
+        }
+
+        // Variável para controlar estado do sidebar
+        let sidebarAberto = false;
+
+        // Funções do Menu Hamburger
+        function toggleSidebar() {
+            sidebarAberto = !sidebarAberto;
+            if (sidebarAberto) {
+                abrirSidebar();
+            } else {
+                fecharSidebar();
+            }
+        }
+
+        function abrirSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            const button = document.querySelector('.btn-hamburger');
+            
+            if (sidebar) {
+                sidebar.cssText = 'left: 0 !important;';
+                sidebar.classList.add('show');
+            }
+            
+            if (overlay) {
+                overlay.style.cssText = 'display: block !important; opacity: 1 !important; visibility: visible !important;';
+                overlay.classList.add('active');
+            }
+            
+            if (button) {
+                button.classList.add('active');
+            }
+            
+            sidebarAberto = true;
+        }
+
+        function fecharSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            const button = document.querySelector('.btn-hamburger');
+            
+            if (sidebar) {
+                if (window.innerWidth <= 1024) {
+                    sidebar.cssText = 'left: -300px !important;';
+                }
+                sidebar.classList.remove('show');
+            }
+            
+            if (overlay) {
+                overlay.style.cssText = 'display: none !important; opacity: 0 !important; visibility: hidden !important;';
+                overlay.classList.remove('active');
+            }
+            
+            if (button) {
+                button.classList.remove('active');
+            }
+            
+            sidebarAberto = false;
+        }
+
+        function initializeSidebarState() {
+            if (window.innerWidth <= 1024) {
+                fecharSidebar();
+            }
+        }
+
+        function setupMobileMenu() {
+            // Event listener para o botão hamburger
+            const hamburgerBtn = document.querySelector('[data-sidebar-toggle]');
+            if (hamburgerBtn) {
+                hamburgerBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+            }
+
+            // Event listener para o overlay
+            const overlay = document.querySelector('[data-sidebar-overlay]');
+            if (overlay) {
+                overlay.addEventListener('click', function() {
+                    fecharSidebar();
+                });
+            }
+
+            // Event listener para tecla ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sidebarAberto) {
+                    fecharSidebar();
+                }
+            });
+
+            // Event listeners para links do sidebar (fechar ao navegar)
+            const sidebarLinks = document.querySelectorAll('.sidebar-nav-link');
+            sidebarLinks.forEach(link => {
+                if (!link.classList.contains('disabled')) {
+                    link.addEventListener('click', function() {
+                        if (window.innerWidth <= 1024) {
+                            fecharSidebar();
+                        }
+                    });
+                }
+            });
+
+            // Inicializar estado do sidebar
+            initializeSidebarState();
+        }
+
+        function handleResize() {
+            if (window.innerWidth > 1024) {
+                // Desktop: resetar sidebar
+                const sidebar = document.querySelector('.sidebar');
+                const overlay = document.querySelector('.sidebar-overlay');
+                const button = document.querySelector('.btn-hamburger');
+                
+                if (sidebar) {
+                    sidebar.cssText = '';
+                    sidebar.classList.remove('show');
+                }
+                
+                if (overlay) {
+                    overlay.style.cssText = 'display: none !important;';
+                    overlay.classList.remove('active');
+                }
+                
+                if (button) {
+                    button.classList.remove('active');
+                }
+                
+                sidebarAberto = false;
+            } else {
+                // Mobile: garantir estado inicial correto
+                initializeSidebarState();
             }
         }
 
@@ -642,62 +1082,55 @@
                 AuthManager.logout();
             });
 
-            // Form de adicionar dispositivo
-            document.getElementById('addDeviceForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(e.target);
-                const sensorName = formData.get('sensor_name');
-                
-                if (!sensorName) {
-                    NotificationManager.error('Erro', 'Nome do sensor é obrigatório');
-                    return;
-                }
+            // Modal event listeners
+            setupModalEventListeners();
 
-                const submitButton = this.querySelector('button[type="submit"]');
-                LoadingManager.show(submitButton);
+            // Configurar menu hamburger
+            setupMobileMenu();
+        }
 
-                try {
-                    // Para criar um sensor, precisamos do company_id
-                    // Como não temos essa informação facilmente disponível,
-                    // vamos simular por enquanto
-                    
-                    NotificationManager.warning(
-                        'Funcionalidade em desenvolvimento', 
-                        'A criação de sensores via interface ainda está sendo implementada. Entre em contato com o administrador.'
-                    );
-                    
-                    ModalManager.close('addDeviceModal');
-                    
-                    /*
-                    // Código para quando a API estiver completa:
-                    const response = await ApiClient.createSensor(companyId, sensorName);
-                    
-                    // Mostrar chave gerada
-                    document.getElementById('generatedDeviceKey').textContent = response.device_key;
-                    currentDeviceKey = response.device_key;
-                    
-                    ModalManager.close('addDeviceModal');
-                    ModalManager.open('deviceKeyModal');
-                    
-                    // Recarregar lista
-                    await loadDevices();
-                    */
-                    
-                } catch (error) {
-                    console.error('Erro ao criar sensor:', error);
-                    NotificationManager.error('Erro', error.message);
-                } finally {
-                    LoadingManager.hide(submitButton);
+        function setupModalEventListeners() {
+            // Event listener para o formulário
+            const addDeviceForm = document.getElementById('addDeviceForm');
+            if (addDeviceForm) {
+                addDeviceForm.addEventListener('submit', submitAddDevice);
+            }
+
+            // Fechar modal ao clicar no backdrop
+            const addDeviceModal = document.getElementById('addDeviceModal');
+            if (addDeviceModal) {
+                addDeviceModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeAddDeviceModal();
+                    }
+                });
+            }
+
+            const deviceKeyModal = document.getElementById('deviceKeyModal');
+            if (deviceKeyModal) {
+                deviceKeyModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeDeviceKeyModal();
+                    }
+                });
+            }
+
+            // Fechar modal com ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeAddDeviceModal();
+                    closeDeviceKeyModal();
                 }
             });
+        }
 
-            // Toggle sidebar
-            const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', function() {
-                    document.querySelector('.sidebar').classList.toggle('show');
-                });
+        // Função auxiliar para mostrar notificações
+        function showNotification(type, title, message) {
+            if (window.NotificationManager && typeof window.NotificationManager[type] === 'function') {
+                window.NotificationManager[type](title, message);
+            } else {
+                // Fallback para alert se NotificationManager não estiver disponível
+                alert(`${title}: ${message}`);
             }
         }
 
@@ -705,10 +1138,13 @@
         function checkScreenSize() {
             const toggle = document.querySelector('[data-sidebar-toggle]');
             if (window.innerWidth <= 1024) {
-                toggle.style.display = 'flex';
+                if (toggle) toggle.style.display = 'flex';
             } else {
-                toggle.style.display = 'none';
+                if (toggle) toggle.style.display = 'none';
             }
+            
+            // Chamar handleResize para gerenciar estado do sidebar
+            handleResize();
         }
 
         window.addEventListener('resize', checkScreenSize);

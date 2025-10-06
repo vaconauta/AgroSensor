@@ -238,10 +238,118 @@
             padding: 2px 6px;
             border-radius: 10px;
         }
+        
+        /* ===== MENU HAMBURGUER ===== */
+        .btn-hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 44px;
+            height: 44px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .btn-hamburger:hover {
+            background: var(--light-gray);
+        }
+        
+        .btn-hamburger:active {
+            background: var(--medium-gray);
+        }
+        
+        .hamburger-line {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background: var(--dark-gray);
+            border-radius: 2px;
+            transition: var(--transition);
+            transform-origin: center;
+        }
+        
+        /* Animação do hamburguer para X */
+        .btn-hamburger.active .hamburger-line:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+        
+        .btn-hamburger.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .btn-hamburger.active .hamburger-line:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+        
+        /* Overlay para fechar sidebar ao clicar fora */
+        .sidebar-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0, 0, 0, 0.5) !important;
+            z-index: 999 !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transition: var(--transition) !important;
+            pointer-events: none !important;
+        }
+        
+        .sidebar-overlay.show {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+        }
+        
+        /* Responsividade e posicionamento absoluto para garantir alinhamento */
+        @media (max-width: 1024px) {
+            .btn-hamburger {
+                display: flex !important;
+                position: absolute !important;
+                right: 20px !important;
+                top: 20px !important;
+                z-index: 100 !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .btn-hamburger {
+                width: 40px;
+                height: 40px;
+                right: 15px !important;
+                top: 15px !important;
+            }
+        }
+        
+        /* Garantir que o header tenha position relative */
+        .content-header {
+            position: relative !important;
+        }
+        
+        /* Classes auxiliares para layout */
+        .ml-auto {
+            margin-left: auto !important;
+            display: flex !important;
+            justify-content: flex-end !important;
+            align-items: center !important;
+        }
+        
+        .flex-grow-1 {
+            flex-grow: 1 !important;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Overlay para dispositivos móveis -->
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
+
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -306,19 +414,27 @@
     <!-- Conteúdo Principal -->
     <main class="main-content">
         <div class="content-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1>Dados dos Sensores</h1>
-                    <p class="mb-0 text-muted">Histórico detalhado das leituras</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-secondary" onclick="loadSensorData()">
-                        <i class="fas fa-sync-alt"></i>
-                        Atualizar
-                    </button>
-                    <button class="btn btn-primary" data-sidebar-toggle style="display: none;">
-                        <i class="fas fa-bars"></i>
-                    </button>
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="mb-1">Dados dos Sensores</h1>
+                            <p class="mb-0 text-muted">Histórico detalhado das leituras</p>
+                        </div>
+                        <div class="ml-auto">
+                            <button class="btn-hamburger" data-sidebar-toggle aria-label="Abrir/Fechar Menu">
+                                <div class="hamburger-line"></div>
+                                <div class="hamburger-line"></div>
+                                <div class="hamburger-line"></div>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-secondary btn-sm" onclick="loadSensorData()">
+                            <i class="fas fa-sync-alt"></i>
+                            Atualizar
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -492,9 +608,16 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', async function() {
+            // Setup do menu mobile primeiro
+            setupMobileMenu();
+            
+            // Inicialização principal
             await initializeDataPage();
             setupEventListeners();
             handleDisabledLinks();
+            
+            // Garantir responsividade inicial
+            handleResize();
         });
 
         async function initializeDataPage() {
@@ -826,6 +949,172 @@
             URL.revokeObjectURL(url);
         }
 
+        // Variável para controlar estado do sidebar
+        let sidebarAberto = false;
+
+        // Funções do Menu Hamburger
+        function toggleSidebar() {
+            if (sidebarAberto) {
+                fecharSidebar();
+            } else {
+                abrirSidebar();
+            }
+        }
+
+        function abrirSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('[data-sidebar-overlay]');
+            const hamburger = document.querySelector('[data-sidebar-toggle]');
+            
+            // Forçar estilos inline - SIMPLES E DIRETO
+            sidebar.style.cssText = `
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 280px !important;
+                height: 100vh !important;
+                z-index: 9999 !important;
+                background: white !important;
+                transform: translateX(0) !important;
+                transition: transform 0.3s ease !important;
+                box-shadow: 0 0 30px rgba(0,0,0,0.5) !important;
+            `;
+            
+            overlay.style.cssText = `
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: rgba(0,0,0,0.5) !important;
+                z-index: 998 !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+            `;
+            
+            hamburger.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            sidebarAberto = true;
+        }
+
+        function fecharSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('[data-sidebar-overlay]');
+            const hamburger = document.querySelector('[data-sidebar-toggle]');
+            
+            // FORÇAR COMPLETAMENTE O FECHAMENTO
+            sidebar.style.cssText = `
+                position: fixed !important;
+                left: -300px !important;
+                top: 0 !important;
+                width: 280px !important;
+                height: 100vh !important;
+                z-index: -1 !important;
+                transform: translateX(-100%) !important;
+                transition: all 0.3s ease !important;
+            `;
+            
+            overlay.style.cssText = `
+                opacity: 0 !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+                z-index: -1 !important;
+            `;
+            
+            hamburger.classList.remove('active');
+            document.body.style.overflow = '';
+            sidebarAberto = false;
+        }
+
+        function initializeSidebarState() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('[data-sidebar-overlay]');
+            
+            if (!sidebar || !overlay) return;
+            
+            // FORÇAR estado inicial fechado COMPLETAMENTE
+            sidebarAberto = false;
+            
+            if (window.innerWidth <= 1024) {
+                // FORÇAR sidebar para FORA da tela
+                sidebar.style.cssText = `
+                    position: fixed !important;
+                    left: -300px !important;
+                    top: 0 !important;
+                    width: 280px !important;
+                    height: 100vh !important;
+                    z-index: -1 !important;
+                    transform: translateX(-100%) !important;
+                `;
+                
+                overlay.style.cssText = `
+                    opacity: 0 !important;
+                    visibility: hidden !important;
+                    pointer-events: none !important;
+                    z-index: -1 !important;
+                `;
+            }
+        }
+
+        function setupMobileMenu() {
+            try {
+                const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
+                const sidebar = document.querySelector('.sidebar');
+                const overlay = document.querySelector('[data-sidebar-overlay]');
+                
+                if (!sidebarToggle || !sidebar || !overlay) {
+                    return;
+                }
+                
+                // Configurar estado inicial do sidebar
+                initializeSidebarState();
+                
+                // Toggle sidebar ao clicar no hamburguer
+                sidebarToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleSidebar();
+                });
+                
+                // Fechar sidebar ao clicar no overlay
+                overlay.addEventListener('click', function() {
+                    if (sidebarAberto) fecharSidebar();
+                });
+                
+                // Fechar sidebar com ESC
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && sidebarAberto) {
+                        fecharSidebar();
+                    }
+                });
+                
+                // Fechar sidebar ao clicar em links (mobile)
+                if (window.innerWidth <= 1024) {
+                    const sidebarLinks = sidebar.querySelectorAll('.sidebar-nav-link:not(.disabled)');
+                    sidebarLinks.forEach(link => {
+                        link.addEventListener('click', function() {
+                            if (sidebarAberto) {
+                                setTimeout(() => fecharSidebar(), 150);
+                            }
+                        });
+                    });
+                }
+            } catch (error) {
+                // Silencioso - menu mobile não crítico
+            }
+        }
+
+        // Gerenciar responsividade  
+        function handleResize() {
+            // Se mudou para desktop, fechar sidebar
+            if (window.innerWidth > 1024 && sidebarAberto) {
+                fecharSidebar();
+            }
+            
+            // Reinicializar estado
+            initializeSidebarState();
+        }
+
         function setupEventListeners() {
             // Logout
             document.getElementById('logoutBtn').addEventListener('click', function(e) {
@@ -843,14 +1132,6 @@
                 }
             });
 
-            // Toggle sidebar
-            const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', function() {
-                    document.querySelector('.sidebar').classList.toggle('show');
-                });
-            }
-
             // Verificar parâmetros da URL
             const urlParams = new URLSearchParams(window.location.search);
             const deviceParam = urlParams.get('device');
@@ -863,13 +1144,22 @@
         function checkScreenSize() {
             const toggle = document.querySelector('[data-sidebar-toggle]');
             if (window.innerWidth <= 1024) {
-                toggle.style.display = 'flex';
+                if (toggle) toggle.style.display = 'flex';
             } else {
-                toggle.style.display = 'none';
+                if (toggle) toggle.style.display = 'none';
             }
+            
+            // Chamar handleResize para gerenciar estado do sidebar
+            handleResize();
         }
 
-        window.addEventListener('resize', checkScreenSize);
+        // Debounce para otimizar performance
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(checkScreenSize, 150);
+        });
+        
         checkScreenSize();
     </script>
 </body>
