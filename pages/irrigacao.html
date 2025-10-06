@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Irrigação - AgroSensor</title>
+    
+    <!-- Fontes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <style>
+        .irrigation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: var(--spacing-xl);
+        }
+        
+        .irrigation-status {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-gray);
+            box-shadow: var(--shadow-sm);
+            padding: var(--spacing-xl);
+            text-align: center;
+        }
+        
+        .status-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--spacing-lg);
+            font-size: 2rem;
+        }
+        
+        .status-active .status-icon {
+            background: var(--accent-green);
+            color: var(--white);
+        }
+        
+        .status-inactive .status-icon {
+            background: var(--light-gray);
+            color: var(--text-gray);
+        }
+        
+        .status-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .status-active .status-title {
+            color: var(--accent-green);
+        }
+        
+        .status-inactive .status-title {
+            color: var(--text-gray);
+        }
+        
+        .status-description {
+            color: var(--text-gray);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .irrigation-controls {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-gray);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        
+        .controls-header {
+            padding: var(--spacing-lg);
+            background: var(--light-gray);
+            border-bottom: 1px solid var(--border-gray);
+        }
+        
+        .controls-title {
+            margin: 0;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        .controls-body {
+            padding: var(--spacing-lg);
+        }
+        
+        .control-item {
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .control-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .irrigation-toggle {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin-left: auto;
+        }
+        
+        .irrigation-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--accent-green);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .water-level {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-lg);
+            background: var(--background-green);
+            border: 1px solid var(--accent-green);
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-lg);
+        }
+        
+        .water-icon {
+            font-size: 2rem;
+            color: var(--accent-green);
+        }
+        
+        .water-info h4 {
+            margin: 0;
+            color: var(--primary-green);
+            font-size: 1rem;
+        }
+        
+        .water-info p {
+            margin: var(--spacing-xs) 0 0 0;
+            color: var(--text-gray);
+            font-size: 0.875rem;
+        }
+        
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md);
+            background: var(--light-gray);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .schedule-time {
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        .schedule-duration {
+            color: var(--text-gray);
+            font-size: 0.875rem;
+        }
+        
+        .schedule-actions {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
+        .btn-icon {
+            padding: var(--spacing-xs);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        
+        .btn-edit {
+            background: var(--accent-green);
+            color: var(--white);
+        }
+        
+        .btn-delete {
+            background: var(--error);
+            color: var(--white);
+        }
+        
+        .irrigation-history {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-gray);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--border-gray);
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .history-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--background-green);
+            color: var(--accent-green);
+        }
+        
+        .history-text h5 {
+            margin: 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        .history-text p {
+            margin: var(--spacing-xs) 0 0 0;
+            font-size: 0.75rem;
+            color: var(--text-gray);
+        }
+        
+        .history-time {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+        }
+        
+        .moisture-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-md);
+        }
+        
+        .moisture-value {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+        
+        .moisture-good .moisture-value {
+            color: var(--accent-green);
+        }
+        
+        .moisture-warning .moisture-value {
+            color: #f6ad55;
+        }
+        
+        .moisture-critical .moisture-value {
+            color: var(--error);
+        }
+        
+        .moisture-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--light-gray);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .moisture-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .moisture-good .moisture-fill {
+            background: var(--accent-green);
+        }
+        
+        .moisture-warning .moisture-fill {
+            background: #f6ad55;
+        }
+        
+        .moisture-critical .moisture-fill {
+            background: var(--error);
+        }
+        
+        @media (max-width: 768px) {
+            .irrigation-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .schedule-item {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+                text-align: center;
+            }
+            
+            .history-item {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+                text-align: center;
+            }
+        }
+        
+        /* Links desabilitados */
+        .sidebar-nav-link.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            position: relative;
+        }
+        
+        .sidebar-nav-link.disabled::after {
+            content: "Em breve";
+            position: absolute;
+            right: 12px;
+            font-size: 0.75rem;
+            background: var(--text-gray);
+            color: var(--white);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="navbar-brand">
+                <i class="fas fa-seedling"></i>
+                <span>AgroSensor</span>
+            </div>
+            <p class="subtitle" style="color: var(--text-gray); font-size: 0.875rem; margin-top: var(--spacing-sm);">
+                Plano Básico
+            </p>
+        </div>
+        
+        <nav>
+            <ul class="sidebar-nav">
+                <li class="sidebar-nav-item">
+                    <a href="dashboard.html" class="sidebar-nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="dispositivos.html" class="sidebar-nav-link">
+                        <i class="fas fa-microchip"></i>
+                        Dispositivos
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="dados.html" class="sidebar-nav-link">
+                        <i class="fas fa-database"></i>
+                        Dados
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="irrigacao.html" class="sidebar-nav-link active">
+                        <i class="fas fa-tint"></i>
+                        Irrigação
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="configuracoes.html" class="sidebar-nav-link">
+                        <i class="fas fa-cog"></i>
+                        Configurações
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div style="margin-top: auto; padding-top: var(--spacing-xl);">
+            <div class="sidebar-nav-item">
+                <a href="#" class="sidebar-nav-link" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair
+                </a>
+            </div>
+            <div style="padding: var(--spacing-md); text-align: center; font-size: 0.75rem; color: var(--text-gray);">
+                <i class="fas fa-user"></i>
+                <span id="userInfo">Carregando...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <div class="content-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1>Sistema de Irrigação</h1>
+                    <p class="mb-0 text-muted">Controle automático e manual da irrigação</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-secondary" onclick="loadIrrigationData()">
+                        <i class="fas fa-sync-alt"></i>
+                        Atualizar
+                    </button>
+                    <button class="btn btn-primary" data-sidebar-toggle style="display: none;">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-body">
+            <div class="irrigation-grid">
+                <!-- Status Atual -->
+                <div class="irrigation-status" id="irrigationStatus">
+                    <div class="status-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <h2 class="status-title">Sistema Desligado</h2>
+                    <p class="status-description">
+                        O sistema de irrigação está atualmente desativado
+                    </p>
+                    <div class="moisture-indicator moisture-good">
+                        <i class="fas fa-thermometer-half"></i>
+                        <span class="moisture-value">65%</span>
+                        <div class="moisture-bar">
+                            <div class="moisture-fill" style="width: 65%;"></div>
+                        </div>
+                        <small style="color: var(--text-gray);">Umidade atual</small>
+                    </div>
+                    <button class="btn btn-primary btn-full" style="margin-top: var(--spacing-lg);" onclick="toggleIrrigation()">
+                        <i class="fas fa-play"></i>
+                        Ligar Irrigação Manual
+                    </button>
+                </div>
+
+                <!-- Controles -->
+                <div class="irrigation-controls">
+                    <div class="controls-header">
+                        <h3 class="controls-title">
+                            <i class="fas fa-sliders-h"></i>
+                            Controles
+                        </h3>
+                    </div>
+                    <div class="controls-body">
+                        <div class="control-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <label class="form-label" style="margin-bottom: var(--spacing-xs);">
+                                        <i class="fas fa-robot"></i>
+                                        Irrigação Automática
+                                    </label>
+                                    <p style="color: var(--text-gray); font-size: 0.875rem; margin: 0;">
+                                        Liga automaticamente quando a umidade estiver baixa
+                                    </p>
+                                </div>
+                                <label class="irrigation-toggle">
+                                    <input type="checkbox" id="autoIrrigation" onchange="toggleAutoIrrigation(this)">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="control-item">
+                            <label class="form-label" for="irrigationDuration">
+                                <i class="fas fa-clock"></i>
+                                Duração da Irrigação
+                            </label>
+                            <div class="input-with-addon" style="display: flex;">
+                                <select id="irrigationDuration" class="form-control" style="border-radius: var(--radius-md) 0 0 var(--radius-md);">
+                                    <option value="300">5 minutos</option>
+                                    <option value="600">10 minutos</option>
+                                    <option value="900">15 minutos</option>
+                                    <option value="1200">20 minutos</option>
+                                    <option value="1800">30 minutos</option>
+                                    <option value="3600">1 hora</option>
+                                </select>
+                                <div class="input-group-addon" style="background: var(--light-gray); border: 1px solid var(--border-gray); border-left: none; padding: var(--spacing-sm) var(--spacing-md); border-radius: 0 var(--radius-md) var(--radius-md) 0;">
+                                    <i class="fas fa-stopwatch"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-item">
+                            <button type="button" class="btn btn-secondary btn-full" onclick="showScheduleModal()">
+                                <i class="fas fa-calendar-plus"></i>
+                                Adicionar Agendamento
+                            </button>
+                        </div>
+
+                        <div class="water-level">
+                            <div class="water-icon">
+                                <i class="fas fa-water"></i>
+                            </div>
+                            <div class="water-info">
+                                <h4>Nível do Reservatório</h4>
+                                <p>Sensor de nível não configurado</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agendamentos -->
+                <div class="irrigation-controls">
+                    <div class="controls-header">
+                        <h3 class="controls-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            Agendamentos
+                        </h3>
+                    </div>
+                    <div class="controls-body">
+                        <div id="scheduleList">
+                            <div class="schedule-item">
+                                <div>
+                                    <div class="schedule-time">06:00</div>
+                                    <div class="schedule-duration">15 minutos</div>
+                                </div>
+                                <div class="schedule-actions">
+                                    <button class="btn-icon btn-edit" onclick="editSchedule(1)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon btn-delete" onclick="deleteSchedule(1)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="schedule-item">
+                                <div>
+                                    <div class="schedule-time">18:00</div>
+                                    <div class="schedule-duration">10 minutos</div>
+                                </div>
+                                <div class="schedule-actions">
+                                    <button class="btn-icon btn-edit" onclick="editSchedule(2)">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn-icon btn-delete" onclick="deleteSchedule(2)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p style="color: var(--text-gray); font-size: 0.875rem; margin-top: var(--spacing-lg); text-align: center;">
+                            <i class="fas fa-info-circle"></i>
+                            Os agendamentos funcionam apenas com a irrigação automática ativada
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Histórico -->
+                <div class="irrigation-history">
+                    <div class="controls-header">
+                        <h3 class="controls-title">
+                            <i class="fas fa-history"></i>
+                            Histórico Recente
+                        </h3>
+                    </div>
+                    <div id="irrigationHistory">
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-icon">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                                <div class="history-text">
+                                    <h5>Irrigação Iniciada</h5>
+                                    <p>Ativação manual - 15 minutos</p>
+                                </div>
+                            </div>
+                            <div class="history-time">Hoje, 14:30</div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-icon">
+                                    <i class="fas fa-stop"></i>
+                                </div>
+                                <div class="history-text">
+                                    <h5>Irrigação Finalizada</h5>
+                                    <p>Completou ciclo automático</p>
+                                </div>
+                            </div>
+                            <div class="history-time">Hoje, 06:15</div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-icon">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="history-text">
+                                    <h5>Irrigação Automática</h5>
+                                    <p>Umidade baixa detectada (25%)</p>
+                                </div>
+                            </div>
+                            <div class="history-time">Hoje, 06:00</div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-icon">
+                                    <i class="fas fa-exclamation-triangle" style="color: var(--error);"></i>
+                                </div>
+                                <div class="history-text">
+                                    <h5>Alerta de Umidade</h5>
+                                    <p>Umidade crítica detectada (18%)</p>
+                                </div>
+                            </div>
+                            <div class="history-time">Ontem, 19:45</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Agendamento -->
+    <div id="scheduleModal" class="modal" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-calendar-plus"></i>
+                    Novo Agendamento
+                </h5>
+                <button type="button" onclick="ModalManager.close('scheduleModal')" style="background: none; border: none; font-size: 18px; cursor: pointer;">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="scheduleForm">
+                    <div class="form-group">
+                        <label class="form-label" for="scheduleTime">
+                            <i class="fas fa-clock"></i> Horário
+                        </label>
+                        <input 
+                            type="time" 
+                            id="scheduleTime" 
+                            name="time" 
+                            class="form-control"
+                            required 
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="scheduleDuration">
+                            <i class="fas fa-stopwatch"></i> Duração
+                        </label>
+                        <select id="scheduleDuration" name="duration" class="form-control" required>
+                            <option value="300">5 minutos</option>
+                            <option value="600">10 minutos</option>
+                            <option value="900">15 minutos</option>
+                            <option value="1200">20 minutos</option>
+                            <option value="1800">30 minutos</option>
+                            <option value="3600">1 hora</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar"></i> Dias da Semana
+                        </label>
+                        <div class="d-flex flex-wrap gap-2" style="margin-top: var(--spacing-sm);">
+                            <label style="display: flex; align-items: center; gap: var(--spacing-xs); font-weight: normal;">
+                                <input type="checkbox" name="days" value="0"> Domingo
+                            </label>
+                            <label style="display: flex; align-items: center; gap: var(--spacing-xs); font-weight: normal;">
+                                <input type="checkbox" name="days" value="1"> Segunda
+                            </label>
+                            <label style="display: flex; align-items: center; gap: var(--spacing-xs); font-weight: normal;">
+                                <input type="checkbox" name="days" value="2"> Terça
+                            </label>
+                            <label style="display: flex; align-items: center; gap: var(--spacing-xs); font-weight: normal;">
+                                <input type="checkbox" name="days" value="3"> Quarta
+                            </label>
+                            <label style="display: flex; align-items: center; gap: var(--spacing-xs); font-weight: normal;">
+                                <input type="checkbox" name="days" value="4"> Quinta
+                            </label>
+                            <label style="display: flex; align-items: center; gap: var(--spacing-xs); font-weight: normal;">
+                                <input type="checkbox" name="days" value="5"> Sexta
+                            </label>
+                            <label style="display: flex; align-items: center; gap: var(--spacing-xs); font-weight: normal;">
+                                <input type="checkbox" name="days" value="6"> Sábado
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="ModalManager.close('scheduleModal')">
+                    Cancelar
+                </button>
+                <button type="submit" form="scheduleForm" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Salvar Agendamento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../assets/js/app.js"></script>
+    <script>
+        // Verificar autenticação e permissões
+        if (!AuthManager.redirectIfNotAuthenticated()) {
+            throw new Error('Não autenticado');
+        }
+
+        // Obter parâmetros para administradores
+        const urlParams = new URLSearchParams(window.location.search);
+        const adminCompanyId = urlParams.get('company_id');
+        const isAdminView = urlParams.get('admin') === 'true';
+
+        // Verificar permissões
+        if (AuthManager.isAdmin() && !adminCompanyId && !isAdminView) {
+            // Admin sem especificar empresa - redirecionar para admin dashboard
+            window.location.href = 'admin-dashboard.html';
+        }
+
+        let irrigationState = {
+            isRunning: false,
+            isAutoMode: false,
+            currentDuration: 600,
+            currentMoisture: 65,
+            lastUpdate: new Date()
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeIrrigationPage();
+            setupEventListeners();
+            startMoistureMonitoring();
+        });
+
+        async function initializeIrrigationPage() {
+            try {
+                LoadingManager.showGlobalLoading('Carregando sistema de irrigação...');
+                
+                // Carregar dados do usuário
+                const user = AuthManager.getUserFromToken();
+                if (user) {
+                    document.getElementById('userInfo').textContent = user.username || 'Usuário';
+                }
+                
+                await loadIrrigationData();
+                updateIrrigationStatus();
+                
+            } catch (error) {
+                console.error('Erro ao inicializar página:', error);
+                NotificationManager.error('Erro', 'Falha ao carregar sistema de irrigação');
+            } finally {
+                LoadingManager.hideGlobalLoading();
+            }
+        }
+
+        async function loadIrrigationData() {
+            try {
+                // Simular carregamento de dados do sistema de irrigação
+                // Na implementação real, faria chamadas para a API
+                
+                // Atualizar dados mockados
+                irrigationState.currentMoisture = Math.floor(Math.random() * 40) + 40; // 40-80%
+                updateMoistureDisplay();
+                
+                NotificationManager.success('Dados atualizados', 'Sistema de irrigação sincronizado');
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                NotificationManager.error('Erro', 'Falha ao carregar dados do sistema');
+            }
+        }
+
+        function updateIrrigationStatus() {
+            const statusElement = document.getElementById('irrigationStatus');
+            const statusIcon = statusElement.querySelector('.status-icon');
+            const statusTitle = statusElement.querySelector('.status-title');
+            const statusDescription = statusElement.querySelector('.status-description');
+            const actionButton = statusElement.querySelector('.btn');
+            
+            if (irrigationState.isRunning) {
+                statusElement.classList.add('status-active');
+                statusElement.classList.remove('status-inactive');
+                statusTitle.textContent = 'Sistema Ligado';
+                statusDescription.textContent = 'A irrigação está ativa e funcionando normalmente';
+                actionButton.innerHTML = '<i class="fas fa-stop"></i> Parar Irrigação';
+                actionButton.className = 'btn btn-secondary btn-full';
+            } else {
+                statusElement.classList.add('status-inactive');
+                statusElement.classList.remove('status-active');
+                statusTitle.textContent = 'Sistema Desligado';
+                statusDescription.textContent = 'O sistema de irrigação está atualmente desativado';
+                actionButton.innerHTML = '<i class="fas fa-play"></i> Ligar Irrigação Manual';
+                actionButton.className = 'btn btn-primary btn-full';
+            }
+        }
+
+        function updateMoistureDisplay() {
+            const moistureIndicator = document.querySelector('.moisture-indicator');
+            const moistureValue = moistureIndicator.querySelector('.moisture-value');
+            const moistureFill = moistureIndicator.querySelector('.moisture-fill');
+            
+            moistureValue.textContent = irrigationState.currentMoisture + '%';
+            moistureFill.style.width = irrigationState.currentMoisture + '%';
+            
+            // Atualizar classe baseada no nível
+            moistureIndicator.classList.remove('moisture-good', 'moisture-warning', 'moisture-critical');
+            
+            if (irrigationState.currentMoisture >= 50) {
+                moistureIndicator.classList.add('moisture-good');
+            } else if (irrigationState.currentMoisture >= 30) {
+                moistureIndicator.classList.add('moisture-warning');
+            } else {
+                moistureIndicator.classList.add('moisture-critical');
+            }
+        }
+
+        function toggleIrrigation() {
+            irrigationState.isRunning = !irrigationState.isRunning;
+            
+            if (irrigationState.isRunning) {
+                const duration = parseInt(document.getElementById('irrigationDuration').value);
+                startIrrigation(duration);
+            } else {
+                stopIrrigation();
+            }
+            
+            updateIrrigationStatus();
+        }
+
+        function startIrrigation(duration = 600) {
+            irrigationState.isRunning = true;
+            irrigationState.currentDuration = duration;
+            
+            NotificationManager.success(
+                'Irrigação iniciada!', 
+                `Sistema ligado por ${Utils.formatDuration(duration)}`
+            );
+            
+            // Simular irrigação por tempo determinado
+            setTimeout(() => {
+                if (irrigationState.isRunning) {
+                    stopIrrigation();
+                    NotificationManager.info('Irrigação concluída', 'Ciclo de irrigação finalizado');
+                }
+            }, Math.min(duration * 1000, 30000)); // Máximo 30s para demo
+            
+            addHistoryItem('Irrigação Iniciada', `Ativação manual - ${Utils.formatDuration(duration)}`, 'play');
+        }
+
+        function stopIrrigation() {
+            irrigationState.isRunning = false;
+            updateIrrigationStatus();
+            
+            addHistoryItem('Irrigação Finalizada', 'Parada manual pelo usuário', 'stop');
+        }
+
+        function toggleAutoIrrigation(checkbox) {
+            irrigationState.isAutoMode = checkbox.checked;
+            
+            if (irrigationState.isAutoMode) {
+                NotificationManager.success('Modo automático ativado', 'Sistema irá ligar automaticamente quando necessário');
+            } else {
+                NotificationManager.info('Modo automático desativado', 'Irrigação apenas manual');
+            }
+        }
+
+        function showScheduleModal() {
+            ModalManager.open('scheduleModal');
+            document.getElementById('scheduleTime').focus();
+        }
+
+        function editSchedule(scheduleId) {
+            NotificationManager.info('Funcionalidade em desenvolvimento', 'Edição de agendamentos será implementada em breve');
+        }
+
+        function deleteSchedule(scheduleId) {
+            const confirmed = confirm('Tem certeza que deseja excluir este agendamento?');
+            if (confirmed) {
+                NotificationManager.success('Agendamento excluído', 'O horário foi removido com sucesso');
+                // Aqui removeria o elemento da lista
+            }
+        }
+
+        function addHistoryItem(title, description, icon) {
+            const historyContainer = document.getElementById('irrigationHistory');
+            const now = new Date();
+            
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <div class="history-info">
+                    <div class="history-icon">
+                        <i class="fas fa-${icon}"></i>
+                    </div>
+                    <div class="history-text">
+                        <h5>${title}</h5>
+                        <p>${description}</p>
+                    </div>
+                </div>
+                <div class="history-time">${Utils.formatDate(now, 'dd/MM HH:mm')}</div>
+            `;
+            
+            // Adicionar no topo da lista
+            historyContainer.insertBefore(historyItem, historyContainer.firstChild);
+            
+            // Manter apenas os últimos 10 itens
+            while (historyContainer.children.length > 10) {
+                historyContainer.removeChild(historyContainer.lastChild);
+            }
+        }
+
+        function startMoistureMonitoring() {
+            // Simular mudanças na umidade a cada 30 segundos
+            setInterval(() => {
+                // Pequenas variações na umidade
+                const change = (Math.random() - 0.5) * 4; // ±2%
+                irrigationState.currentMoisture = Math.max(15, Math.min(85, irrigationState.currentMoisture + change));
+                
+                updateMoistureDisplay();
+                
+                // Verificar se precisa de irrigação automática
+                if (irrigationState.isAutoMode && !irrigationState.isRunning && irrigationState.currentMoisture < 30) {
+                    startIrrigation(parseInt(document.getElementById('irrigationDuration').value));
+                    addHistoryItem('Irrigação Automática', `Umidade baixa detectada (${Math.round(irrigationState.currentMoisture)}%)`, 'robot');
+                }
+            }, 30000);
+        }
+
+        function setupEventListeners() {
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                AuthManager.logout();
+            });
+
+            // Form de agendamento
+            document.getElementById('scheduleForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const time = formData.get('time');
+                const duration = formData.get('duration');
+                const selectedDays = formData.getAll('days');
+                
+                if (!time || !duration || selectedDays.length === 0) {
+                    NotificationManager.error('Erro', 'Preencha todos os campos obrigatórios');
+                    return;
+                }
+                
+                const submitButton = this.querySelector('button[type="submit"]');
+                LoadingManager.show(submitButton);
+
+                try {
+                    // Simular salvamento do agendamento
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    NotificationManager.success(
+                        'Agendamento criado!', 
+                        `Irrigação programada para ${time} nos dias selecionados`
+                    );
+                    
+                    ModalManager.close('scheduleModal');
+                    this.reset();
+                    
+                } catch (error) {
+                    console.error('Erro ao criar agendamento:', error);
+                    NotificationManager.error('Erro', 'Falha ao salvar agendamento');
+                } finally {
+                    LoadingManager.hide(submitButton);
+                }
+            });
+
+            // Toggle sidebar
+            const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    document.querySelector('.sidebar').classList.toggle('show');
+                });
+            }
+        }
+
+        // Responsividade
+        function checkScreenSize() {
+            const toggle = document.querySelector('[data-sidebar-toggle]');
+            if (window.innerWidth <= 1024) {
+                toggle.style.display = 'flex';
+            } else {
+                toggle.style.display = 'none';
+            }
+        }
+
+        window.addEventListener('resize', checkScreenSize);
+        checkScreenSize();
+    </script>
+</body>
+</html>

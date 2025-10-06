@@ -1,0 +1,137 @@
+{
+  "name": "AgroSensor Frontend",
+  "version": "1.0.0",
+  "description": "Sistema de monitoramento agrícola com interface web responsiva",
+  "homepage": "index.html",
+  "config": {
+    "api": {
+      "baseUrl": "https://api-estacao.onrender.com/api",
+      "timeout": 10000,
+      "retryAttempts": 3
+    },
+    "app": {
+      "title": "AgroSensor",
+      "subtitle": "Plano Básico",
+      "theme": "agricultural",
+      "locale": "pt-BR",
+      "dateFormat": "dd/MM/yyyy HH:mm"
+    },
+    "features": {
+      "irrigation": true,
+      "notifications": true,
+      "charts": true,
+      "dataExport": true,
+      "deviceManagement": true
+    },
+    "ui": {
+      "itemsPerPage": 50,
+      "chartRefreshInterval": 30000,
+      "autoLogoutMinutes": 60,
+      "showBetaFeatures": false
+    },
+    "colors": {
+      "primary": "#2d5a27",
+      "accent": "#7fb069",
+      "background": "#f7fbf3",
+      "text": "#2d3748",
+      "textSecondary": "#718096",
+      "error": "#e53e3e",
+      "warning": "#f6ad55",
+      "success": "#38a169"
+    }
+  },
+  "pages": [
+    {
+      "path": "index.html",
+      "name": "Login",
+      "description": "Página de autenticação e registro",
+      "public": true
+    },
+    {
+      "path": "pages/dashboard.html", 
+      "name": "Dashboard",
+      "description": "Visão geral do sistema com gráficos",
+      "icon": "fas fa-chart-line",
+      "protected": true
+    },
+    {
+      "path": "pages/dispositivos.html",
+      "name": "Dispositivos", 
+      "description": "Gerenciamento de sensores IoT",
+      "icon": "fas fa-microchip",
+      "protected": true
+    },
+    {
+      "path": "pages/dados.html",
+      "name": "Dados",
+      "description": "Visualização e exportação de dados",
+      "icon": "fas fa-database", 
+      "protected": true
+    },
+    {
+      "path": "pages/irrigacao.html",
+      "name": "Irrigação",
+      "description": "Controle do sistema de irrigação",
+      "icon": "fas fa-tint",
+      "protected": true,
+      "beta": false
+    },
+    {
+      "path": "pages/configuracoes.html",
+      "name": "Configurações",
+      "description": "Configurações do sistema",
+      "icon": "fas fa-cog", 
+      "protected": true
+    }
+  ],
+  "dependencies": {
+    "chart.js": "^4.0.0",
+    "font-awesome": "^6.4.0",
+    "google-fonts": "Inter"
+  },
+  "browser_support": {
+    "chrome": "90+",
+    "firefox": "88+", 
+    "safari": "14+",
+    "edge": "90+"
+  },
+  "deployment": {
+    "type": "static",
+    "build_required": false,
+    "server_requirements": "Any HTTP server",
+    "recommended": [
+      "nginx",
+      "apache", 
+      "netlify",
+      "vercel",
+      "github-pages"
+    ]
+  },
+  "development": {
+    "local_server": {
+      "python": "python -m http.server 8000",
+      "node": "npx serve -s .",
+      "php": "php -S localhost:8000"
+    },
+    "debug_mode": "localStorage.setItem('debug', 'true')",
+    "test_users": [
+      {
+        "username": "admin",
+        "password": "123456",
+        "client_id": "DEMO_CLIENT_001",
+        "role": "admin"
+      },
+      {
+        "username": "user", 
+        "password": "123456",
+        "client_id": "DEMO_CLIENT_001",
+        "role": "user"
+      }
+    ]
+  },
+  "security": {
+    "content_security_policy": "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; connect-src 'self' api-estacao.onrender.com",
+    "permissions_policy": "geolocation=(), microphone=(), camera=()",
+    "https_required": true
+  }
+}

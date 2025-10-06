@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dados - AgroSensor</title>
+    
+    <!-- Fontes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <style>
+        .data-filters {
+            background: var(--white);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-gray);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .filters-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-md);
+            align-items: end;
+        }
+        
+        .data-table-container {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-gray);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--border-gray);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .table-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: var(--spacing-md);
+            text-align: left;
+            border-bottom: 1px solid var(--border-gray);
+            font-size: 0.875rem;
+        }
+        
+        .data-table th {
+            background: var(--light-gray);
+            font-weight: 600;
+            color: var(--dark-gray);
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table tbody tr:hover {
+            background: var(--light-gray);
+        }
+        
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .value-cell {
+            font-weight: 600;
+        }
+        
+        .humidity-value {
+            color: var(--info);
+        }
+        
+        .rain-value {
+            color: var(--success);
+        }
+        
+        .timestamp-cell {
+            color: var(--text-gray);
+            font-size: 0.75rem;
+        }
+        
+        .device-badge {
+            background: var(--background-green);
+            color: var(--primary-green);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .pagination {
+            padding: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            border-top: 1px solid var(--border-gray);
+        }
+        
+        .pagination-info {
+            color: var(--text-gray);
+            font-size: 0.875rem;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-left: auto;
+        }
+        
+        .export-options {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .export-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            min-width: 150px;
+            z-index: 1000;
+        }
+        
+        .export-dropdown.show {
+            display: block;
+        }
+        
+        .export-option {
+            display: block;
+            width: 100%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            color: var(--dark-gray);
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+        
+        .export-option:hover {
+            background: var(--light-gray);
+        }
+        
+        .loading-row {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--text-gray);
+        }
+        
+        .no-data-row {
+            text-align: center;
+            padding: var(--spacing-2xl);
+            color: var(--text-gray);
+        }
+        
+        .no-data-row i {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 768px) {
+            .filters-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                align-items: stretch;
+            }
+            
+            .table-actions {
+                justify-content: center;
+            }
+            
+            .data-table-container {
+                overflow-x: auto;
+            }
+            
+            .data-table {
+                min-width: 600px;
+            }
+            
+            .pagination {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                text-align: center;
+            }
+            
+            .pagination-controls {
+                margin-left: 0;
+                justify-content: center;
+            }
+        }
+        
+        /* Links desabilitados */
+        .sidebar-nav-link.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            position: relative;
+        }
+        
+        .sidebar-nav-link.disabled::after {
+            content: "Em breve";
+            position: absolute;
+            right: 12px;
+            font-size: 0.75rem;
+            background: var(--text-gray);
+            color: var(--white);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="navbar-brand">
+                <i class="fas fa-seedling"></i>
+                <span>AgroSensor</span>
+            </div>
+            <p class="subtitle" style="color: var(--text-gray); font-size: 0.875rem; margin-top: var(--spacing-sm);">
+                Plano Básico
+            </p>
+        </div>
+        
+        <nav>
+            <ul class="sidebar-nav">
+                <li class="sidebar-nav-item">
+                    <a href="dashboard.html" class="sidebar-nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="dispositivos.html" class="sidebar-nav-link">
+                        <i class="fas fa-microchip"></i>
+                        Dispositivos
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="dados.html" class="sidebar-nav-link active">
+                        <i class="fas fa-database"></i>
+                        Dados
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#" class="sidebar-nav-link disabled">
+                        <i class="fas fa-tint"></i>
+                        Irrigação
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="configuracoes.html" class="sidebar-nav-link">
+                        <i class="fas fa-cog"></i>
+                        Configurações
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div style="margin-top: auto; padding-top: var(--spacing-xl);">
+            <div class="sidebar-nav-item">
+                <a href="#" class="sidebar-nav-link" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair
+                </a>
+            </div>
+            <div style="padding: var(--spacing-md); text-align: center; font-size: 0.75rem; color: var(--text-gray);">
+                <i class="fas fa-user"></i>
+                <span id="userInfo">Carregando...</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <div class="content-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1>Dados dos Sensores</h1>
+                    <p class="mb-0 text-muted">Histórico detalhado das leituras</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-secondary" onclick="loadSensorData()">
+                        <i class="fas fa-sync-alt"></i>
+                        Atualizar
+                    </button>
+                    <button class="btn btn-primary" data-sidebar-toggle style="display: none;">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-body">
+            <!-- Filtros -->
+            <div class="data-filters">
+                <div class="filters-row">
+                    <div class="form-group mb-0">
+                        <label class="form-label" for="startDate">
+                            <i class="fas fa-calendar-alt"></i> Data Inicial
+                        </label>
+                        <input 
+                            type="datetime-local" 
+                            id="startDate" 
+                            name="start_date" 
+                            class="form-control"
+                        >
+                    </div>
+                    
+                    <div class="form-group mb-0">
+                        <label class="form-label" for="endDate">
+                            <i class="fas fa-calendar-alt"></i> Data Final
+                        </label>
+                        <input 
+                            type="datetime-local" 
+                            id="endDate" 
+                            name="end_date" 
+                            class="form-control"
+                        >
+                    </div>
+                    
+                    <div class="form-group mb-0">
+                        <label class="form-label" for="deviceFilter">
+                            <i class="fas fa-microchip"></i> Dispositivo
+                        </label>
+                        <select id="deviceFilter" name="device" class="form-control">
+                            <option value="">Todos os dispositivos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group mb-0">
+                        <label class="form-label" style="visibility: hidden;">Ações</label>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" onclick="applyFilters()">
+                                <i class="fas fa-filter"></i>
+                                Filtrar
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearFilters()">
+                                <i class="fas fa-times"></i>
+                                Limpar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabela de Dados -->
+            <div class="data-table-container">
+                <div class="table-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-table"></i>
+                        Registros de Leituras
+                    </h3>
+                    <div class="table-actions">
+                        <div class="export-options">
+                            <button class="btn btn-secondary" onclick="toggleExportDropdown()">
+                                <i class="fas fa-download"></i>
+                                Exportar
+                                <i class="fas fa-chevron-down" style="font-size: 0.75rem; margin-left: 4px;"></i>
+                            </button>
+                            <div class="export-dropdown" id="exportDropdown">
+                                <button class="export-option" onclick="exportData('csv')">
+                                    <i class="fas fa-file-csv"></i>
+                                    Exportar CSV
+                                </button>
+                                <button class="export-option" onclick="exportData('json')">
+                                    <i class="fas fa-file-code"></i>
+                                    Exportar JSON
+                                </button>
+                                <button class="export-option" onclick="exportData('excel')">
+                                    <i class="fas fa-file-excel"></i>
+                                    Exportar Excel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="max-height: 500px; overflow-y: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Dispositivo</th>
+                                <th>Umidade do Solo</th>
+                                <th>Quantidade de Chuva</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- Será preenchido via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="pagination">
+                    <div class="pagination-info">
+                        <span id="paginationInfo">Carregando...</span>
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-sm btn-secondary" id="prevPageBtn" onclick="changePage(-1)" disabled>
+                            <i class="fas fa-chevron-left"></i>
+                            Anterior
+                        </button>
+                        <span id="currentPageInfo" style="padding: 0 var(--spacing-md); color: var(--text-gray); font-size: 0.875rem;">
+                            Página 1
+                        </span>
+                        <button class="btn btn-sm btn-secondary" id="nextPageBtn" onclick="changePage(1)" disabled>
+                            Próxima
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../assets/js/app.js"></script>
+    <script>
+        // Verificar autenticação e permissões
+        if (!AuthManager.redirectIfNotAuthenticated()) {
+            throw new Error('Não autenticado');
+        }
+
+        // Obter parâmetros para administradores
+        const urlParams = new URLSearchParams(window.location.search);
+        const adminCompanyId = urlParams.get('company_id');
+        const isAdminView = urlParams.get('admin') === 'true';
+
+        // Verificar permissões
+        if (AuthManager.isAdmin() && !adminCompanyId && !isAdminView) {
+            // Admin sem especificar empresa - redirecionar para admin dashboard
+            window.location.href = 'admin-dashboard.html';
+        }
+
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const itemsPerPage = 50;
+
+        // Função helper para notificações
+        function showNotification(type, title, message) {
+            if (window.NotificationManager && typeof window.NotificationManager[type] === 'function') {
+                window.NotificationManager[type](title, message);
+            } else {
+                alert(`${title}: ${message}`);
+            }
+        }
+        
+        // Função para interceptar cliques em links desabilitados
+        function handleDisabledLinks() {
+            document.querySelectorAll('.sidebar-nav-link.disabled').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showNotification('info', 'Funcionalidade em desenvolvimento', 'Esta funcionalidade estará disponível em breve.');
+                });
+            });
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeDataPage();
+            setupEventListeners();
+            handleDisabledLinks();
+        });
+
+        async function initializeDataPage() {
+            try {
+                LoadingManager.showGlobalLoading('Carregando dados...');
+                
+                // Carregar dados do usuário
+                const user = AuthManager.getUserFromToken();
+                if (user) {
+                    document.getElementById('userInfo').textContent = user.username || 'Usuário';
+                }
+                
+                // Configurar datas padrão (últimos 7 dias)
+                setDefaultDates();
+                
+                await loadSensorData();
+                
+            } catch (error) {
+                console.error('Erro ao inicializar página:', error);
+                NotificationManager.error('Erro', 'Falha ao carregar dados');
+            } finally {
+                LoadingManager.hideGlobalLoading();
+            }
+        }
+
+        function setDefaultDates() {
+            const now = new Date();
+            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            
+            document.getElementById('endDate').value = formatDateTimeLocal(now);
+            document.getElementById('startDate').value = formatDateTimeLocal(sevenDaysAgo);
+        }
+
+        function formatDateTimeLocal(date) {
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        }
+
+        async function loadSensorData() {
+            try {
+                const tableBody = document.getElementById('dataTableBody');
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="loading-row">
+                            <i class="fas fa-spinner fa-spin"></i><br>
+                            Carregando dados dos sensores...
+                        </td>
+                    </tr>
+                `;
+
+                // Carregar dados da API
+                // Obter company_id para administradores via query parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const adminCompanyId = urlParams.get('company_id');
+                
+                const data = await ApiClient.getSensorsHistory(adminCompanyId);
+                allData = data || [];
+                
+                // Extrair dispositivos únicos para o filtro
+                populateDeviceFilter();
+                
+                // Aplicar filtros iniciais
+                applyFilters();
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                
+                // Mostrar dados simulados em caso de erro
+                generateMockData();
+                populateDeviceFilter();
+                applyFilters();
+            }
+        }
+
+        function generateMockData() {
+            allData = [];
+            const now = new Date();
+            
+            for (let i = 0; i < 100; i++) {
+                const timestamp = new Date(now.getTime() - (i * 15 * 60 * 1000)); // 15 min intervals
+                allData.push({
+                    _id: `mock_${i}`,
+                    device_key: i % 3 === 0 ? 'DEVICE_001' : i % 2 === 0 ? 'DEVICE_002' : 'DEVICE_003',
+                    umidade_solo: Math.random() * 40 + 30, // 30-70%
+                    quantidade_chuva: Math.random() * 8, // 0-8mm
+                    timestamp: timestamp.toISOString()
+                });
+            }
+            
+            allData.reverse(); // Mais recente primeiro
+        }
+
+        function populateDeviceFilter() {
+            const deviceFilter = document.getElementById('deviceFilter');
+            const devices = [...new Set(allData.map(item => item.device_key))];
+            
+            // Limpar opções existentes (exceto "Todos")
+            deviceFilter.innerHTML = '<option value="">Todos os dispositivos</option>';
+            
+            devices.forEach((deviceKey, index) => {
+                const option = document.createElement('option');
+                option.value = deviceKey;
+                option.textContent = `Dispositivo ${index + 1} (${deviceKey.substring(0, 8)}...)`;
+                deviceFilter.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const deviceKey = document.getElementById('deviceFilter').value;
+            
+            filteredData = allData.filter(item => {
+                const itemDate = new Date(item.timestamp);
+                
+                // Filtro de data
+                if (startDate && itemDate < new Date(startDate)) return false;
+                if (endDate && itemDate > new Date(endDate)) return false;
+                
+                // Filtro de dispositivo
+                if (deviceKey && item.device_key !== deviceKey) return false;
+                
+                return true;
+            });
+            
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        }
+
+        function clearFilters() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('deviceFilter').value = '';
+            
+            setDefaultDates();
+            applyFilters();
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('dataTableBody');
+            
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="no-data-row">
+                            <i class="fas fa-search"></i><br>
+                            <strong>Nenhum dado encontrado</strong><br>
+                            <small>Ajuste os filtros ou verifique se há dados para o período selecionado</small>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredData.length);
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            let html = '';
+            pageData.forEach(item => {
+                const deviceName = getDeviceName(item.device_key);
+                
+                html += `
+                    <tr>
+                        <td class="timestamp-cell">
+                            ${Utils.formatDate(item.timestamp, 'dd/MM/yyyy HH:mm')}
+                        </td>
+                        <td>
+                            <div class="device-badge">${deviceName}</div>
+                            <small style="color: var(--text-gray); font-size: 0.7rem; display: block; margin-top: 2px;">
+                                ${item.device_key.substring(0, 12)}...
+                            </small>
+                        </td>
+                        <td class="value-cell humidity-value">
+                            ${Utils.formatNumber(item.umidade_solo)}%
+                        </td>
+                        <td class="value-cell rain-value">
+                            ${Utils.formatNumber(item.quantidade_chuva)} mm
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary" onclick="viewDetails('${item._id}')" title="Ver detalhes">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html;
+        }
+
+        function getDeviceName(deviceKey) {
+            const devices = [...new Set(allData.map(item => item.device_key))];
+            const index = devices.indexOf(deviceKey);
+            return `Sensor ${index + 1}`;
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            const startItem = ((currentPage - 1) * itemsPerPage) + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, filteredData.length);
+            
+            document.getElementById('paginationInfo').textContent = 
+                `Mostrando ${startItem}-${endItem} de ${filteredData.length} registros`;
+            
+            document.getElementById('currentPageInfo').textContent = `Página ${currentPage} de ${totalPages}`;
+            
+            document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderTable();
+                updatePagination();
+            }
+        }
+
+        function viewDetails(itemId) {
+            const item = filteredData.find(d => d._id === itemId);
+            if (!item) return;
+            
+            const content = `
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label class="form-label">Data/Hora:</label>
+                            <div style="font-weight: 600;">${Utils.formatDate(item.timestamp, 'dd/MM/yyyy HH:mm')}</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Dispositivo:</label>
+                            <div class="device-badge" style="display: inline-block;">${getDeviceName(item.device_key)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label class="form-label">Umidade do Solo:</label>
+                            <div style="font-weight: 600; color: var(--info);">${Utils.formatNumber(item.umidade_solo)}%</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Quantidade de Chuva:</label>
+                            <div style="font-weight: 600; color: var(--success);">${Utils.formatNumber(item.quantidade_chuva)} mm</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Device Key:</label>
+                    <div class="device-key-display" style="font-family: monospace; background: var(--light-gray); padding: 8px; border-radius: 4px; font-size: 0.75rem; word-break: break-all;">
+                        ${item.device_key}
+                    </div>
+                </div>
+            `;
+            
+            ModalManager.create('detailsModal', 'Detalhes da Leitura', content, `
+                <button class="btn btn-secondary" onclick="ModalManager.close('detailsModal')">Fechar</button>
+            `);
+            
+            ModalManager.open('detailsModal');
+        }
+
+        function toggleExportDropdown() {
+            const dropdown = document.getElementById('exportDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function exportData(format) {
+            toggleExportDropdown();
+            
+            if (filteredData.length === 0) {
+                NotificationManager.warning('Sem dados', 'Não há dados para exportar');
+                return;
+            }
+            
+            const filename = `agrosensor_dados_${new Date().toISOString().split('T')[0]}`;
+            
+            switch (format) {
+                case 'csv':
+                    exportCSV(filteredData, filename);
+                    break;
+                case 'json':
+                    exportJSON(filteredData, filename);
+                    break;
+                case 'excel':
+                    NotificationManager.info('Em breve', 'Exportação para Excel será implementada em breve');
+                    break;
+            }
+        }
+
+        function exportCSV(data, filename) {
+            const headers = ['Data/Hora', 'Dispositivo', 'Umidade do Solo (%)', 'Quantidade de Chuva (mm)'];
+            const csvContent = [
+                headers.join(','),
+                ...data.map(item => [
+                    `"${Utils.formatDate(item.timestamp, 'dd/MM/yyyy HH:mm')}"`,
+                    `"${getDeviceName(item.device_key)}"`,
+                    Utils.formatNumber(item.umidade_solo),
+                    Utils.formatNumber(item.quantidade_chuva)
+                ].join(','))
+            ].join('\n');
+            
+            downloadFile(csvContent, `${filename}.csv`, 'text/csv');
+            NotificationManager.success('Exportado!', 'Arquivo CSV baixado com sucesso');
+        }
+
+        function exportJSON(data, filename) {
+            const jsonContent = JSON.stringify(data, null, 2);
+            downloadFile(jsonContent, `${filename}.json`, 'application/json');
+            NotificationManager.success('Exportado!', 'Arquivo JSON baixado com sucesso');
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function setupEventListeners() {
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                AuthManager.logout();
+            });
+
+            // Fechar dropdown ao clicar fora
+            document.addEventListener('click', function(e) {
+                const exportOptions = document.querySelector('.export-options');
+                const dropdown = document.getElementById('exportDropdown');
+                
+                if (!exportOptions.contains(e.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            // Toggle sidebar
+            const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    document.querySelector('.sidebar').classList.toggle('show');
+                });
+            }
+
+            // Verificar parâmetros da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const deviceParam = urlParams.get('device');
+            if (deviceParam) {
+                document.getElementById('deviceFilter').value = deviceParam;
+            }
+        }
+
+        // Responsividade
+        function checkScreenSize() {
+            const toggle = document.querySelector('[data-sidebar-toggle]');
+            if (window.innerWidth <= 1024) {
+                toggle.style.display = 'flex';
+            } else {
+                toggle.style.display = 'none';
+            }
+        }
+
+        window.addEventListener('resize', checkScreenSize);
+        checkScreenSize();
+    </script>
+</body>
+</html>
