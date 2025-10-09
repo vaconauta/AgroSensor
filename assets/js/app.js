@@ -20,6 +20,7 @@ const CONFIG = {
         SENSORS_HISTORY: '/api/sensores/historico',
         SENSORS_CONFIG: '/api/sensores/config',
         CONFIGURATIONS: '/api/configuracoes',
+        CONFIGURATIONS_SENSORS: '/api/configuracoes/sensors',
         COMPANY_CONFIG: '/api/company/config',
         ADMIN_SENSOR: '/api/admin/sensor',
         ADMIN_COMPANY: '/api/admin/company',
@@ -412,6 +413,41 @@ class ApiClient {
         return this.request(CONFIG.ROUTES.COMPANY_CONFIG, {
             method: 'POST',
             body: JSON.stringify(config)
+        });
+    }
+
+    // ===== NOVAS ROTAS: Sensores para Usuários Comuns =====
+    
+    /**
+     * Listar sensores da própria fazenda (usuário comum) ou de uma fazenda específica (admin)
+     * @param {string|null} companyId - ID da empresa (apenas para admins)
+     * @returns {Promise} Lista de sensores
+     */
+    static async getUserSensors(companyId = null) {
+        let url = CONFIG.ROUTES.CONFIGURATIONS_SENSORS;
+        if (companyId && AuthManager.isAdmin()) {
+            url += `?company_id=${companyId}`;
+        }
+        return this.request(url);
+    }
+
+    /**
+     * Cadastrar novo sensor na própria fazenda (usuário comum) ou em uma fazenda específica (admin)
+     * @param {string} sensorName - Nome do sensor a ser cadastrado
+     * @param {string|null} companyId - ID da empresa (apenas para admins)
+     * @returns {Promise} Dados do sensor criado incluindo device_key
+     */
+    static async createUserSensor(sensorName, companyId = null) {
+        const body = { nome_sensor: sensorName };
+        
+        // Admins podem especificar company_id no body
+        if (companyId && AuthManager.isAdmin()) {
+            body.company_id = companyId;
+        }
+        
+        return this.request(CONFIG.ROUTES.CONFIGURATIONS_SENSORS, {
+            method: 'POST',
+            body: JSON.stringify(body)
         });
     }
 }

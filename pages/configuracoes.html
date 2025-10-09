@@ -443,17 +443,22 @@
                                     <i class="fas fa-clock"></i>
                                     Intervalo de Envio dos Dados
                                 </label>
-                                <div class="input-with-addon">
-                                    <select id="intervaloEnvio" name="intervaloEnvio" class="form-control" onchange="updateIntervalDisplay()">
-                                        <option value="300">5 minutos</option>
-                                        <option value="600">10 minutos</option>
-                                        <option value="900">15 minutos</option>
-                                        <option value="1800">30 minutos</option>
-                                        <option value="3600">1 hora</option>
+                                <div style="display: flex; gap: var(--spacing-sm);">
+                                    <input 
+                                        type="number" 
+                                        id="intervaloEnvio" 
+                                        name="intervaloEnvio" 
+                                        class="form-control" 
+                                        min="1" 
+                                        value="10"
+                                        onchange="updateIntervalDisplay()"
+                                        style="flex: 1;"
+                                    >
+                                    <select id="unidadeTempo" name="unidadeTempo" class="form-control" onchange="updateIntervalDisplay()" style="flex: 0 0 140px;">
+                                        <option value="segundos">Segundos</option>
+                                        <option value="minutos" selected>Minutos</option>
+                                        <option value="horas">Horas</option>
                                     </select>
-                                    <div class="input-group-addon">
-                                        <i class="fas fa-info-circle"></i>
-                                    </div>
                                 </div>
                                 <div class="config-preview">
                                     <div class="preview-title">Próxima leitura:</div>
@@ -461,6 +466,9 @@
                                         Calculando...
                                     </div>
                                 </div>
+                                <small style="color: var(--text-gray); font-size: 0.75rem; margin-top: var(--spacing-xs); display: block;">
+                                    Intervalo em segundos: <strong id="intervalInSeconds">600</strong>s
+                                </small>
                             </div>
 
                             <button type="submit" class="btn btn-primary btn-full">
@@ -792,8 +800,7 @@
                 }
                 
                 if (config.intervaloEnvio !== undefined) {
-                    document.getElementById('intervaloEnvio').value = config.intervaloEnvio;
-                    updateIntervalDisplay();
+                    setIntervalFromSeconds(config.intervaloEnvio);
                 }
                 
                 showNotification('success', 'Configurações carregadas', 'Dados atualizados com sucesso');
@@ -814,8 +821,7 @@
             document.getElementById('limiteUmidade').value = 30;
             updateHumidityDisplay(30);
             
-            document.getElementById('intervaloEnvio').value = 600;
-            updateIntervalDisplay();
+            setIntervalFromSeconds(600);
         }
 
         function updateHumidityDisplay(value) {
@@ -823,12 +829,66 @@
         }
 
         function updateIntervalDisplay() {
-            const interval = parseInt(document.getElementById('intervaloEnvio').value);
+            const valor = parseInt(document.getElementById('intervaloEnvio').value) || 0;
+            const unidade = document.getElementById('unidadeTempo').value;
+            
+            // Converter para segundos
+            let intervalEmSegundos = 0;
+            switch(unidade) {
+                case 'segundos':
+                    intervalEmSegundos = valor;
+                    break;
+                case 'minutos':
+                    intervalEmSegundos = valor * 60;
+                    break;
+                case 'horas':
+                    intervalEmSegundos = valor * 3600;
+                    break;
+            }
+            
+            // Atualizar display de segundos
+            document.getElementById('intervalInSeconds').textContent = intervalEmSegundos;
+            
+            // Calcular próxima leitura
             const now = new Date();
-            const nextReading = new Date(now.getTime() + (interval * 1000));
+            const nextReading = new Date(now.getTime() + (intervalEmSegundos * 1000));
             
             document.getElementById('nextReadingPreview').textContent = 
                 Utils.formatDate(nextReading, 'dd/MM/yyyy HH:mm');
+        }
+        
+        function getIntervalInSeconds() {
+            const valor = parseInt(document.getElementById('intervaloEnvio').value) || 0;
+            const unidade = document.getElementById('unidadeTempo').value;
+            
+            switch(unidade) {
+                case 'segundos':
+                    return valor;
+                case 'minutos':
+                    return valor * 60;
+                case 'horas':
+                    return valor * 3600;
+                default:
+                    return 0;
+            }
+        }
+        
+        function setIntervalFromSeconds(segundos) {
+            // Determinar a melhor unidade para exibir
+            if (segundos >= 3600 && segundos % 3600 === 0) {
+                // Horas
+                document.getElementById('intervaloEnvio').value = segundos / 3600;
+                document.getElementById('unidadeTempo').value = 'horas';
+            } else if (segundos >= 60 && segundos % 60 === 0) {
+                // Minutos
+                document.getElementById('intervaloEnvio').value = segundos / 60;
+                document.getElementById('unidadeTempo').value = 'minutos';
+            } else {
+                // Segundos
+                document.getElementById('intervaloEnvio').value = segundos;
+                document.getElementById('unidadeTempo').value = 'segundos';
+            }
+            updateIntervalDisplay();
         }
 
         function showChangePasswordModal() {
@@ -1119,7 +1179,13 @@
                 
                 const formData = new FormData(e.target);
                 const limiteUmidade = parseInt(formData.get('limiteUmidade'));
-                const intervaloEnvio = parseInt(formData.get('intervaloEnvio'));
+                const intervaloEnvio = getIntervalInSeconds(); // Obter intervalo em segundos
+                
+                // Validação
+                if (intervaloEnvio <= 0) {
+                    showNotification('error', 'Erro', 'O intervalo de envio deve ser maior que zero');
+                    return;
+                }
                 
                 const submitButton = this.querySelector('button[type="submit"]');
                 LoadingManager.show(submitButton);

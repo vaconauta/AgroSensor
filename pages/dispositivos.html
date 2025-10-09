@@ -619,18 +619,41 @@
 
         async function loadDevices() {
             try {
-                // Como a API não tem endpoint específico para listar sensores,
-                // vamos simular com base nos dados disponíveis
-                const sensorsData = await ApiClient.getSensorsHistory();
+                // Obter company_id para administradores via query parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const adminCompanyId = urlParams.get('company_id');
+                
+                // NOVA ROTA: Usar endpoint específico para listar sensores da fazenda
+                const sensorsResponse = await ApiClient.getUserSensors(adminCompanyId);
+                const registeredSensors = sensorsResponse.sensors || [];
+                
+                // Também carregar histórico para determinar status online/offline
+                const sensorsData = await ApiClient.getSensorsHistory(adminCompanyId);
                 
                 // Processar dados para extrair dispositivos únicos
                 const uniqueDevices = new Map();
                 
+                // Primeiro, adicionar sensores registrados
+                registeredSensors.forEach(sensor => {
+                    uniqueDevices.set(sensor.device_key, {
+                        device_key: sensor.device_key,
+                        sensor_id: sensor._id,
+                        name: sensor.nome || 'Sensor sem nome',
+                        lastReading: null,
+                        readingCount: 0,
+                        status: 'offline',
+                        createdAt: sensor.createdAt
+                    });
+                });
+                
+                // Depois, atualizar com dados de leitura
                 sensorsData.forEach(reading => {
                     if (!uniqueDevices.has(reading.device_key)) {
+                        // Sensor não registrado mas com dados (situação legacy)
                         uniqueDevices.set(reading.device_key, {
                             device_key: reading.device_key,
-                            name: 'Sensor Principal',
+                            sensor_id: reading.sensor_id?._id || null,
+                            name: reading.sensor_id?.nome || 'Sensor Principal',
                             lastReading: reading,
                             readingCount: 1,
                             status: 'online'
@@ -638,7 +661,7 @@
                     } else {
                         const device = uniqueDevices.get(reading.device_key);
                         device.readingCount++;
-                        if (new Date(reading.timestamp) > new Date(device.lastReading.timestamp)) {
+                        if (!device.lastReading || new Date(reading.timestamp) > new Date(device.lastReading.timestamp)) {
                             device.lastReading = reading;
                         }
                     }
@@ -648,6 +671,13 @@
                 
                 // Determinar status baseado na última leitura
                 devices.forEach(device => {
+                    // ✅ Verificar se existe lastReading antes de acessar timestamp
+                    if (!device.lastReading) {
+                        // Sensor sem leituras = offline
+                        device.status = 'offline';
+                        return;
+                    }
+                    
                     const timeDiff = Date.now() - new Date(device.lastReading.timestamp).getTime();
                     if (timeDiff > 60 * 60 * 1000) { // 1 hora
                         device.status = 'offline';
@@ -693,8 +723,19 @@
                     warning: 'Atenção'
                 }[device.status];
 
+                // ✅ Verificar se existe lastReading
+                const hasReading = device.lastReading !== null;
                 const lastReading = device.lastReading;
-                const timeSince = Utils.formatDate(lastReading.timestamp, 'dd/MM/yyyy HH:mm');
+                const timeSince = hasReading 
+                    ? Utils.formatDate(lastReading.timestamp, 'dd/MM/yyyy HH:mm')
+                    : 'Sem leituras';
+                
+                const umidade = hasReading 
+                    ? Utils.formatNumber(lastReading.umidade_solo) 
+                    : '--';
+                const chuva = hasReading 
+                    ? Utils.formatNumber(lastReading.quantidade_chuva) 
+                    : '--';
 
                 html += `
                     <div class="col-6">
@@ -723,11 +764,11 @@
                             <div class="device-body">
                                 <div class="device-stats">
                                     <div class="stat-item">
-                                        <div class="stat-value">${Utils.formatNumber(lastReading.umidade_solo)}%</div>
+                                        <div class="stat-value">${umidade}%</div>
                                         <div class="stat-label">Umidade</div>
                                     </div>
                                     <div class="stat-item">
-                                        <div class="stat-value">${Utils.formatNumber(lastReading.quantidade_chuva)}mm</div>
+                                        <div class="stat-value">${chuva}mm</div>
                                         <div class="stat-label">Chuva</div>
                                     </div>
                                 </div>
@@ -820,43 +861,60 @@
                     return;
                 }
                 
-                // Simular loading
+                // Mostrar loading
                 const originalText = submitButton.innerHTML;
                 submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
                 submitButton.disabled = true;
 
-            // Simular delay da API
-            setTimeout(() => {
-                // Simular criação de device key
-                const deviceKey = generateMockDeviceKey();
+                // NOVA ROTA: Usar endpoint de criação de sensor para usuários
+                const urlParams = new URLSearchParams(window.location.search);
+                const adminCompanyId = urlParams.get('company_id');
                 
-                // Mostrar modal com device key
-                const deviceKeyElement = document.getElementById('generatedDeviceKey');
-                if (deviceKeyElement) {
-                    deviceKeyElement.textContent = deviceKey;
-                    currentDeviceKey = deviceKey;
-                }
-                
-                closeAddDeviceModal();
-                
-                const deviceKeyModal = document.getElementById('deviceKeyModal');
-                if (deviceKeyModal) {
-                    deviceKeyModal.style.display = 'flex';
-                }
-                
-                // Restaurar botão
-                if (submitButton) {
-                    submitButton.innerHTML = originalText;
-                    submitButton.disabled = false;
-                }
-                
-                // Mostrar notificação de sucesso
-                showNotification('success', 'Sensor Criado!', `Sensor "${sensorName}" foi criado com sucesso.`);
-                
-                // Recarregar lista (quando implementado)
-                // loadDevices();
-                
-            }, 1500);
+                ApiClient.createUserSensor(sensorName.trim(), adminCompanyId)
+                    .then(response => {
+                        console.log('Sensor criado:', response);
+                        
+                        // Extrair device_key da resposta
+                        const deviceKey = response.sensor?.device_key;
+                        
+                        if (!deviceKey) {
+                            throw new Error('Device key não retornada pela API');
+                        }
+                        
+                        // Mostrar modal com device key
+                        const deviceKeyElement = document.getElementById('generatedDeviceKey');
+                        if (deviceKeyElement) {
+                            deviceKeyElement.textContent = deviceKey;
+                            currentDeviceKey = deviceKey;
+                        }
+                        
+                        closeAddDeviceModal();
+                        
+                        const deviceKeyModal = document.getElementById('deviceKeyModal');
+                        if (deviceKeyModal) {
+                            deviceKeyModal.style.display = 'flex';
+                        }
+                        
+                        // Mostrar notificação de sucesso
+                        showNotification('success', 'Sensor Criado!', response.message || `Sensor "${sensorName}" foi criado com sucesso.`);
+                        
+                        // Recarregar lista de dispositivos
+                        setTimeout(() => {
+                            loadDevices();
+                        }, 500);
+                        
+                    })
+                    .catch(error => {
+                        console.error('Erro ao criar sensor:', error);
+                        showNotification('error', 'Erro ao criar sensor', error.message || 'Falha ao criar sensor');
+                    })
+                    .finally(() => {
+                        // Restaurar botão
+                        if (submitButton) {
+                            submitButton.innerHTML = originalText;
+                            submitButton.disabled = false;
+                        }
+                    });
                 
             } catch (error) {
                 console.error('Erro em submitAddDevice:', error);
