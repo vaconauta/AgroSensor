@@ -395,11 +395,7 @@
                         </div>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-primary" onclick="showAddDeviceModal()">
-                            <i class="fas fa-plus"></i>
-                            Adicionar Dispositivo
-                        </button>
-                        <button class="btn btn-secondary btn-sm" onclick="loadDevices()">
+                        <button class="btn btn-primary btn-sm" onclick="loadDevices()">
                             <i class="fas fa-sync-alt"></i>
                             Atualizar
                         </button>
@@ -415,97 +411,24 @@
         </div>
     </main>
 
-    <!-- Modal Adicionar Dispositivo -->
-    <div id="addDeviceModal" class="modal" style="display: none;">
-        <div class="modal-dialog">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-plus-circle"></i>
-                    Adicionar Novo Dispositivo
-                </h5>
-                <button type="button" class="modal-close" onclick="closeAddDeviceModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="addDeviceForm">
-                    <div class="form-group">
-                        <label class="form-label" for="sensorName">
-                            <i class="fas fa-tag"></i>
-                            Nome do Sensor
-                        </label>
-                        <input 
-                            type="text" 
-                            id="sensorName" 
-                            name="sensor_name" 
-                            class="form-control"
-                            required 
-                            placeholder="Ex: Sensor Jardim Norte"
-                            autocomplete="off"
-                        >
-                        <small style="color: var(--text-gray); font-size: 0.75rem; margin-top: var(--spacing-xs); display: block;">
-                            Nome para identificar o sensor na sua fazenda
-                        </small>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="sensorLocation">
-                            <i class="fas fa-map-marker-alt"></i>
-                            Localização
-                        </label>
-                        <input 
-                            type="text" 
-                            id="sensorLocation" 
-                            name="sensor_location" 
-                            class="form-control"
-                            placeholder="Ex: Estufa A - Setor 1"
-                            autocomplete="off"
-                        >
-                        <small style="color: var(--text-gray); font-size: 0.75rem; margin-top: var(--spacing-xs); display: block;">
-                            Descrição da localização do sensor (opcional)
-                        </small>
-                    </div>
-
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i>
-                        <div>
-                            <strong>Informação:</strong><br>
-                            Após criar o sensor, você receberá uma chave única (device_key) que deve ser configurada no seu dispositivo Arduino/ESP32.
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeAddDeviceModal()">
-                    <i class="fas fa-times"></i>
-                    Cancelar
-                </button>
-                <button type="submit" form="addDeviceForm" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Criar Sensor
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal Device Key -->
     <div id="deviceKeyModal" class="modal" style="display: none;">
         <div class="modal-dialog">
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="fas fa-key"></i>
-                    Chave do Dispositivo Criada
+                    Chave do Dispositivo
                 </h5>
                 <button type="button" class="modal-close" onclick="closeDeviceKeyModal()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
                     <div>
-                        <strong>Sensor criado com sucesso!</strong><br>
-                        Use a chave abaixo no seu dispositivo Arduino/ESP32.
+                        <strong>Chave do Dispositivo:</strong><br>
+                        Esta chave deve ser configurada no seu dispositivo Arduino/ESP32.
                     </div>
                 </div>
                 
@@ -522,7 +445,7 @@
                         </button>
                     </div>
                     <small style="color: var(--text-gray); font-size: 0.75rem; margin-top: var(--spacing-xs); display: block;">
-                        ⚠️ IMPORTANTE: Salve esta chave em local seguro. Ela será necessária para configurar o dispositivo.
+                        Use esta chave para autenticar seu dispositivo na plataforma
                     </small>
                 </div>
                 
@@ -541,9 +464,9 @@
                     <i class="fas fa-copy"></i>
                     Copiar Chave
                 </button>
-                <button type="button" class="btn btn-primary" onclick="closeDeviceKeyModal(); loadDevices();">
+                <button type="button" class="btn btn-primary" onclick="closeDeviceKeyModal()">
                     <i class="fas fa-check"></i>
-                    Entendi
+                    Fechar
                 </button>
             </div>
         </div>
@@ -623,51 +546,29 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const adminCompanyId = urlParams.get('company_id');
                 
-                // NOVA ROTA: Usar endpoint específico para listar sensores da fazenda
+                // ✅ OTIMIZADO: Usar endpoint que já retorna última leitura
                 const sensorsResponse = await ApiClient.getUserSensors(adminCompanyId);
                 const registeredSensors = sensorsResponse.sensors || [];
                 
-                // Também carregar histórico para determinar status online/offline
-                const sensorsData = await ApiClient.getSensorsHistory(adminCompanyId);
-                
-                // Processar dados para extrair dispositivos únicos
-                const uniqueDevices = new Map();
-                
-                // Primeiro, adicionar sensores registrados
-                registeredSensors.forEach(sensor => {
-                    uniqueDevices.set(sensor.device_key, {
+                // Processar sensores registrados com dados da última leitura
+                devices = registeredSensors.map(sensor => {
+                    // ✅ Usar ultimaLeituraDados que já vem da API
+                    const lastReading = sensor.ultimaLeituraDados ? {
+                        umidade_solo: sensor.ultimaLeituraDados.umidade_solo,
+                        quantidade_chuva: sensor.ultimaLeituraDados.quantidade_chuva,
+                        timestamp: sensor.ultimaLeituraDados.timestamp || sensor.ultimaLeituraData
+                    } : null;
+                    
+                    return {
                         device_key: sensor.device_key,
                         sensor_id: sensor._id,
                         name: sensor.nome || 'Sensor sem nome',
-                        lastReading: null,
-                        readingCount: 0,
-                        status: 'offline',
+                        lastReading: lastReading,
+                        readingCount: sensor.totalLeituras || 0,
+                        status: 'offline', // Será atualizado logo abaixo
                         createdAt: sensor.createdAt
-                    });
+                    };
                 });
-                
-                // Depois, atualizar com dados de leitura
-                sensorsData.forEach(reading => {
-                    if (!uniqueDevices.has(reading.device_key)) {
-                        // Sensor não registrado mas com dados (situação legacy)
-                        uniqueDevices.set(reading.device_key, {
-                            device_key: reading.device_key,
-                            sensor_id: reading.sensor_id?._id || null,
-                            name: reading.sensor_id?.nome || 'Sensor Principal',
-                            lastReading: reading,
-                            readingCount: 1,
-                            status: 'online'
-                        });
-                    } else {
-                        const device = uniqueDevices.get(reading.device_key);
-                        device.readingCount++;
-                        if (!device.lastReading || new Date(reading.timestamp) > new Date(device.lastReading.timestamp)) {
-                            device.lastReading = reading;
-                        }
-                    }
-                });
-                
-                devices = Array.from(uniqueDevices.values());
                 
                 // Determinar status baseado na última leitura
                 devices.forEach(device => {
@@ -675,14 +576,23 @@
                     if (!device.lastReading) {
                         // Sensor sem leituras = offline
                         device.status = 'offline';
+                        console.log(`[Status] ${device.name}: OFFLINE (sem leituras)`);
                         return;
                     }
                     
                     const timeDiff = Date.now() - new Date(device.lastReading.timestamp).getTime();
-                    if (timeDiff > 60 * 60 * 1000) { // 1 hora
+                    const minutesAgo = Math.floor(timeDiff / (60 * 1000));
+                    
+                    // Determinar status baseado no tempo decorrido
+                    if (timeDiff > 60 * 60 * 1000) { // Mais de 1 hora
                         device.status = 'offline';
-                    } else if (timeDiff > 30 * 60 * 1000) { // 30 minutos
+                        console.log(`[Status] ${device.name}: OFFLINE (última leitura há ${minutesAgo} minutos)`);
+                    } else if (timeDiff > 30 * 60 * 1000) { // Entre 30 minutos e 1 hora
                         device.status = 'warning';
+                        console.log(`[Status] ${device.name}: WARNING (última leitura há ${minutesAgo} minutos)`);
+                    } else { // Menos de 30 minutos
+                        device.status = 'online';
+                        console.log(`[Status] ${device.name}: ONLINE (última leitura há ${minutesAgo} minutos)`);
                     }
                 });
                 
@@ -704,11 +614,7 @@
                     <div class="empty-state">
                         <i class="fas fa-microchip"></i>
                         <h3>Nenhum dispositivo encontrado</h3>
-                        <p>Adicione seu primeiro sensor para começar a monitorar sua fazenda</p>
-                        <button class="btn btn-primary" onclick="showAddDeviceModal()">
-                            <i class="fas fa-plus"></i>
-                            Adicionar Primeiro Dispositivo
-                        </button>
+                        <p>Aguarde o administrador adicionar sensores à sua conta</p>
                     </div>
                 `;
                 return;
@@ -736,6 +642,11 @@
                 const chuva = hasReading 
                     ? Utils.formatNumber(lastReading.quantidade_chuva) 
                     : '--';
+                
+                // Formatar número de leituras
+                const readingCountFormatted = device.readingCount > 0 
+                    ? device.readingCount.toLocaleString('pt-BR')
+                    : '0';
 
                 html += `
                     <div class="col-6">
@@ -781,7 +692,7 @@
                                 </span>
                                 <span>
                                     <i class="fas fa-chart-bar"></i>
-                                    ${device.readingCount} leituras
+                                    ${readingCountFormatted} leituras
                                 </span>
                             </div>
                         </div>
@@ -791,149 +702,6 @@
             
             html += '</div>';
             container.innerHTML = html;
-        }
-
-        function showAddDeviceModal() {
-            const modal = document.getElementById('addDeviceModal');
-            const form = document.getElementById('addDeviceForm');
-            const nameInput = document.getElementById('sensorName');
-            
-            if (modal) {
-                modal.style.display = 'flex';
-            }
-            
-            if (form) {
-                form.reset();
-            }
-            
-            // Focar no campo nome com um pequeno delay para garantir que o modal esteja visível
-            if (nameInput) {
-                setTimeout(() => {
-                    nameInput.focus();
-                }, 100);
-            }
-        }
-
-        function closeAddDeviceModal() {
-            const modal = document.getElementById('addDeviceModal');
-            const form = document.getElementById('addDeviceForm');
-            
-            if (modal) {
-                modal.style.display = 'none';
-            }
-            
-            if (form) {
-                form.reset();
-            }
-        }
-
-        function closeDeviceKeyModal() {
-            const modal = document.getElementById('deviceKeyModal');
-            
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-
-        function submitAddDevice(event) {
-            console.log('submitAddDevice called', event);
-            event.preventDefault();
-            
-            try {
-                const formData = new FormData(event.target);
-                const sensorName = formData.get('sensor_name');
-                const sensorLocation = formData.get('sensor_location') || 'Localização não informada';
-                
-                console.log('Form data:', { sensorName, sensorLocation });
-                
-                if (!sensorName || sensorName.trim() === '') {
-                    showNotification('error', 'Erro', 'Nome do sensor é obrigatório');
-                    return;
-                }
-
-                // Encontrar o botão de submit no modal footer
-                const submitButton = document.querySelector('#addDeviceModal button[type="submit"]');
-                console.log('Submit button found:', submitButton);
-                
-                if (!submitButton) {
-                    console.error('Botão de submit não encontrado');
-                    showNotification('error', 'Erro', 'Botão de envio não encontrado');
-                    return;
-                }
-                
-                // Mostrar loading
-                const originalText = submitButton.innerHTML;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
-                submitButton.disabled = true;
-
-                // NOVA ROTA: Usar endpoint de criação de sensor para usuários
-                const urlParams = new URLSearchParams(window.location.search);
-                const adminCompanyId = urlParams.get('company_id');
-                
-                ApiClient.createUserSensor(sensorName.trim(), adminCompanyId)
-                    .then(response => {
-                        console.log('Sensor criado:', response);
-                        
-                        // Extrair device_key da resposta
-                        const deviceKey = response.sensor?.device_key;
-                        
-                        if (!deviceKey) {
-                            throw new Error('Device key não retornada pela API');
-                        }
-                        
-                        // Mostrar modal com device key
-                        const deviceKeyElement = document.getElementById('generatedDeviceKey');
-                        if (deviceKeyElement) {
-                            deviceKeyElement.textContent = deviceKey;
-                            currentDeviceKey = deviceKey;
-                        }
-                        
-                        closeAddDeviceModal();
-                        
-                        const deviceKeyModal = document.getElementById('deviceKeyModal');
-                        if (deviceKeyModal) {
-                            deviceKeyModal.style.display = 'flex';
-                        }
-                        
-                        // Mostrar notificação de sucesso
-                        showNotification('success', 'Sensor Criado!', response.message || `Sensor "${sensorName}" foi criado com sucesso.`);
-                        
-                        // Recarregar lista de dispositivos
-                        setTimeout(() => {
-                            loadDevices();
-                        }, 500);
-                        
-                    })
-                    .catch(error => {
-                        console.error('Erro ao criar sensor:', error);
-                        showNotification('error', 'Erro ao criar sensor', error.message || 'Falha ao criar sensor');
-                    })
-                    .finally(() => {
-                        // Restaurar botão
-                        if (submitButton) {
-                            submitButton.innerHTML = originalText;
-                            submitButton.disabled = false;
-                        }
-                    });
-                
-            } catch (error) {
-                console.error('Erro em submitAddDevice:', error);
-                showNotification('error', 'Erro', 'Ocorreu um erro ao processar o formulário');
-                
-                // Restaurar botão em caso de erro
-                const submitButton = document.querySelector('#addDeviceModal button[type="submit"]');
-                if (submitButton) {
-                    submitButton.innerHTML = '<i class="fas fa-plus"></i> Criar Sensor';
-                    submitButton.disabled = false;
-                }
-            }
-        }
-
-        function generateMockDeviceKey() {
-            // Gerar uma chave similar à estrutura real
-            const companyId = '68dfe63619feeaed6bd640ea';
-            const randomHash = Math.random().toString(16).substring(2) + Math.random().toString(16).substring(2);
-            return `${companyId}-${randomHash}`;
         }
 
         function showDeviceKey(deviceKey) {
@@ -950,7 +718,18 @@
                 Chave do Dispositivo: ${device.name}
             `;
             
-            ModalManager.open('deviceKeyModal');
+            // Abrir modal
+            const modal = document.getElementById('deviceKeyModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+        
+        function closeDeviceKeyModal() {
+            const modal = document.getElementById('deviceKeyModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
         }
 
         function showDeviceDetails(deviceKey) {
@@ -1148,22 +927,7 @@
         }
 
         function setupModalEventListeners() {
-            // Event listener para o formulário
-            const addDeviceForm = document.getElementById('addDeviceForm');
-            if (addDeviceForm) {
-                addDeviceForm.addEventListener('submit', submitAddDevice);
-            }
-
             // Fechar modal ao clicar no backdrop
-            const addDeviceModal = document.getElementById('addDeviceModal');
-            if (addDeviceModal) {
-                addDeviceModal.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        closeAddDeviceModal();
-                    }
-                });
-            }
-
             const deviceKeyModal = document.getElementById('deviceKeyModal');
             if (deviceKeyModal) {
                 deviceKeyModal.addEventListener('click', function(e) {
@@ -1176,7 +940,6 @@
             // Fechar modal com ESC
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
-                    closeAddDeviceModal();
                     closeDeviceKeyModal();
                 }
             });

@@ -953,6 +953,28 @@ p {
     }
 }
 
+/* ===== MOBILE OPTIMIZATIONS - TABLETS ===== */
+@media (max-width: 768px) {
+    .stats-card {
+        padding: var(--spacing-md);
+    }
+    
+    .stats-card-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1.25rem;
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .stats-card-value {
+        font-size: 1.75rem;
+    }
+    
+    .stats-card-label {
+        font-size: 0.8rem;
+    }
+}
+
 @media (max-width: 480px) {
     .btn {
         padding: var(--spacing-sm);
@@ -963,8 +985,29 @@ p {
         padding: var(--spacing-md);
     }
     
+    /* Cards ainda mais compactos em telas pequenas */
+    .stats-card {
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius-md);
+    }
+    
+    .stats-card-icon {
+        width: 2rem;
+        height: 2rem;
+        font-size: 1rem;
+        margin-bottom: var(--spacing-xs);
+        border-radius: var(--radius-sm);
+    }
+    
     .stats-card-value {
         font-size: 1.5rem;
+        margin-bottom: 0;
+        line-height: 1.2;
+    }
+    
+    .stats-card-label {
+        font-size: 0.75rem;
+        line-height: 1.3;
     }
     
     h1 { font-size: 2rem; }

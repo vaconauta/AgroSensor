@@ -370,11 +370,27 @@ class ApiClient {
     }
 
     // Sensor endpoints with company support
-    static async getSensorsHistory(companyId = null) {
-        let url = CONFIG.ROUTES.SENSORS_HISTORY;
-        if (companyId && AuthManager.isAdmin()) {
-            url += `?company_id=${companyId}`;
+    static async getSensorsHistory(companyId = null, period = null, sensorId = null) {
+        const params = new URLSearchParams();
+        
+        // Adicionar período se fornecido (24h, 7d, 30d)
+        if (period) {
+            params.append('period', period);
         }
+        
+        // Adicionar sensor específico se fornecido
+        if (sensorId) {
+            params.append('sensor_id', sensorId);
+        }
+        
+        // Adicionar company_id se for admin
+        if (companyId && AuthManager.isAdmin()) {
+            params.append('company_id', companyId);
+        }
+        
+        const queryString = params.toString();
+        const url = queryString ? `${CONFIG.ROUTES.SENSORS_HISTORY}?${queryString}` : CONFIG.ROUTES.SENSORS_HISTORY;
+        
         return this.request(url);
     }
 
