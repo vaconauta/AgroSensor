@@ -1,7 +1,7 @@
 {
-  "name": "AgroSensor Frontend",
+  "name": "WR10 Frontend",
   "version": "1.0.0",
-  "description": "Sistema de monitoramento agrícola com interface web responsiva",
+  "description": "Sistema de monitoramento inteligente com interface web responsiva",
   "homepage": "index.html",
   "config": {
     "api": {
@@ -10,9 +10,9 @@
       "retryAttempts": 3
     },
     "app": {
-      "title": "AgroSensor",
+      "title": "WR10",
       "subtitle": "Plano Básico",
-      "theme": "agricultural",
+      "theme": "tech",
       "locale": "pt-BR",
       "dateFormat": "dd/MM/yyyy HH:mm"
     },

@@ -1,4 +1,4 @@
-# Implementação de Filtros nos Gráficos - AgroSensor
+# Implementação de Filtros nos Gráficos - WR10
 
 ## Resumo das Alterações
 

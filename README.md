@@ -1,10 +1,10 @@
-# AgroSensor 🌱
+# WR10 🔧
 
-Sistema de monitoramento agrícola com interface web responsiva para acompanhamento de dados de sensores em tempo real.
+Sistema de monitoramento inteligente com interface web responsiva para acompanhamento de dados de sensores em tempo real.
 
 ## 📋 Sobre o Projeto
 
-O AgroSensor é uma plataforma web moderna desenvolvida para monitoramento de dados agrícolas, oferecendo uma interface intuitiva e responsiva para acompanhar métricas importantes como:
+O WR10 é uma plataforma web moderna desenvolvida para monitoramento de dados em tempo real, oferecendo uma interface intuitiva e responsiva para acompanhar métricas importantes como:
 
 - 🌡️ Temperatura e umidade do ar
 - 💧 Umidade do solo
@@ -34,12 +34,12 @@ O AgroSensor é uma plataforma web moderna desenvolvida para monitoramento de da
 ## 🌐 Demo Online
 
 O projeto está disponível online através do GitHub Pages:
-[https://vaconauta.github.io/AgroSensor/](https://vaconauta.github.io/AgroSensor/)
+[https://vaconauta.github.io/WR10/](https://vaconauta.github.io/WR10/)
 
 ## 📁 Estrutura do Projeto
 
 ```
-AgroSensor/
+WR10/
 ├── index.html              # Página principal (login)
 ├── config.json             # Configurações do sistema
 ├── assets/
@@ -61,8 +61,8 @@ AgroSensor/
 
 1. **Clone o repositório**:
    ```bash
-   git clone https://github.com/vaconauta/AgroSensor.git
-   cd AgroSensor
+   git clone https://github.com/vaconauta/WR10.git
+   cd WR10
    ```
 
 2. **Execute localmente**:
@@ -93,7 +93,7 @@ O arquivo `config.json` contém as principais configurações do sistema:
 
 ## 📱 Responsividade
 
-O AgroSensor foi desenvolvido com design mobile-first, garantindo:
+O WR10 foi desenvolvido com design mobile-first, garantindo:
 - ✅ Compatibilidade com dispositivos móveis
 - ✅ Adaptação automática para tablets
 - ✅ Interface otimizada para desktop
@@ -120,7 +120,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 🐛 Reportar Bugs
 
-Encontrou um problema? [Abra uma issue](https://github.com/vaconauta/AgroSensor/issues) descrevendo:
+Encontrou um problema? [Abra uma issue](https://github.com/vaconauta/WR10/issues) descrevendo:
 - Passos para reproduzir o bug
 - Comportamento esperado vs atual
 - Screenshots (se aplicável)
