@@ -1550,7 +1550,13 @@
                 humidityChart.data.labels = timestamps.map(timestamp => {
                     const date = new Date(timestamp);
                     if (filter === '24h') {
-                        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                        // Mostrar dia e hora para evitar ambiguidade quando há dados de múltiplos dias
+                        return date.toLocaleString('pt-BR', { 
+                            day: '2-digit', 
+                            month: '2-digit',
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        });
                     } else if (filter === 'all') {
                         return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' });
                     } else {
