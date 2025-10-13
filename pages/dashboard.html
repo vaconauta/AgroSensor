@@ -22,6 +22,22 @@
     <link rel="stylesheet" href="../assets/css/style.css">
     
     <style>
+        /* Prevenir overflow horizontal global */
+        body, html {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+        
+        .main-content {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+        
+        .content-body {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -58,6 +74,19 @@
             border: 1px solid var(--border-gray);
             box-shadow: var(--shadow-sm);
             overflow: visible;
+        }
+        
+        @media (max-width: 768px) {
+            .chart-container {
+                overflow-x: hidden;
+                padding: var(--spacing-md);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .chart-container {
+                padding: var(--spacing-sm);
+            }
         }
         
         .chart-container canvas {
@@ -146,6 +175,7 @@
             border-bottom: 1px solid var(--border-gray);
             gap: var(--spacing-md);
             flex-wrap: wrap;
+            position: relative;
         }
         
         .chart-title {
@@ -168,6 +198,7 @@
             display: flex;
             gap: var(--spacing-sm);
             flex-shrink: 0;
+            position: relative;
         }
         
         .filter-selector {
@@ -194,6 +225,7 @@
             gap: 6px;
             transition: var(--transition);
             color: var(--dark-gray);
+            white-space: nowrap;
         }
         
         .chart-control-btn:hover {
@@ -212,6 +244,35 @@
             font-size: 0.875rem;
         }
         
+        /* Ajustes para botões em mobile */
+        @media (max-width: 768px) {
+            .chart-control-btn {
+                padding: var(--spacing-xs);
+                font-size: 0.8rem;
+                gap: 4px;
+            }
+            
+            .chart-control-btn i {
+                font-size: 0.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .chart-control-btn {
+                padding: 6px 8px;
+                font-size: 0.75rem;
+            }
+            
+            .chart-control-btn span {
+                display: none; /* Ocultar texto, mostrar apenas ícone */
+            }
+            
+            .chart-control-btn i {
+                font-size: 0.9rem;
+                margin: 0;
+            }
+        }
+        
         /* Dropdown de personalização */
         .chart-settings-dropdown {
             position: absolute;
@@ -224,12 +285,41 @@
             box-shadow: var(--shadow-lg);
             padding: var(--spacing-md);
             min-width: 250px;
+            max-width: 90vw;
             z-index: 1000;
             display: none;
         }
         
         .chart-settings-dropdown.show {
             display: block;
+        }
+        
+        /* Ajustar dropdown em mobile para não causar overflow */
+        @media (max-width: 768px) {
+            .chart-settings-dropdown {
+                position: absolute;
+                right: 10px;
+                left: auto;
+                top: 100%;
+                min-width: 240px;
+                max-width: calc(100vw - 40px);
+                transform: none;
+                margin-top: 8px;
+            }
+            
+            /* Garantir que o container de ações seja o contexto de posicionamento */
+            .chart-header {
+                position: relative;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .chart-settings-dropdown {
+                min-width: 220px;
+                max-width: calc(100vw - 30px);
+                padding: var(--spacing-sm);
+                right: 5px;
+            }
         }
         
         .chart-settings-section {
@@ -607,16 +697,20 @@
             display: flex !important;
             gap: var(--spacing-lg) !important;
             margin-bottom: var(--spacing-lg) !important;
+            max-width: 100% !important;
+            overflow: visible !important;
         }
         
         .col-8 {
             flex: 2 !important;
             min-width: 0 !important;
+            overflow: visible !important;
         }
         
         .col-4 {
             flex: 1 !important;
             min-width: 0 !important;
+            overflow: visible !important;
         }
         
         @media (max-width: 1024px) {
@@ -663,6 +757,7 @@
                 gap: var(--spacing-sm) !important;
                 min-height: auto !important;
                 margin-bottom: var(--spacing-md) !important;
+                overflow: visible !important;
             }
             
             .chart-title {
@@ -676,12 +771,20 @@
             
             .chart-actions {
                 width: 100% !important;
+                flex-wrap: nowrap !important;
+                overflow: visible !important;
+                gap: var(--spacing-xs) !important;
             }
             
             .filter-selector {
-                width: 100% !important;
-                min-width: auto !important;
-                padding: var(--spacing-sm) !important;
+                flex: 1 !important;
+                min-width: 0 !important;
+                font-size: 0.8rem !important;
+                padding: var(--spacing-xs) var(--spacing-sm) !important;
+            }
+            
+            .chart-control-btn {
+                flex-shrink: 0 !important;
             }
             
             /* Melhorar grid de estatísticas em mobile */
@@ -761,19 +864,30 @@
                 line-height: 1.25 !important;
             }
             
-            /* Melhorar scroll horizontal se necessário */
-            .chart-container {
-                overflow-x: auto !important;
-            }
-            
             /* Garantir que os filtros sejam visíveis */
             .chart-actions {
                 display: flex !important;
+                flex-wrap: nowrap !important;
                 justify-content: stretch !important;
+                gap: var(--spacing-xs) !important;
             }
             
             .filter-selector {
-                font-size: 0.8rem !important;
+                flex: 1 !important;
+                font-size: 0.75rem !important;
+                padding: var(--spacing-xs) !important;
+                min-width: 0 !important;
+            }
+            
+            .chart-control-btn {
+                padding: var(--spacing-xs) !important;
+                flex-shrink: 0 !important;
+            }
+            
+            /* Ajustar header para evitar overflow */
+            .chart-header {
+                overflow: visible !important;
+                padding-bottom: var(--spacing-sm) !important;
             }
         }
         
@@ -1732,6 +1846,9 @@
                 }
             });
             
+            // Aplicar preferências salvas do localStorage aos gráficos recém-criados
+            loadChartPreferences();
+            
             updateCharts();
         }
         
@@ -2091,8 +2208,8 @@
                 }
             });
             
-            // Carregar preferências salvas
-            loadChartPreferences();
+            // Nota: loadChartPreferences() agora é chamada em initializeCharts()
+            // após a criação dos gráficos, não aqui
         }
         
         // ===== FUNÇÕES DE PERSONALIZAÇÃO DE GRÁFICOS =====
@@ -2308,9 +2425,75 @@
                 });
                 
                 console.log('Preferências de gráficos carregadas:', chartConfigs);
+                
+                // Aplicar preferências aos gráficos Chart.js
+                applyChartPreferencesToCharts();
             } catch (error) {
                 console.warn('Erro ao carregar preferências:', error);
             }
+        }
+        
+        // Aplicar configurações salvas aos objetos Chart.js
+        function applyChartPreferencesToCharts() {
+            ['humidity', 'rain'].forEach(chartName => {
+                const chart = chartName === 'humidity' ? humidityChart : rainChart;
+                const config = chartConfigs[chartName];
+                
+                if (!chart) {
+                    console.warn(`Gráfico ${chartName} ainda não foi inicializado`);
+                    return;
+                }
+                
+                // Aplicar tipo de gráfico
+                if (config.type === 'area') {
+                    chart.config.type = 'line';
+                    if (chart.data && chart.data.datasets) {
+                        chart.data.datasets.forEach(dataset => {
+                            dataset.fill = true;
+                        });
+                    }
+                } else if (config.type === 'bar') {
+                    chart.config.type = 'bar';
+                    if (chart.data && chart.data.datasets) {
+                        chart.data.datasets.forEach(dataset => {
+                            dataset.fill = false;
+                        });
+                    }
+                } else {
+                    // line
+                    chart.config.type = 'line';
+                    if (chart.data && chart.data.datasets) {
+                        chart.data.datasets.forEach(dataset => {
+                            dataset.fill = config.fill;
+                        });
+                    }
+                }
+                
+                // Aplicar grid
+                if (chart.options && chart.options.scales) {
+                    chart.options.scales.x.grid = { display: config.showGrid };
+                    chart.options.scales.y.grid = { display: config.showGrid };
+                }
+                
+                // Aplicar pontos
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.pointRadius = config.showPoints ? 3 : 0;
+                        dataset.pointHoverRadius = config.showPoints ? 6 : 0;
+                    });
+                }
+                
+                // Aplicar preenchimento
+                if (chart.config.type === 'line' && chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = config.fill;
+                    });
+                }
+                
+                chart.update();
+            });
+            
+            console.log('Preferências aplicadas aos gráficos Chart.js');
         }
         
         function setupMobileMenu() {
