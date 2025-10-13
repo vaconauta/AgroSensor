@@ -57,7 +57,7 @@
             padding: var(--spacing-lg);
             border: 1px solid var(--border-gray);
             box-shadow: var(--shadow-sm);
-            overflow: hidden;
+            overflow: visible;
         }
         
         .chart-container canvas {
@@ -91,14 +91,25 @@
             box-sizing: border-box;
         }
         
-        .chart-container * {
+        /* Melhor controle de texto nos gráficos */
+        .chart-container .chartjs-tooltip {
+            z-index: 1000 !important;
+        }
+        
+        /* Canvas não deve bloquear cliques nos botões */
+        .chart-container canvas {
             position: relative;
             z-index: 1;
         }
         
-        /* Melhor controle de texto nos gráficos */
-        .chart-container .chartjs-tooltip {
-            z-index: 1000 !important;
+        /* Header e controles devem ficar acima do canvas */
+        .chart-header {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .chart-settings-dropdown {
+            z-index: 1001 !important;
         }
         
         /* Evitar sobreposição de elementos */
@@ -168,6 +179,150 @@
             cursor: pointer;
             min-width: 130px;
             flex-shrink: 0;
+        }
+        
+        /* Botões de controle de gráfico */
+        .chart-control-btn {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+            color: var(--dark-gray);
+        }
+        
+        .chart-control-btn:hover {
+            background: var(--light-gray);
+            border-color: #3182ce;
+            color: #3182ce;
+        }
+        
+        .chart-control-btn.active {
+            background: #3182ce;
+            color: var(--white);
+            border-color: #3182ce;
+        }
+        
+        .chart-control-btn i {
+            font-size: 0.875rem;
+        }
+        
+        /* Dropdown de personalização */
+        .chart-settings-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            padding: var(--spacing-md);
+            min-width: 250px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .chart-settings-dropdown.show {
+            display: block;
+        }
+        
+        .chart-settings-section {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .chart-settings-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .chart-settings-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: var(--spacing-xs);
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .chart-type-buttons {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
+        .chart-type-btn {
+            flex: 1;
+            padding: var(--spacing-xs);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: var(--transition);
+            color: var(--text-gray);
+        }
+        
+        .chart-type-btn:hover {
+            background: var(--light-gray);
+            border-color: #3182ce;
+        }
+        
+        .chart-type-btn.active {
+            background: #3182ce;
+            color: var(--white);
+            border-color: #3182ce;
+        }
+        
+        .chart-type-btn i {
+            font-size: 1.25rem;
+        }
+        
+        .chart-settings-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-xs) 0;
+            font-size: 0.875rem;
+            color: var(--dark-gray);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: #cbd5e0;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .toggle-switch.active {
+            background: #48bb78;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: var(--white);
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+        
+        .toggle-switch.active::after {
+            left: 22px;
         }
         
         .no-data {
@@ -795,7 +950,7 @@
             <!-- Gráficos -->
             <div class="row">
                 <div class="col-8">
-                    <div class="chart-container">
+                    <div class="chart-container" id="humidityChartContainer">
                         <div class="chart-header">
                             <h3 class="chart-title">
                                 <i class="fas fa-chart-area"></i>
@@ -808,6 +963,44 @@
                                     <option value="30d">Últimos 30 dias</option>
                                     <option value="all">Todos os dados</option>
                                 </select>
+                                <div style="position: relative;">
+                                    <button class="chart-control-btn" id="humiditySettingsBtn" onclick="toggleChartSettings('humidity')">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                    <div class="chart-settings-dropdown" id="humiditySettings">
+                                        <div class="chart-settings-section">
+                                            <label class="chart-settings-label">Tipo de Gráfico</label>
+                                            <div class="chart-type-buttons">
+                                                <button class="chart-type-btn active" data-type="line" onclick="changeChartType('humidity', 'line')">
+                                                    <i class="fas fa-chart-line"></i>
+                                                    <span>Linha</span>
+                                                </button>
+                                                <button class="chart-type-btn" data-type="bar" onclick="changeChartType('humidity', 'bar')">
+                                                    <i class="fas fa-chart-bar"></i>
+                                                    <span>Barra</span>
+                                                </button>
+                                                <button class="chart-type-btn" data-type="area" onclick="changeChartType('humidity', 'area')">
+                                                    <i class="fas fa-chart-area"></i>
+                                                    <span>Área</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="chart-settings-section">
+                                            <div class="chart-settings-toggle">
+                                                <span>Mostrar Grid</span>
+                                                <div class="toggle-switch active" onclick="toggleChartGrid('humidity')" id="humidityGridToggle"></div>
+                                            </div>
+                                            <div class="chart-settings-toggle">
+                                                <span>Mostrar Pontos</span>
+                                                <div class="toggle-switch active" onclick="toggleChartPoints('humidity')" id="humidityPointsToggle"></div>
+                                            </div>
+                                            <div class="chart-settings-toggle">
+                                                <span>Preencher Área</span>
+                                                <div class="toggle-switch active" onclick="toggleChartFill('humidity')" id="humidityFillToggle"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <canvas id="humidityChart"></canvas>
@@ -815,7 +1008,7 @@
                 </div>
                 
                 <div class="col-4">
-                    <div class="chart-container">
+                    <div class="chart-container" id="rainChartContainer">
                         <div class="chart-header">
                             <h3 class="chart-title">
                                 <i class="fas fa-cloud-rain"></i>
@@ -827,6 +1020,51 @@
                                     <option value="7d">Últimos 7 dias</option>
                                     <option value="30d">Últimos 30 dias</option>
                                     <option value="all">Todos os dados</option>
+                                </select>
+                                <div style="position: relative;">
+                                    <button class="chart-control-btn" id="rainSettingsBtn" onclick="toggleChartSettings('rain')">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                    <div class="chart-settings-dropdown" id="rainSettings">
+                                        <div class="chart-settings-section">
+                                            <label class="chart-settings-label">Tipo de Gráfico</label>
+                                            <div class="chart-type-buttons">
+                                                <button class="chart-type-btn active" data-type="line" onclick="changeChartType('rain', 'line')">
+                                                    <i class="fas fa-chart-line"></i>
+                                                    <span>Linha</span>
+                                                </button>
+                                                <button class="chart-type-btn" data-type="bar" onclick="changeChartType('rain', 'bar')">
+                                                    <i class="fas fa-chart-bar"></i>
+                                                    <span>Barra</span>
+                                                </button>
+                                                <button class="chart-type-btn" data-type="area" onclick="changeChartType('rain', 'area')">
+                                                    <i class="fas fa-chart-area"></i>
+                                                    <span>Área</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="chart-settings-section">
+                                            <div class="chart-settings-toggle">
+                                                <span>Mostrar Grid</span>
+                                                <div class="toggle-switch active" onclick="toggleChartGrid('rain')" id="rainGridToggle"></div>
+                                            </div>
+                                            <div class="chart-settings-toggle">
+                                                <span>Mostrar Pontos</span>
+                                                <div class="toggle-switch active" onclick="toggleChartPoints('rain')" id="rainPointsToggle"></div>
+                                            </div>
+                                            <div class="chart-settings-toggle">
+                                                <span>Preencher Área</span>
+                                                <div class="toggle-switch active" onclick="toggleChartFill('rain')" id="rainFillToggle"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <canvas id="rainChart"></canvas>
+                    </div>
+                </div>
+            </div>
                                 </select>
                             </div>
                         </div>
@@ -1142,7 +1380,7 @@
             
             const avgHumidity = readingCount > 0 ? totalHumidity / readingCount : 0;
             
-            // Calcular chuva total do dia (soma de todos os sensores)
+            // Calcular chuva total do dia (última leitura de cada sensor, pois é valor acumulado)
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
@@ -1154,12 +1392,13 @@
                     new Date(reading.timestamp) >= today
                 );
                 
-                // Somar chuva acumulada do dia para este sensor
-                const sensorRainToday = todayReadings.reduce((sum, reading) => 
-                    sum + reading.quantidade_chuva, 0
-                );
+                // Pegar apenas a última leitura do dia (valor já é acumulado)
+                if (todayReadings.length > 0) {
+                    // Ordenar por timestamp (mais recente primeiro)
+                    todayReadings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    totalRainToday += todayReadings[0].quantidade_chuva;
+                }
                 
-                totalRainToday += sensorRainToday;
                 totalReadingsToday += todayReadings.length;
             });
             
@@ -1406,15 +1645,17 @@
             // Gráfico de Chuva
             const rainCtx = document.getElementById('rainChart').getContext('2d');
             rainChart = new Chart(rainCtx, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: [],
                     datasets: [{
                         label: 'Quantidade de Chuva (mm)',
                         data: [],
-                        backgroundColor: '#7fb069',
-                        borderColor: '#2d5a27',
-                        borderWidth: 1
+                        borderColor: '#7fb069',
+                        backgroundColor: 'rgba(127, 176, 105, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
                     }]
                 },
                 options: {
@@ -1477,6 +1718,15 @@
                                     return value + 'mm';
                                 }
                             }
+                        },
+                        x: {
+                            display: true
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: 3,
+                            hoverRadius: 6
                         }
                     }
                 }
@@ -1635,17 +1885,74 @@
                     return;
                 }
                 
-                // Agrupar leituras por período de tempo
-                const groupedData = groupReadingsByTimePeriod(historyData, filter);
+                // Agrupar dados por device_key
+                const dataByDevice = {};
+                historyData.forEach(reading => {
+                    const deviceKey = reading.device_key;
+                    if (!dataByDevice[deviceKey]) {
+                        const deviceName = generateDeviceName(deviceKey);
+                        dataByDevice[deviceKey] = {
+                            name: deviceName.name,
+                            readings: []
+                        };
+                    }
+                    dataByDevice[deviceKey].readings.push(reading);
+                });
                 
-                rainChart.data.labels = groupedData.labels;
-                rainChart.data.datasets = [{
-                    label: 'Chuva Total (mm)',
-                    data: groupedData.totalRain,
-                    backgroundColor: colors[0],
-                    borderColor: colors[1],
-                    borderWidth: 1
-                }];
+                // Coletar todos os timestamps únicos
+                let allTimestamps = new Set();
+                Object.values(dataByDevice).forEach(sensor => {
+                    sensor.readings.forEach(reading => {
+                        allTimestamps.add(reading.timestamp);
+                    });
+                });
+                
+                // Converter para array ordenado
+                const timestamps = Array.from(allTimestamps).sort();
+                
+                // Criar labels para o eixo X
+                rainChart.data.labels = timestamps.map(timestamp => {
+                    const date = new Date(timestamp);
+                    if (filter === '24h') {
+                        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    } else if (filter === '7d') {
+                        return date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+                    } else if (filter === '30d') {
+                        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                    } else if (filter === 'all') {
+                        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' });
+                    } else {
+                        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                    }
+                });
+                
+                // Limpar datasets anteriores
+                rainChart.data.datasets = [];
+                
+                // Criar dataset para cada sensor
+                let colorIndex = 0;
+                Object.entries(dataByDevice).forEach(([deviceKey, sensor]) => {
+                    // Criar array de dados alinhado com os timestamps
+                    const data = timestamps.map(timestamp => {
+                        const reading = sensor.readings.find(r => r.timestamp === timestamp);
+                        return reading ? reading.quantidade_chuva : null;
+                    });
+                    
+                    // Adicionar dataset para este sensor
+                    rainChart.data.datasets.push({
+                        label: sensor.name,
+                        data: data,
+                        borderColor: colors[colorIndex % colors.length],
+                        backgroundColor: colors[colorIndex % colors.length] + '20',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 6
+                    });
+                    
+                    colorIndex++;
+                });
                 
                 rainChart.update();
                 
@@ -1685,17 +1992,39 @@
                 }
                 
                 if (!groups[key]) {
-                    groups[key] = [];
+                    groups[key] = {
+                        byDevice: {}
+                    };
                 }
-                groups[key].push(reading.quantidade_chuva);
+                
+                // Agrupar por device_key para evitar somar leituras duplicadas do mesmo sensor
+                const deviceKey = reading.device_key;
+                if (!groups[key].byDevice[deviceKey]) {
+                    groups[key].byDevice[deviceKey] = [];
+                }
+                groups[key].byDevice[deviceKey].push({
+                    timestamp: new Date(reading.timestamp),
+                    rain: reading.quantidade_chuva
+                });
             });
             
             // Converter para arrays ordenados
             const sortedKeys = Object.keys(groups).sort();
             const labels = sortedKeys;
             const totalRain = sortedKeys.map(key => {
-                // Somar chuva de todos os sensores no período
-                return groups[key].reduce((sum, val) => sum + val, 0);
+                let periodTotal = 0;
+                
+                // Para cada dispositivo no período, pegar apenas a última leitura (valor acumulado)
+                Object.values(groups[key].byDevice).forEach(deviceReadings => {
+                    // Ordenar por timestamp
+                    deviceReadings.sort((a, b) => b.timestamp - a.timestamp);
+                    // Pegar a última leitura (mais recente) que já vem com valor acumulado
+                    if (deviceReadings.length > 0) {
+                        periodTotal += deviceReadings[0].rain;
+                    }
+                });
+                
+                return periodTotal;
             });
             
             return { labels, totalRain };
@@ -1751,6 +2080,236 @@
                 console.log(`Dashboard será atualizado automaticamente a cada ${refreshInterval}ms (${refreshInterval / 60000} minutos)`);
                 
                 setInterval(loadDashboardData, refreshInterval);
+            }
+            
+            // Fechar dropdowns ao clicar fora
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.chart-control-btn') && !e.target.closest('.chart-settings-dropdown')) {
+                    document.querySelectorAll('.chart-settings-dropdown').forEach(dropdown => {
+                        dropdown.classList.remove('show');
+                    });
+                }
+            });
+            
+            // Carregar preferências salvas
+            loadChartPreferences();
+        }
+        
+        // ===== FUNÇÕES DE PERSONALIZAÇÃO DE GRÁFICOS =====
+        
+        // Armazenamento de configurações
+        const chartConfigs = {
+            humidity: {
+                type: 'line',
+                showGrid: true,
+                showPoints: true,
+                fill: true
+            },
+            rain: {
+                type: 'line',
+                showGrid: true,
+                showPoints: true,
+                fill: true
+            }
+        };
+        
+        // Toggle do menu de configurações
+        function toggleChartSettings(chartName) {
+            const dropdown = document.getElementById(`${chartName}Settings`);
+            const allDropdowns = document.querySelectorAll('.chart-settings-dropdown');
+            
+            // Fechar outros dropdowns
+            allDropdowns.forEach(d => {
+                if (d !== dropdown) {
+                    d.classList.remove('show');
+                }
+            });
+            
+            // Toggle do dropdown atual
+            dropdown.classList.toggle('show');
+            
+            console.log(`Toggle dropdown ${chartName}:`, dropdown.classList.contains('show') ? 'ABERTO' : 'FECHADO');
+        }
+        
+        // Mudar tipo de gráfico
+        function changeChartType(chartName, type) {
+            console.log(`Mudando tipo de gráfico ${chartName} para:`, type);
+            
+            // Atualizar configuração
+            chartConfigs[chartName].type = type;
+            
+            // Atualizar UI dos botões
+            const container = document.getElementById(`${chartName}Settings`);
+            container.querySelectorAll('.chart-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === type) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Aplicar mudança ao gráfico
+            const chart = chartName === 'humidity' ? humidityChart : rainChart;
+            
+            if (!chart) {
+                console.warn(`Gráfico ${chartName} não encontrado`);
+                return;
+            }
+            
+            if (type === 'area') {
+                // Área é linha com fill
+                chart.config.type = 'line';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = true;
+                        dataset.backgroundColor = dataset.borderColor + '33';
+                    });
+                }
+            } else if (type === 'bar') {
+                chart.config.type = 'bar';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = false;
+                    });
+                }
+            } else {
+                // Linha
+                chart.config.type = 'line';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = chartConfigs[chartName].fill;
+                    });
+                }
+            }
+            
+            chart.update();
+            console.log(`Gráfico ${chartName} atualizado para tipo:`, type);
+            saveChartPreferences();
+        }
+        
+        // Toggle grid
+        function toggleChartGrid(chartName) {
+            const toggle = document.getElementById(`${chartName}GridToggle`);
+            const isActive = toggle.classList.toggle('active');
+            chartConfigs[chartName].showGrid = isActive;
+            
+            const chart = chartName === 'humidity' ? humidityChart : rainChart;
+            if (chart && chart.options && chart.options.scales) {
+                chart.options.scales.x.grid = { display: isActive };
+                chart.options.scales.y.grid = { display: isActive };
+                chart.update();
+            }
+            
+            console.log(`Grid ${chartName}:`, isActive ? 'ATIVADO' : 'DESATIVADO');
+            saveChartPreferences();
+        }
+        
+        // Toggle pontos
+        function toggleChartPoints(chartName) {
+            const toggle = document.getElementById(`${chartName}PointsToggle`);
+            const isActive = toggle.classList.toggle('active');
+            chartConfigs[chartName].showPoints = isActive;
+            
+            const chart = chartName === 'humidity' ? humidityChart : rainChart;
+            if (chart && chart.data && chart.data.datasets) {
+                chart.data.datasets.forEach(dataset => {
+                    dataset.pointRadius = isActive ? 3 : 0;
+                    dataset.pointHoverRadius = isActive ? 6 : 0;
+                });
+                chart.update();
+            }
+            
+            console.log(`Pontos ${chartName}:`, isActive ? 'ATIVADO' : 'DESATIVADO');
+            saveChartPreferences();
+        }
+        
+        // Toggle preenchimento
+        function toggleChartFill(chartName) {
+            const toggle = document.getElementById(`${chartName}FillToggle`);
+            const isActive = toggle.classList.toggle('active');
+            chartConfigs[chartName].fill = isActive;
+            
+            const chart = chartName === 'humidity' ? humidityChart : rainChart;
+            if (chart && chart.config && chart.config.type === 'line' && chart.data && chart.data.datasets) {
+                chart.data.datasets.forEach(dataset => {
+                    dataset.fill = isActive;
+                    if (isActive) {
+                        dataset.backgroundColor = dataset.borderColor + '20';
+                    } else {
+                        dataset.backgroundColor = 'transparent';
+                    }
+                });
+                chart.update();
+            }
+            
+            console.log(`Preenchimento ${chartName}:`, isActive ? 'ATIVADO' : 'DESATIVADO');
+            saveChartPreferences();
+        }
+        
+        // Salvar preferências no localStorage
+        function saveChartPreferences() {
+            try {
+                localStorage.setItem('chartPreferences', JSON.stringify(chartConfigs));
+            } catch (error) {
+                console.warn('Erro ao salvar preferências:', error);
+            }
+        }
+        
+        // Carregar preferências do localStorage
+        function loadChartPreferences() {
+            try {
+                const saved = localStorage.getItem('chartPreferences');
+                if (saved) {
+                    const preferences = JSON.parse(saved);
+                    Object.assign(chartConfigs, preferences);
+                }
+                
+                // SEMPRE aplicar estados visuais (mesmo sem localStorage salvo)
+                ['humidity', 'rain'].forEach(chartName => {
+                    const config = chartConfigs[chartName];
+                    
+                    // Atualizar toggles visuais
+                    const gridToggle = document.getElementById(`${chartName}GridToggle`);
+                    const pointsToggle = document.getElementById(`${chartName}PointsToggle`);
+                    const fillToggle = document.getElementById(`${chartName}FillToggle`);
+                    
+                    if (gridToggle) {
+                        if (config.showGrid) {
+                            gridToggle.classList.add('active');
+                        } else {
+                            gridToggle.classList.remove('active');
+                        }
+                    }
+                    
+                    if (pointsToggle) {
+                        if (config.showPoints) {
+                            pointsToggle.classList.add('active');
+                        } else {
+                            pointsToggle.classList.remove('active');
+                        }
+                    }
+                    
+                    if (fillToggle) {
+                        if (config.fill) {
+                            fillToggle.classList.add('active');
+                        } else {
+                            fillToggle.classList.remove('active');
+                        }
+                    }
+                    
+                    // Atualizar botão de tipo
+                    const typeButtons = document.querySelectorAll(`#${chartName}Settings .chart-type-btn`);
+                    typeButtons.forEach(btn => {
+                        if (btn.dataset.type === config.type) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                });
+                
+                console.log('Preferências de gráficos carregadas:', chartConfigs);
+            } catch (error) {
+                console.warn('Erro ao carregar preferências:', error);
             }
         }
         
