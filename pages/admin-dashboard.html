@@ -270,6 +270,14 @@
             font-size: 0.875rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .selector-label i {
+            color: var(--accent-green);
+            font-size: 1rem;
         }
         
         .management-grid {
@@ -701,6 +709,217 @@
             letter-spacing: 0.05em;
         }
 
+        /* User Type Selector Cards */
+        .user-type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-type-card {
+            position: relative;
+            padding: 1.5rem;
+            border: 2px solid var(--border-gray);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-glass);
+            text-align: center;
+        }
+
+        .user-type-card:hover {
+            border-color: var(--accent-green);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .user-type-card.selected {
+            border-color: var(--secondary-green);
+            background: linear-gradient(135deg, var(--background-green) 0%, rgba(127, 176, 105, 0.1) 100%);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .user-type-card input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .user-type-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-gray);
+            transition: all 0.3s ease;
+        }
+
+        .user-type-card.selected .user-type-icon {
+            color: var(--secondary-green);
+            transform: scale(1.1);
+        }
+
+        .user-type-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .user-type-description {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            line-height: 1.4;
+        }
+
+        /* Password Strength Indicator */
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: color 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--secondary-green);
+        }
+
+        .password-strength {
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .password-strength.active {
+            display: block;
+        }
+
+        .strength-bars {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .strength-bar {
+            flex: 1;
+            height: 4px;
+            background: var(--border-gray);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .strength-bar.filled {
+            background: var(--error);
+        }
+
+        .strength-bar.filled.medium {
+            background: var(--warning);
+        }
+
+        .strength-bar.filled.strong {
+            background: var(--success);
+        }
+
+        .strength-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .strength-weak { color: var(--error); }
+        .strength-medium { color: var(--warning); }
+        .strength-strong { color: var(--success); }
+
+        /* Form Helper Text */
+        .form-helper {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+            margin-top: 0.375rem;
+            display: flex;
+            align-items: start;
+            gap: 0.375rem;
+            line-height: 1.4;
+        }
+
+        .form-helper i {
+            margin-top: 2px;
+            font-size: 0.7rem;
+        }
+
+        /* Field Validation */
+        .form-control.valid {
+            border-color: var(--success);
+            background: rgba(56, 161, 105, 0.05);
+        }
+
+        .form-control.invalid {
+            border-color: var(--error);
+            background: rgba(229, 62, 62, 0.05);
+        }
+
+        .field-feedback {
+            display: none;
+            font-size: 0.75rem;
+            margin-top: 0.375rem;
+            font-weight: 500;
+        }
+
+        .field-feedback.show {
+            display: block;
+        }
+
+        .field-feedback.success {
+            color: var(--success);
+        }
+
+        .field-feedback.error {
+            color: var(--error);
+        }
+
+        /* Info Alert */
+        .info-alert {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: start;
+        }
+
+        .info-alert i {
+            color: var(--info);
+            font-size: 1.25rem;
+            margin-top: 2px;
+        }
+
+        .info-alert-content {
+            flex: 1;
+        }
+
+        .info-alert-title {
+            font-weight: 600;
+            color: var(--info);
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .info-alert-text {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            line-height: 1.5;
+        }
+
         /* Hamburger Menu Styles */
         .hamburger-btn {
             display: none;
@@ -956,7 +1175,29 @@
                 padding: 80px 20px 30px;
             }
 
+            /* User Type Cards em Mobile */
+            .user-type-selector {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
 
+            .user-type-card {
+                padding: 1.25rem;
+            }
+
+            .user-type-icon {
+                font-size: 2rem;
+            }
+
+            .info-alert {
+                padding: 0.875rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .info-alert i {
+                font-size: 1.125rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1235,7 +1476,6 @@
             <div class="nav-brand">
                 <i class="fas fa-seedling"></i>
                 <span>WR10</span>
-                <span class="nav-subtitle">Painel Administrativo</span>
             </div>
             
             <!-- Hamburger Button -->
@@ -1407,11 +1647,23 @@
                                 Novo Sensor
                             </button>
                         </div>
+                        
+                        <!-- Filtro por Empresa -->
+                        <div class="company-selector" style="margin-top: 1rem;">
+                            <div class="selector-label">
+                                <i class="fas fa-filter"></i>
+                                Filtrar por Empresa:
+                            </div>
+                            <select id="sensorCompanyFilter" class="form-control" onchange="filterSensorsByCompany()">
+                                <option value="">Todas as empresas</option>
+                            </select>
+                        </div>
+                        
                         <div class="table-container">
                             <table class="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Nome</th>
+                                        <th>Nome do Sensor</th>
                                         <th>Empresa</th>
                                         <th>Device Key</th>
                                         <th>Criado em</th>
@@ -1487,8 +1739,20 @@
                 </div>
                 <div class="form-row full">
                     <div>
-                        <label class="form-label">Reset Interval (minutos)</label>
-                        <input type="number" name="reset_interval_min" class="form-control" value="1440" min="60">
+                        <label class="form-label">
+                            <i class="fas fa-redo"></i>
+                            Horário de Reset do Pluviômetro
+                        </label>
+                        <input 
+                            type="time" 
+                            name="reset_time" 
+                            class="form-control" 
+                            value="00:00"
+                            style="max-width: 200px;"
+                        >
+                        <small style="color: var(--text-gray); font-size: 0.75rem; margin-top: var(--spacing-xs); display: block;">
+                            Horário diário para reset automático do contador de chuva (formato 24h)
+                        </small>
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -1515,44 +1779,132 @@
                 <button class="close-modal" onclick="closeModal('createUserModal')">&times;</button>
             </div>
             <form id="createUserForm">
+                <!-- Info Alert -->
+                <div class="info-alert">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="info-alert-content">
+                        <div class="info-alert-title">Criando um novo usuário</div>
+                        <div class="info-alert-text">
+                            Preencha os dados abaixo para cadastrar um novo usuário no sistema. 
+                            Escolha o tipo de usuário com atenção: <strong>Administradores</strong> têm acesso total ao sistema, 
+                            enquanto <strong>Usuários Comuns</strong> só visualizam dados de sua empresa.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tipo de Usuário - Cards Visuais -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label class="form-label" style="margin-bottom: 0.75rem;">Tipo de Usuário *</label>
+                    <div class="user-type-selector">
+                        <div class="user-type-card" onclick="selectUserType('admin')">
+                            <input type="radio" name="userType" value="admin" required>
+                            <div class="user-type-icon">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <div class="user-type-title">Administrador</div>
+                            <div class="user-type-description">
+                                Acesso completo ao sistema, pode gerenciar empresas e usuários
+                            </div>
+                        </div>
+                        <div class="user-type-card" onclick="selectUserType('user')">
+                            <input type="radio" name="userType" value="user" required>
+                            <div class="user-type-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="user-type-title">Usuário Comum</div>
+                            <div class="user-type-description">
+                                Acesso aos dados e sensores de sua empresa
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dados Pessoais -->
                 <div class="form-row">
                     <div>
                         <label class="form-label">Nome Completo *</label>
-                        <input type="text" name="fullName" class="form-control" required>
+                        <input type="text" name="fullName" class="form-control" required 
+                               placeholder="Ex: João Silva"
+                               oninput="validateField(this, 'fullName')">
+                        <div class="form-helper">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Nome completo do usuário</span>
+                        </div>
+                        <div class="field-feedback" id="fullName-feedback"></div>
                     </div>
                     <div>
                         <label class="form-label">Nome de Usuário *</label>
-                        <input type="text" name="username" class="form-control" required>
+                        <input type="text" name="username" class="form-control" required 
+                               placeholder="Ex: joao.silva"
+                               pattern="[a-zA-Z0-9._-]+"
+                               oninput="validateField(this, 'username')">
+                        <div class="form-helper">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Usado para fazer login (sem espaços)</span>
+                        </div>
+                        <div class="field-feedback" id="username-feedback"></div>
                     </div>
                 </div>
+
+                <!-- Email e Senha -->
                 <div class="form-row">
                     <div>
                         <label class="form-label">Email *</label>
-                        <input type="email" name="email" class="form-control" required>
+                        <input type="email" name="email" class="form-control" required 
+                               placeholder="usuario@empresa.com"
+                               oninput="validateField(this, 'email')">
+                        <div class="form-helper">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Email válido para comunicações</span>
+                        </div>
+                        <div class="field-feedback" id="email-feedback"></div>
                     </div>
-                    <div>
-                        <label class="form-label">Tipo de Usuário *</label>
-                        <select name="userType" class="form-control" required onchange="toggleCompanyField()">
-                            <option value="">Selecionar...</option>
-                            <option value="admin">Administrador</option>
-                            <option value="user">Usuário Comum</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
                     <div>
                         <label class="form-label">Senha *</label>
-                        <input type="password" name="password" class="form-control" required minlength="6">
-                    </div>
-                    <div id="companyField" style="display: none;">
-                        <label class="form-label">Empresa *</label>
-                        <select name="company_id" class="form-control" id="userCompanySelect">
-                            <option value="">Selecionar empresa...</option>
-                        </select>
+                        <div class="password-wrapper">
+                            <input type="password" name="password" id="userPassword" class="form-control" 
+                                   required minlength="6" 
+                                   placeholder="Mínimo 6 caracteres"
+                                   oninput="checkPasswordStrength(this)">
+                            <button type="button" class="password-toggle" onclick="togglePasswordVisibility('userPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bars">
+                                <div class="strength-bar"></div>
+                                <div class="strength-bar"></div>
+                                <div class="strength-bar"></div>
+                                <div class="strength-bar"></div>
+                            </div>
+                            <div class="strength-text" id="strengthText"></div>
+                        </div>
+                        <div class="form-helper">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Use letras, números e símbolos para mais segurança</span>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Campo Empresa (condicional) -->
+                <div id="companyField" style="display: none;">
+                    <div class="form-row full">
+                        <div>
+                            <label class="form-label">Empresa *</label>
+                            <select name="company_id" class="form-control" id="userCompanySelect">
+                                <option value="">Selecione a empresa do usuário...</option>
+                            </select>
+                            <div class="form-helper">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Empresa à qual o usuário terá acesso</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('createUserModal')">
+                        <i class="fas fa-times"></i>
                         Cancelar
                     </button>
                     <button type="submit" class="btn btn-primary">
@@ -1647,6 +1999,12 @@
                 e.preventDefault();
                 const formData = new FormData(e.target);
                 const companyData = Object.fromEntries(formData);
+                
+                // Validação do horário de reset
+                if (companyData.reset_time && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(companyData.reset_time)) {
+                    showNotification('error', 'Erro', 'Por favor, informe um horário válido no formato HH:MM');
+                    return;
+                }
                 
                 try {
                     const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -1882,10 +2240,26 @@
             tbody.innerHTML = '';
 
             users.forEach(user => {
-                const company = companies.find(c => c._id === user.company_id);
+                // Buscar nome da empresa - lidar com diferentes estruturas de dados
+                let companyName = '-';
+                if (user.userType === 'admin') {
+                    companyName = 'Sistema';
+                } else if (user.company_id) {
+                    if (typeof user.company_id === 'object' && user.company_id.nome) {
+                        // company_id já é um objeto populado
+                        companyName = user.company_id.nome;
+                    } else {
+                        // company_id é apenas o ID, buscar na lista de empresas
+                        const company = companies.find(c => c._id === user.company_id || c._id === user.company_id._id);
+                        companyName = company ? company.nome : 'Empresa não encontrada';
+                    }
+                }
+
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${user.fullName || user.username}</td>
+                    <td>
+                        <strong>${user.fullName || user.username}</strong>
+                    </td>
                     <td>${user.username}</td>
                     <td>${user.email || '-'}</td>
                     <td>
@@ -1893,7 +2267,12 @@
                             ${user.userType === 'admin' ? 'Admin' : 'Usuário'}
                         </span>
                     </td>
-                    <td>${company ? company.nome : (user.userType === 'admin' ? 'Sistema' : '-')}</td>
+                    <td>
+                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas ${user.userType === 'admin' ? 'fa-crown' : 'fa-building'}" style="color: ${user.userType === 'admin' ? 'var(--warning)' : 'var(--secondary-green)'};"></i>
+                            ${companyName}
+                        </span>
+                    </td>
                     <td>
                         <span class="status-badge ${user.isActive ? 'status-active' : 'status-inactive'}">
                             ${user.isActive ? 'Ativo' : 'Inativo'}
@@ -1901,7 +2280,7 @@
                     </td>
                     <td>
                         ${user.isActive ? 
-                            `<button class="btn btn-sm btn-danger" onclick="deactivateUser('${user._id}')">
+                            `<button class="btn btn-sm btn-danger" onclick="deactivateUser('${user._id}')" title="Desativar usuário">
                                 <i class="fas fa-ban"></i>
                             </button>` : 
                             '-'
@@ -1913,31 +2292,101 @@
         }
 
         // Renderizar tabela de sensores
-        function renderSensorsTable() {
+        function renderSensorsTable(filteredSensors = null) {
             const tbody = document.getElementById('sensorsTableBody');
             tbody.innerHTML = '';
 
-            sensors.forEach(sensor => {
-                const company = companies.find(c => c._id === sensor.company_id);
+            const sensorsToRender = filteredSensors || sensors;
+
+            if (sensorsToRender.length === 0) {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${sensor.nome}</td>
-                    <td>${company ? company.nome : '-'}</td>
+                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-gray);">
+                        <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
+                        ${filteredSensors ? 'Nenhum sensor encontrado para esta empresa' : 'Nenhum sensor cadastrado'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+                return;
+            }
+
+            sensorsToRender.forEach(sensor => {
+                // Buscar nome da empresa - lidar com diferentes estruturas de dados
+                let companyName = '-';
+                if (sensor.company_id) {
+                    if (typeof sensor.company_id === 'object' && sensor.company_id.nome) {
+                        // company_id já é um objeto populado
+                        companyName = sensor.company_id.nome;
+                    } else {
+                        // company_id é apenas o ID, buscar na lista de empresas
+                        const company = companies.find(c => c._id === sensor.company_id || c._id === sensor.company_id._id);
+                        companyName = company ? company.nome : 'Empresa não encontrada';
+                    }
+                }
+
+                // Formatar data de criação
+                const createdDate = sensor.createdAt ? new Date(sensor.createdAt).toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : '-';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
                     <td>
-                        <code style="font-size: 0.75rem;">${sensor.device_key}</code>
-                        <button class="btn btn-xs btn-outline" onclick="copyDeviceKey('${sensor.device_key}')" style="margin-left: 8px;">
+                        <strong>${sensor.nome}</strong>
+                    </td>
+                    <td>
+                        <span style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-building" style="color: var(--secondary-green);"></i>
+                            ${companyName}
+                        </span>
+                    </td>
+                    <td>
+                        <code style="font-size: 0.75rem; background: var(--light-gray); padding: 0.25rem 0.5rem; border-radius: 4px; display: inline-block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${sensor.device_key}
+                        </code>
+                        <button class="btn btn-xs btn-outline" onclick="copyDeviceKey('${sensor.device_key}')" style="margin-left: 8px;" title="Copiar Device Key">
                             <i class="fas fa-copy"></i>
                         </button>
                     </td>
-                    <td>${Utils.formatDate(sensor.createdAt)}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline" onclick="viewSensor('${sensor._id}')">
+                        <span style="font-size: 0.85rem; color: var(--text-gray);">
+                            <i class="far fa-calendar-alt"></i>
+                            ${createdDate}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" onclick="viewSensor('${sensor._id}')" title="Ver detalhes">
                             <i class="fas fa-eye"></i>
                         </button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
+        }
+
+        // Filtrar sensores por empresa
+        function filterSensorsByCompany() {
+            const companyId = document.getElementById('sensorCompanyFilter').value;
+            
+            if (!companyId) {
+                // Mostrar todos os sensores
+                renderSensorsTable();
+                return;
+            }
+            
+            // Filtrar sensores pela empresa selecionada
+            const filteredSensors = sensors.filter(sensor => {
+                if (typeof sensor.company_id === 'object' && sensor.company_id._id) {
+                    return sensor.company_id._id === companyId;
+                }
+                return sensor.company_id === companyId;
+            });
+            
+            renderSensorsTable(filteredSensors);
         }
 
         // Atualizar estatísticas
@@ -1951,10 +2400,12 @@
 
         // Atualizar seletores de empresa
         function updateCompanySelectors() {
-            const selectors = ['companySelector', 'userCompanySelect', 'sensorCompanySelect'];
+            const selectors = ['companySelector', 'userCompanySelect', 'sensorCompanySelect', 'sensorCompanyFilter'];
             
             selectors.forEach(selectorId => {
                 const selector = document.getElementById(selectorId);
+                if (!selector) return;
+                
                 const currentOptions = selector.innerHTML;
                 const firstOption = selector.children[0].outerHTML;
                 
@@ -1975,6 +2426,32 @@
         }
 
         function showCreateUserModal() {
+            // Limpar seleções anteriores
+            document.querySelectorAll('.user-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelectorAll('input[name="userType"]').forEach(radio => {
+                radio.checked = false;
+            });
+            
+            // Limpar campos
+            const form = document.getElementById('createUserForm');
+            form.reset();
+            
+            // Resetar validações
+            form.querySelectorAll('.form-control').forEach(input => {
+                input.classList.remove('valid', 'invalid');
+            });
+            form.querySelectorAll('.field-feedback').forEach(feedback => {
+                feedback.classList.remove('show', 'success', 'error');
+            });
+            
+            // Esconder força da senha
+            document.getElementById('passwordStrength').classList.remove('active');
+            
+            // Esconder campo de empresa
+            document.getElementById('companyField').style.display = 'none';
+            
             showModal('createUserModal');
         }
 
@@ -2000,7 +2477,7 @@
         }
 
         function toggleCompanyField() {
-            const userType = document.querySelector('select[name="userType"]').value;
+            const userType = document.querySelector('input[name="userType"]:checked')?.value;
             const companyField = document.getElementById('companyField');
             const companySelect = document.getElementById('userCompanySelect');
             
@@ -2011,6 +2488,141 @@
                 companyField.style.display = 'none';
                 companySelect.required = false;
                 companySelect.value = '';
+            }
+        }
+
+        // Selecionar tipo de usuário com cards visuais
+        function selectUserType(type) {
+            // Remover seleção anterior
+            document.querySelectorAll('.user-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Adicionar seleção ao card clicado
+            event.currentTarget.classList.add('selected');
+            
+            // Marcar o radio button
+            const radio = event.currentTarget.querySelector('input[type="radio"]');
+            radio.checked = true;
+            
+            // Mostrar/ocultar campo de empresa
+            toggleCompanyField();
+        }
+
+        // Validação de campos em tempo real
+        function validateField(input, fieldName) {
+            const value = input.value.trim();
+            const feedback = document.getElementById(`${fieldName}-feedback`);
+            
+            // Remover classes anteriores
+            input.classList.remove('valid', 'invalid');
+            feedback.classList.remove('show', 'success', 'error');
+            
+            if (value.length === 0) {
+                return;
+            }
+            
+            let isValid = false;
+            let message = '';
+            
+            switch(fieldName) {
+                case 'fullName':
+                    isValid = value.length >= 3;
+                    message = isValid ? 'Nome válido' : 'Nome deve ter pelo menos 3 caracteres';
+                    break;
+                    
+                case 'username':
+                    const usernameRegex = /^[a-zA-Z0-9._-]+$/;
+                    isValid = usernameRegex.test(value) && value.length >= 3;
+                    message = isValid ? 'Nome de usuário válido' : 'Use apenas letras, números, ponto, hífen ou underline';
+                    break;
+                    
+                case 'email':
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    isValid = emailRegex.test(value);
+                    message = isValid ? 'Email válido' : 'Digite um email válido';
+                    break;
+            }
+            
+            if (isValid) {
+                input.classList.add('valid');
+                feedback.classList.add('show', 'success');
+                feedback.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            } else {
+                input.classList.add('invalid');
+                feedback.classList.add('show', 'error');
+                feedback.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+            }
+        }
+
+        // Verificar força da senha
+        function checkPasswordStrength(input) {
+            const password = input.value;
+            const strengthDiv = document.getElementById('passwordStrength');
+            const strengthText = document.getElementById('strengthText');
+            const bars = strengthDiv.querySelectorAll('.strength-bar');
+            
+            if (password.length === 0) {
+                strengthDiv.classList.remove('active');
+                return;
+            }
+            
+            strengthDiv.classList.add('active');
+            
+            let strength = 0;
+            let strengthLabel = '';
+            let strengthClass = '';
+            
+            // Critérios de força
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            // Resetar barras
+            bars.forEach(bar => {
+                bar.classList.remove('filled', 'medium', 'strong');
+            });
+            
+            // Determinar nível de força
+            if (strength <= 2) {
+                strengthLabel = 'Fraca';
+                strengthClass = 'strength-weak';
+                for (let i = 0; i < 1; i++) {
+                    bars[i].classList.add('filled');
+                }
+            } else if (strength <= 3) {
+                strengthLabel = 'Média';
+                strengthClass = 'strength-medium';
+                for (let i = 0; i < 2; i++) {
+                    bars[i].classList.add('filled', 'medium');
+                }
+            } else {
+                strengthLabel = 'Forte';
+                strengthClass = 'strength-strong';
+                for (let i = 0; i < 4; i++) {
+                    bars[i].classList.add('filled', 'strong');
+                }
+            }
+            
+            strengthText.textContent = `Senha ${strengthLabel}`;
+            strengthText.className = `strength-text ${strengthClass}`;
+        }
+
+        // Toggle visibilidade da senha
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = event.currentTarget.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
         }
 

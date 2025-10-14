@@ -373,7 +373,7 @@
                 <li class="sidebar-nav-item">
                     <a href="dispositivos.html" class="sidebar-nav-link">
                         <i class="fas fa-microchip"></i>
-                        Dispositivos
+                        Estações
                     </a>
                 </li>
                 <li class="sidebar-nav-item">
@@ -418,7 +418,7 @@
                 <div class="flex-grow-1">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
-                            <h1 class="mb-1">Dados dos Sensores</h1>
+                            <h1 class="mb-1">Dados das Estações</h1>
                             <p class="mb-0 text-muted">Histórico detalhado das leituras</p>
                         </div>
                         <div class="ml-auto">
@@ -469,10 +469,10 @@
                     
                     <div class="form-group mb-0">
                         <label class="form-label" for="deviceFilter">
-                            <i class="fas fa-microchip"></i> Dispositivo
+                            <i class="fas fa-microchip"></i> Estação
                         </label>
                         <select id="deviceFilter" name="device" class="form-control">
-                            <option value="">Todos os dispositivos</option>
+                            <option value="">Todas as estações</option>
                         </select>
                     </div>
                     
@@ -514,10 +514,6 @@
                                 <button class="export-option" onclick="exportData('json')">
                                     <i class="fas fa-file-code"></i>
                                     Exportar JSON
-                                </button>
-                                <button class="export-option" onclick="exportData('excel')">
-                                    <i class="fas fa-file-excel"></i>
-                                    Exportar Excel
                                 </button>
                             </div>
                         </div>
@@ -637,7 +633,7 @@
                 
             } catch (error) {
                 console.error('Erro ao inicializar página:', error);
-                NotificationManager.error('Erro', 'Falha ao carregar dados');
+                showNotification('error', 'Erro', 'Falha ao carregar dados');
             } finally {
                 LoadingManager.hideGlobalLoading();
             }
@@ -663,7 +659,7 @@
                     <tr>
                         <td colspan="5" class="loading-row">
                             <i class="fas fa-spinner fa-spin"></i><br>
-                            Carregando dados dos sensores...
+                            Carregando dados das estações...
                         </td>
                     </tr>
                 `;
@@ -698,7 +694,7 @@
                 allData = [];
                 populateDeviceFilter();
                 applyFilters();
-                NotificationManager.error('Erro', 'Não foi possível carregar os dados dos sensores');
+                showNotification('error', 'Erro', 'Não foi possível carregar os dados das estações');
             }
         }
 
@@ -715,7 +711,7 @@
             });
             
             // Limpar opções existentes (exceto "Todos")
-            deviceFilter.innerHTML = '<option value="">Todos os dispositivos</option>';
+            deviceFilter.innerHTML = '<option value="">Todas as estações</option>';
             
             // Adicionar opções para cada dispositivo
             deviceMap.forEach((sensorName, deviceKey) => {
@@ -907,22 +903,16 @@
             toggleExportDropdown();
             
             if (filteredData.length === 0) {
-                NotificationManager.warning('Sem dados', 'Não há dados para exportar');
+                showNotification('warning', 'Sem dados', 'Não há dados para exportar');
                 return;
             }
             
-            const filename = `wr10_dados_${new Date().toISOString().split('T')[0]}`;
+            const filename = 'wr10_dados_' + new Date().toISOString().split('T')[0];
             
-            switch (format) {
-                case 'csv':
-                    exportCSV(filteredData, filename);
-                    break;
-                case 'json':
-                    exportJSON(filteredData, filename);
-                    break;
-                case 'excel':
-                    NotificationManager.info('Em breve', 'Exportação para Excel será implementada em breve');
-                    break;
+            if (format === 'csv') {
+                exportCSV(filteredData, filename);
+            } else if (format === 'json') {
+                exportJSON(filteredData, filename);
             }
         }
 
@@ -943,13 +933,13 @@
             ].join('\n');
             
             downloadFile(csvContent, `${filename}.csv`, 'text/csv');
-            NotificationManager.success('Exportado!', 'Arquivo CSV baixado com sucesso');
+            showNotification('success', 'Exportado!', 'Arquivo CSV baixado com sucesso');
         }
 
         function exportJSON(data, filename) {
             const jsonContent = JSON.stringify(data, null, 2);
             downloadFile(jsonContent, `${filename}.json`, 'application/json');
-            NotificationManager.success('Exportado!', 'Arquivo JSON baixado com sucesso');
+            showNotification('success', 'Exportado!', 'Arquivo JSON baixado com sucesso');
         }
 
         function downloadFile(content, filename, contentType) {

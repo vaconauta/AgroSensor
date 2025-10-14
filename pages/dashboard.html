@@ -415,6 +415,24 @@
             left: 22px;
         }
         
+        /* Input de número para limite de registros */
+        input[type="number"] {
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+        
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+        
         .no-data {
             display: flex;
             flex-direction: column;
@@ -707,6 +725,12 @@
             overflow: visible !important;
         }
         
+        .col-6 {
+            flex: 1 !important;
+            min-width: 0 !important;
+            overflow: visible !important;
+        }
+        
         .col-4 {
             flex: 1 !important;
             min-width: 0 !important;
@@ -720,7 +744,7 @@
                 gap: var(--spacing-md) !important;
             }
             
-            .col-8, .col-4 {
+            .col-8, .col-6, .col-4 {
                 width: 100% !important;
                 max-width: 100% !important;
                 flex: none !important;
@@ -944,7 +968,7 @@
                 <li class="sidebar-nav-item">
                     <a href="dispositivos.html" class="sidebar-nav-link">
                         <i class="fas fa-microchip"></i>
-                        Dispositivos
+                        Estações
                     </a>
                 </li>
                 <li class="sidebar-nav-item">
@@ -1026,14 +1050,6 @@
             <!-- Status Cards -->
             <div class="stats-grid">
                 <div class="stats-card">
-                    <div class="stats-card-icon primary">
-                        <i class="fas fa-microchip"></i>
-                    </div>
-                    <div class="stats-card-value" id="deviceCount">0</div>
-                    <div class="stats-card-label">Sensores Online</div>
-                </div>
-                
-                <div class="stats-card">
                     <div class="stats-card-icon info">
                         <i class="fas fa-tint"></i>
                     </div>
@@ -1050,6 +1066,15 @@
                 </div>
                 
                 <div class="stats-card">
+                    <div class="stats-card-icon primary">
+                        <i class="fas fa-microchip"></i>
+                    </div>
+                    <div class="stats-card-value" id="deviceCount">0</div>
+                    <div class="stats-card-label">Sensores Online</div>
+                </div>
+                
+                <!-- Card Registros Hoje - OCULTO -->
+                <div class="stats-card" style="display: none;">
                     <div class="stats-card-icon success">
                         <i class="fas fa-database"></i>
                     </div>
@@ -1063,7 +1088,7 @@
             
             <!-- Gráficos -->
             <div class="row">
-                <div class="col-8">
+                <div class="col-6">
                     <div class="chart-container" id="humidityChartContainer">
                         <div class="chart-header">
                             <h3 class="chart-title">
@@ -1113,6 +1138,25 @@
                                                 <div class="toggle-switch active" onclick="toggleChartFill('humidity')" id="humidityFillToggle"></div>
                                             </div>
                                         </div>
+                                        <div class="chart-settings-section">
+                                            <label class="chart-settings-label">Limite de Registros</label>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <input 
+                                                    type="number" 
+                                                    id="humidityMaxRecords" 
+                                                    min="10" 
+                                                    max="10000" 
+                                                    step="10" 
+                                                    value="100" 
+                                                    onchange="changeChartMaxRecords('humidity', this.value)"
+                                                    style="flex: 1; padding: 6px 8px; border: 1px solid var(--border-gray); border-radius: var(--radius-sm); font-size: 0.875rem;"
+                                                />
+                                                <span style="font-size: 0.75rem; color: var(--text-gray); white-space: nowrap;">registros</span>
+                                            </div>
+                                            <div style="margin-top: 4px; font-size: 0.7rem; color: var(--text-gray);">
+                                                Menos registros = gráfico mais rápido
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1121,7 +1165,7 @@
                     </div>
                 </div>
                 
-                <div class="col-4">
+                <div class="col-6">
                     <div class="chart-container" id="rainChartContainer">
                         <div class="chart-header">
                             <h3 class="chart-title">
@@ -1171,6 +1215,25 @@
                                                 <div class="toggle-switch active" onclick="toggleChartFill('rain')" id="rainFillToggle"></div>
                                             </div>
                                         </div>
+                                        <div class="chart-settings-section">
+                                            <label class="chart-settings-label">Limite de Registros</label>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <input 
+                                                    type="number" 
+                                                    id="rainMaxRecords" 
+                                                    min="10" 
+                                                    max="10000" 
+                                                    step="10" 
+                                                    value="100" 
+                                                    onchange="changeChartMaxRecords('rain', this.value)"
+                                                    style="flex: 1; padding: 6px 8px; border: 1px solid var(--border-gray); border-radius: var(--radius-sm); font-size: 0.875rem;"
+                                                />
+                                                <span style="font-size: 0.75rem; color: var(--text-gray); white-space: nowrap;">registros</span>
+                                            </div>
+                                            <div style="margin-top: 4px; font-size: 0.7rem; color: var(--text-gray);">
+                                                Menos registros = gráfico mais rápido
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1179,16 +1242,9 @@
                     </div>
                 </div>
             </div>
-                                </select>
-                            </div>
-                        </div>
-                        <canvas id="rainChart"></canvas>
-                    </div>
-                </div>
-            </div>
             
-            <!-- Leituras Recentes -->
-            <div class="latest-readings">
+            <!-- Leituras Recentes - OCULTO -->
+            <div class="latest-readings" style="display: none;">
                 <div class="readings-header">
                     <h3 class="mb-0">
                         <i class="fas fa-clock"></i>
@@ -1911,7 +1967,13 @@
                 });
                 
                 // Converter para array ordenado
-                const timestamps = Array.from(allTimestamps).sort();
+                let timestamps = Array.from(allTimestamps).sort();
+                
+                // Aplicar limite de registros (pegar os mais recentes)
+                const maxRecords = chartConfigs.humidity.maxRecords || 100;
+                if (timestamps.length > maxRecords) {
+                    timestamps = timestamps.slice(-maxRecords);
+                }
                 
                 // Criar labels para o eixo X
                 humidityChart.data.labels = timestamps.map(timestamp => {
@@ -1959,6 +2021,9 @@
                     
                     colorIndex++;
                 });
+                
+                // Aplicar preferências salvas (tipo de gráfico, fill, pontos, etc)
+                applyChartPreferencesToSingleChart('humidity');
                 
                 humidityChart.update();
                 
@@ -2025,7 +2090,13 @@
                 });
                 
                 // Converter para array ordenado
-                const timestamps = Array.from(allTimestamps).sort();
+                let timestamps = Array.from(allTimestamps).sort();
+                
+                // Aplicar limite de registros (pegar os mais recentes)
+                const maxRecords = chartConfigs.rain.maxRecords || 100;
+                if (timestamps.length > maxRecords) {
+                    timestamps = timestamps.slice(-maxRecords);
+                }
                 
                 // Criar labels para o eixo X
                 rainChart.data.labels = timestamps.map(timestamp => {
@@ -2070,6 +2141,9 @@
                     
                     colorIndex++;
                 });
+                
+                // Aplicar preferências salvas (tipo de gráfico, fill, pontos, etc)
+                applyChartPreferencesToSingleChart('rain');
                 
                 rainChart.update();
                 
@@ -2217,16 +2291,16 @@
         // Armazenamento de configurações
         const chartConfigs = {
             humidity: {
-                type: 'line',
+                type: 'line',  // Pode ser: 'line', 'area', 'bar'
                 showGrid: true,
                 showPoints: true,
-                fill: true
+                maxRecords: 100  // Quantidade máxima de registros a exibir
             },
             rain: {
-                type: 'line',
+                type: 'line',  // Pode ser: 'line', 'area', 'bar'
                 showGrid: true,
                 showPoints: true,
-                fill: true
+                maxRecords: 100  // Quantidade máxima de registros a exibir
             }
         };
         
@@ -2272,8 +2346,9 @@
                 return;
             }
             
+            // LÓGICA SIMPLES E DIRETA:
+            // area = line com fill, line = line sem fill, bar = bar sem fill
             if (type === 'area') {
-                // Área é linha com fill
                 chart.config.type = 'line';
                 if (chart.data && chart.data.datasets) {
                     chart.data.datasets.forEach(dataset => {
@@ -2288,12 +2363,11 @@
                         dataset.fill = false;
                     });
                 }
-            } else {
-                // Linha
+            } else { // type === 'line'
                 chart.config.type = 'line';
                 if (chart.data && chart.data.datasets) {
                     chart.data.datasets.forEach(dataset => {
-                        dataset.fill = chartConfigs[chartName].fill;
+                        dataset.fill = false;
                     });
                 }
             }
@@ -2343,7 +2417,19 @@
         function toggleChartFill(chartName) {
             const toggle = document.getElementById(`${chartName}FillToggle`);
             const isActive = toggle.classList.toggle('active');
-            chartConfigs[chartName].fill = isActive;
+            
+            // Se ativar fill, muda para 'area'. Se desativar, muda para 'line'
+            const newType = isActive ? 'area' : 'line';
+            chartConfigs[chartName].type = newType;
+            
+            // Atualizar UI dos botões de tipo
+            const container = document.getElementById(`${chartName}Settings`);
+            container.querySelectorAll('.chart-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === newType) {
+                    btn.classList.add('active');
+                }
+            });
             
             const chart = chartName === 'humidity' ? humidityChart : rainChart;
             if (chart && chart.config && chart.config.type === 'line' && chart.data && chart.data.datasets) {
@@ -2358,8 +2444,34 @@
                 chart.update();
             }
             
-            console.log(`Preenchimento ${chartName}:`, isActive ? 'ATIVADO' : 'DESATIVADO');
+            console.log(`Preenchimento ${chartName}:`, isActive ? 'ATIVADO (area)' : 'DESATIVADO (line)');
             saveChartPreferences();
+        }
+        
+        // Alterar limite de registros
+        function changeChartMaxRecords(chartName, value) {
+            const maxRecords = parseInt(value);
+            
+            // Validar valor
+            if (isNaN(maxRecords) || maxRecords < 10) {
+                document.getElementById(`${chartName}MaxRecords`).value = 10;
+                chartConfigs[chartName].maxRecords = 10;
+            } else if (maxRecords > 10000) {
+                document.getElementById(`${chartName}MaxRecords`).value = 10000;
+                chartConfigs[chartName].maxRecords = 10000;
+            } else {
+                chartConfigs[chartName].maxRecords = maxRecords;
+            }
+            
+            console.log(`Limite de registros ${chartName}:`, chartConfigs[chartName].maxRecords);
+            saveChartPreferences();
+            
+            // Atualizar gráfico imediatamente
+            if (chartName === 'humidity') {
+                updateHumidityChart();
+            } else {
+                updateRainChart();
+            }
         }
         
         // Salvar preferências no localStorage
@@ -2384,36 +2496,7 @@
                 ['humidity', 'rain'].forEach(chartName => {
                     const config = chartConfigs[chartName];
                     
-                    // Atualizar toggles visuais
-                    const gridToggle = document.getElementById(`${chartName}GridToggle`);
-                    const pointsToggle = document.getElementById(`${chartName}PointsToggle`);
-                    const fillToggle = document.getElementById(`${chartName}FillToggle`);
-                    
-                    if (gridToggle) {
-                        if (config.showGrid) {
-                            gridToggle.classList.add('active');
-                        } else {
-                            gridToggle.classList.remove('active');
-                        }
-                    }
-                    
-                    if (pointsToggle) {
-                        if (config.showPoints) {
-                            pointsToggle.classList.add('active');
-                        } else {
-                            pointsToggle.classList.remove('active');
-                        }
-                    }
-                    
-                    if (fillToggle) {
-                        if (config.fill) {
-                            fillToggle.classList.add('active');
-                        } else {
-                            fillToggle.classList.remove('active');
-                        }
-                    }
-                    
-                    // Atualizar botão de tipo
+                    // Atualizar botões de tipo de gráfico
                     const typeButtons = document.querySelectorAll(`#${chartName}Settings .chart-type-btn`);
                     typeButtons.forEach(btn => {
                         if (btn.dataset.type === config.type) {
@@ -2422,6 +2505,42 @@
                             btn.classList.remove('active');
                         }
                     });
+                    
+                    // Atualizar toggle de grid
+                    const gridToggle = document.getElementById(`${chartName}GridToggle`);
+                    if (gridToggle) {
+                        if (config.showGrid) {
+                            gridToggle.classList.add('active');
+                        } else {
+                            gridToggle.classList.remove('active');
+                        }
+                    }
+                    
+                    // Atualizar toggle de pontos
+                    const pointsToggle = document.getElementById(`${chartName}PointsToggle`);
+                    if (pointsToggle) {
+                        if (config.showPoints) {
+                            pointsToggle.classList.add('active');
+                        } else {
+                            pointsToggle.classList.remove('active');
+                        }
+                    }
+                    
+                    // Atualizar toggle de preenchimento baseado no tipo
+                    const fillToggle = document.getElementById(`${chartName}FillToggle`);
+                    if (fillToggle) {
+                        if (config.type === 'area') {
+                            fillToggle.classList.add('active');
+                        } else {
+                            fillToggle.classList.remove('active');
+                        }
+                    }
+                    
+                    // Atualizar campo de limite de registros
+                    const maxRecordsInput = document.getElementById(`${chartName}MaxRecords`);
+                    if (maxRecordsInput && config.maxRecords) {
+                        maxRecordsInput.value = config.maxRecords;
+                    }
                 });
                 
                 console.log('Preferências de gráficos carregadas:', chartConfigs);
@@ -2436,64 +2555,66 @@
         // Aplicar configurações salvas aos objetos Chart.js
         function applyChartPreferencesToCharts() {
             ['humidity', 'rain'].forEach(chartName => {
-                const chart = chartName === 'humidity' ? humidityChart : rainChart;
-                const config = chartConfigs[chartName];
-                
-                if (!chart) {
-                    console.warn(`Gráfico ${chartName} ainda não foi inicializado`);
-                    return;
-                }
-                
-                // Aplicar tipo de gráfico
-                if (config.type === 'area') {
-                    chart.config.type = 'line';
-                    if (chart.data && chart.data.datasets) {
-                        chart.data.datasets.forEach(dataset => {
-                            dataset.fill = true;
-                        });
-                    }
-                } else if (config.type === 'bar') {
-                    chart.config.type = 'bar';
-                    if (chart.data && chart.data.datasets) {
-                        chart.data.datasets.forEach(dataset => {
-                            dataset.fill = false;
-                        });
-                    }
-                } else {
-                    // line
-                    chart.config.type = 'line';
-                    if (chart.data && chart.data.datasets) {
-                        chart.data.datasets.forEach(dataset => {
-                            dataset.fill = config.fill;
-                        });
-                    }
-                }
-                
-                // Aplicar grid
-                if (chart.options && chart.options.scales) {
-                    chart.options.scales.x.grid = { display: config.showGrid };
-                    chart.options.scales.y.grid = { display: config.showGrid };
-                }
-                
-                // Aplicar pontos
-                if (chart.data && chart.data.datasets) {
-                    chart.data.datasets.forEach(dataset => {
-                        dataset.pointRadius = config.showPoints ? 3 : 0;
-                        dataset.pointHoverRadius = config.showPoints ? 6 : 0;
-                    });
-                }
-                
-                // Aplicar preenchimento
-                if (chart.config.type === 'line' && chart.data && chart.data.datasets) {
-                    chart.data.datasets.forEach(dataset => {
-                        dataset.fill = config.fill;
-                    });
-                }
-                
-                chart.update();
+                applyChartPreferencesToSingleChart(chartName);
             });
             
             console.log('Preferências aplicadas aos gráficos Chart.js');
+        }
+        
+        // Aplicar configurações salvas a um gráfico específico (útil após atualização de dados)
+        function applyChartPreferencesToSingleChart(chartName) {
+            const chart = chartName === 'humidity' ? humidityChart : rainChart;
+            const config = chartConfigs[chartName];
+            
+            if (!chart) {
+                console.warn(`Gráfico ${chartName} ainda não foi inicializado`);
+                return;
+            }
+            
+            // LÓGICA SIMPLES E DIRETA baseada no tipo:
+            // 'area' = line com fill true
+            // 'line' = line com fill false  
+            // 'bar' = bar com fill false
+            
+            if (config.type === 'area') {
+                chart.config.type = 'line';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = true;
+                        dataset.backgroundColor = dataset.borderColor + '33';
+                    });
+                }
+            } else if (config.type === 'bar') {
+                chart.config.type = 'bar';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = false;
+                    });
+                }
+            } else { // type === 'line'
+                chart.config.type = 'line';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = false;
+                    });
+                }
+            }
+            
+            // Aplicar grid
+            if (chart.options && chart.options.scales) {
+                chart.options.scales.x.grid = { display: config.showGrid };
+                chart.options.scales.y.grid = { display: config.showGrid };
+            }
+            
+            // Aplicar pontos
+            if (chart.data && chart.data.datasets) {
+                chart.data.datasets.forEach(dataset => {
+                    dataset.pointRadius = config.showPoints ? 3 : 0;
+                    dataset.pointHoverRadius = config.showPoints ? 6 : 0;
+                });
+            }
+            
+            console.log(`Preferências aplicadas ao gráfico ${chartName}:`, config);
         }
         
         function setupMobileMenu() {

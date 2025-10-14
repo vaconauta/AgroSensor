@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dispositivos - WR10</title>
+    <title>Estações - WR10</title>
     
     <!-- Fontes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -335,7 +335,7 @@
                 <li class="sidebar-nav-item">
                     <a href="dispositivos.html" class="sidebar-nav-link active">
                         <i class="fas fa-microchip"></i>
-                        Dispositivos
+                        Estações
                     </a>
                 </li>
                 <li class="sidebar-nav-item">
@@ -383,8 +383,8 @@
                 <div class="flex-grow-1">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
-                            <h1 class="mb-1">Dispositivos</h1>
-                            <p class="mb-0 text-muted">Gerenciar sensores e dispositivos IoT</p>
+                            <h1 class="mb-1">Estações</h1>
+                            <p class="mb-0 text-muted">Gerenciar sensores e estações meteorológicas</p>
                         </div>
                         <div class="ml-auto">
                             <button class="btn-hamburger" data-sidebar-toggle>
@@ -417,7 +417,7 @@
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="fas fa-key"></i>
-                    Chave do Dispositivo
+                    Chave da Estação
                 </h5>
                 <button type="button" class="modal-close" onclick="closeDeviceKeyModal()">
                     <i class="fas fa-times"></i>
@@ -427,7 +427,7 @@
                 <div class="alert alert-info">
                     <i class="fas fa-info-circle"></i>
                     <div>
-                        <strong>Chave do Dispositivo:</strong><br>
+                        <strong>Chave da Estação:</strong><br>
                         Esta chave deve ser configurada no seu dispositivo Arduino/ESP32.
                     </div>
                 </div>
@@ -522,7 +522,7 @@
 
         async function initializeDevicesPage() {
             try {
-                LoadingManager.showGlobalLoading('Carregando dispositivos...');
+                LoadingManager.showGlobalLoading('Carregando estações...');
                 
                 // Carregar dados do usuário
                 const user = AuthManager.getUserFromToken();
@@ -534,7 +534,7 @@
                 
             } catch (error) {
                 console.error('Erro ao inicializar página:', error);
-                NotificationManager.error('Erro', 'Falha ao carregar dispositivos');
+                NotificationManager.error('Erro', 'Falha ao carregar estações');
             } finally {
                 LoadingManager.hideGlobalLoading();
             }
@@ -613,7 +613,7 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-microchip"></i>
-                        <h3>Nenhum dispositivo encontrado</h3>
+                        <h3>Nenhuma estação encontrada</h3>
                         <p>Aguarde o administrador adicionar sensores à sua conta</p>
                     </div>
                 `;
@@ -715,7 +715,7 @@
             // Atualizar título do modal
             document.querySelector('#deviceKeyModal .modal-title').innerHTML = `
                 <i class="fas fa-key"></i>
-                Chave do Dispositivo: ${device.name}
+                Chave da Estação: ${device.name}
             `;
             
             // Abrir modal
