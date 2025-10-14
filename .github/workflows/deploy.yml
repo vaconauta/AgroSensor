@@ -1,0 +1,78 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Build job
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Verify structure
+        run: |
+          echo "📁 Verificando estrutura do projeto..."
+          ls -la
+          echo ""
+          echo "📄 Verificando arquivos essenciais..."
+          test -f index.html && echo "✅ index.html encontrado" || echo "❌ index.html não encontrado"
+          test -f .nojekyll && echo "✅ .nojekyll encontrado" || echo "❌ .nojekyll não encontrado"
+          test -f 404.html && echo "✅ 404.html encontrado" || echo "❌ 404.html não encontrado"
+          test -d assets && echo "✅ Pasta assets encontrada" || echo "❌ Pasta assets não encontrada"
+          test -d pages && echo "✅ Pasta pages encontrada" || echo "❌ Pasta pages não encontrada"
+
+      - name: Create deployment info
+        run: |
+          echo "🚀 Criando informações de deploy..."
+          cat > deployment-info.json << EOF
+          {
+            "deployed_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "actor": "${{ github.actor }}",
+            "workflow": "${{ github.workflow }}"
+          }
+          EOF
+          cat deployment-info.json
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+  # Deploy job
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Output deployment URL
+        run: |
+          echo "✅ Deploy concluído com sucesso!"
+          echo "🌐 URL: ${{ steps.deployment.outputs.page_url }}"

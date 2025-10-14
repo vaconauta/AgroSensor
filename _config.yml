@@ -1,0 +1,27 @@
+# GitHub Pages Configuration
+title: WR10 - Sistema de Monitoramento Inteligente
+description: Sistema de monitoramento inteligente com interface web responsiva para acompanhamento de dados de sensores em tempo real
+baseurl: "" # Deixe vazio para domínio próprio ou "/nome-do-repo" para subdomínio
+url: "https://vaconauta.github.io" # URL base do GitHub Pages
+
+# Build settings
+markdown: kramdown
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# SEO settings
+author: vaconauta
+twitter:
+  username: vaconauta
+  card: summary_large_image
+
+# Exclude from processing
+exclude:
+  - README.md
+  - FILTROS_GRAFICOS.md
+  - PERSONALIZACAO_GRAFICOS.md
+  - node_modules/
+  - vendor/
+  - .git/
+  - .gitignore

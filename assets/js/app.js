@@ -4,6 +4,14 @@ const CONFIG = {
     // Para desenvolvimento local, descomente a linha abaixo:
     // API_BASE_URL: 'http://localhost:3000',
     
+    // Detecta automaticamente o baseURL para GitHub Pages
+    get BASE_URL() {
+        if (typeof window.router !== 'undefined') {
+            return window.router.baseURL || '';
+        }
+        return '';
+    },
+    
     STORAGE_KEYS: {
         ACCESS_TOKEN: 'accessToken',
         USERNAME: 'username',
@@ -28,6 +36,18 @@ const CONFIG = {
         ADMIN_COMPANIES: '/api/admin/companies',
         ADMIN_USERS: '/api/admin/users',
         ADMIN_SENSORS: '/api/admin/sensors'
+    },
+    
+    // Helper para resolver URLs de páginas
+    getPageURL(page) {
+        const basePath = this.BASE_URL ? `${this.BASE_URL}/` : '/';
+        return `${basePath}${page}`;
+    },
+    
+    // Helper para resolver URLs de assets
+    getAssetURL(asset) {
+        const basePath = this.BASE_URL ? `${this.BASE_URL}/` : '/';
+        return `${basePath}${asset}`;
     }
 };
 
