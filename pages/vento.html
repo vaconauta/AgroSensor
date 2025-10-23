@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de Vento - WR10</title>
+    <meta name="description" content="Monitoramento de velocidade e direção do vento - Acompanhe as condições do vento em tempo real">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../assets/img/logo.svg">
+    
+    <!-- Fontes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <!-- Router para navegação otimizada -->
+    <script src="../assets/js/router.js"></script>
+    
+    <style>
+        /* Estilos específicos para a página de vento */
+        .wind-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .wind-stat-card {
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .wind-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .wind-stat-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .wind-stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--white);
+            flex-shrink: 0;
+        }
+
+        .wind-stat-icon.speed {
+            background: linear-gradient(135deg, var(--info), #2c5aa0);
+        }
+
+        .wind-stat-icon.direction {
+            background: linear-gradient(135deg, var(--success), #2f855a);
+        }
+
+        .wind-stat-icon.gust {
+            background: linear-gradient(135deg, var(--error), #c53030);
+        }
+
+        .wind-stat-icon.pressure {
+            background: linear-gradient(135deg, #9f7aea, #805ad5);
+        }
+
+        .wind-stat-content {
+            flex: 1;
+        }
+
+        .wind-stat-content h3 {
+            margin: 0 0 var(--spacing-xs) 0;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .wind-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin: var(--spacing-xs) 0;
+            line-height: 1.2;
+        }
+
+        .wind-stat-unit {
+            font-size: 0.875rem;
+            color: var(--text-gray);
+            font-weight: 400;
+            margin-left: var(--spacing-xs);
+        }
+
+        .wind-stat-trend {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 0.85rem;
+            margin-top: var(--spacing-sm);
+        }
+
+        .trend-up {
+            color: var(--error);
+        }
+
+        .trend-down {
+            color: var(--success);
+        }
+
+        .trend-stable {
+            color: var(--text-gray);
+        }
+
+        /* Compass para direção do vento */
+        .wind-compass {
+            width: 200px;
+            height: 200px;
+            margin: var(--spacing-lg) auto 0;
+            position: relative;
+            border: 3px solid var(--border-gray);
+            border-radius: 50%;
+            background: var(--light-gray);
+        }
+
+        .compass-face {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            border-radius: 50%;
+        }
+
+        .compass-direction {
+            position: absolute;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+        }
+
+        .compass-direction.north { top: 8px; left: 50%; transform: translateX(-50%); }
+        .compass-direction.east { right: 8px; top: 50%; transform: translateY(-50%); }
+        .compass-direction.south { bottom: 8px; left: 50%; transform: translateX(-50%); }
+        .compass-direction.west { left: 8px; top: 50%; transform: translateY(-50%); }
+
+        .wind-arrow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 70px;
+            background: var(--error);
+            border-radius: 2px;
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(0deg);
+            transition: transform 0.5s ease;
+        }
+
+        .wind-arrow::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -6px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 16px solid var(--error);
+        }
+
+        /* Gráficos de vento */
+        .wind-charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        @media (max-width: 768px) {
+            .wind-charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .wind-compass {
+                width: 150px;
+                height: 150px;
+            }
+        }
+
+        .chart-container {
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            height: 450px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .chart-title i {
+            color: var(--accent-green);
+        }
+
+        .filter-selector {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--dark-gray);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-selector:hover {
+            border-color: var(--accent-green);
+        }
+
+        .filter-selector:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(124, 179, 66, 0.1);
+        }
+
+        /* Rosa dos ventos simplificada */
+        .wind-rose-container {
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .wind-rose-container .chart-title {
+            margin-bottom: var(--spacing-xl);
+            justify-content: center;
+        }
+
+        .wind-rose {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            position: relative;
+            border: 2px solid var(--border-gray);
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--light-gray) 0%, var(--white) 100%);
+        }
+
+        .wind-rose-direction {
+            position: absolute;
+            width: 2px;
+            height: 50%;
+            background: var(--border-gray);
+            top: 0;
+            left: 50%;
+            transform-origin: bottom center;
+        }
+
+        .wind-rose-direction:nth-child(1) { transform: translateX(-50%) rotate(0deg); }
+        .wind-rose-direction:nth-child(2) { transform: translateX(-50%) rotate(45deg); }
+        .wind-rose-direction:nth-child(3) { transform: translateX(-50%) rotate(90deg); }
+        .wind-rose-direction:nth-child(4) { transform: translateX(-50%) rotate(135deg); }
+        .wind-rose-direction:nth-child(5) { transform: translateX(-50%) rotate(180deg); }
+        .wind-rose-direction:nth-child(6) { transform: translateX(-50%) rotate(225deg); }
+        .wind-rose-direction:nth-child(7) { transform: translateX(-50%) rotate(270deg); }
+        .wind-rose-direction:nth-child(8) { transform: translateX(-50%) rotate(315deg); }
+
+        @media (max-width: 480px) {
+            .wind-rose {
+                width: 250px;
+                height: 250px;
+            }
+        }
+
+        /* Links desabilitados */
+        .sidebar-nav-link.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            position: relative;
+        }
+        
+        .sidebar-nav-link.disabled::after {
+            content: "Em breve";
+            position: absolute;
+            right: 12px;
+            font-size: 0.75rem;
+            background: var(--text-gray);
+            color: var(--white);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        /* ===== MENU HAMBURGUER ===== */
+        .btn-hamburger {
+            display: none;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 44px;
+            height: 44px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .btn-hamburger:hover {
+            background: var(--light-gray);
+        }
+        
+        .btn-hamburger:active {
+            background: var(--medium-gray);
+        }
+        
+        .hamburger-line {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background: var(--dark-gray);
+            border-radius: 2px;
+            transition: var(--transition);
+            transform-origin: center;
+        }
+        
+        /* Animação do hamburguer para X */
+        .btn-hamburger.active .hamburger-line:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+        
+        .btn-hamburger.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .btn-hamburger.active .hamburger-line:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        /* Overlay para fechar sidebar ao clicar fora */
+        .sidebar-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: rgba(0, 0, 0, 0.5) !important;
+            z-index: 999 !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transition: var(--transition) !important;
+            pointer-events: none !important;
+        }
+        
+        .sidebar-overlay.show {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+        }
+
+        /* Responsividade */
+        @media (max-width: 1024px) {
+            .btn-hamburger {
+                display: flex;
+                position: absolute;
+                left: var(--spacing-md);
+                top: 50%;
+                transform: translateY(-50%);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .btn-hamburger {
+                left: var(--spacing-sm);
+            }
+        }
+
+        /* Garantir que o header tenha position relative */
+        .content-header {
+            position: relative !important;
+        }
+
+        /* Classes auxiliares para layout */
+        .d-flex {
+            display: flex !important;
+        }
+
+        .justify-content-between {
+            justify-content: space-between !important;
+        }
+
+        .align-items-start {
+            align-items: flex-start !important;
+        }
+
+        .align-items-center {
+            align-items: center !important;
+        }
+
+        .ml-auto {
+            margin-left: auto !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Admin View Status Bar -->
+    <div id="adminStatusBar" class="admin-status-bar" style="display: none;">
+        <div class="admin-status-content">
+            <i class="fas fa-user-shield"></i>
+            <span>Visualização Administrativa - Empresa: <span id="adminCompanyName">Carregando...</span></span>
+            <button onclick="exitAdminView()" class="btn-admin-exit">
+                <i class="fas fa-times"></i> Sair
+            </button>
+        </div>
+    </div>
+    
+    <!-- Overlay para fechar sidebar em mobile -->
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="navbar-brand">
+                <img src="../assets/img/logo.svg" alt="WR10" width="32" height="32">
+                <span>WR10</span>
+            </div>
+            <p class="subtitle" style="color: var(--text-gray); font-size: 0.875rem; margin-top: var(--spacing-sm);">
+                Sistema de Monitoramento Agrícola
+            </p>
+        </div>
+        
+        <nav>
+            <ul class="sidebar-nav">
+                <li class="sidebar-nav-item">
+                    <a href="dashboard.html" class="sidebar-nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="dispositivos.html" class="sidebar-nav-link">
+                        <i class="fas fa-microchip"></i>
+                        Estações
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="dados.html" class="sidebar-nav-link">
+                        <i class="fas fa-database"></i>
+                        Dados
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="vento.html" class="sidebar-nav-link active">
+                        <i class="fas fa-wind"></i>
+                        Vento
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="#" class="sidebar-nav-link disabled">
+                        <i class="fas fa-tint"></i>
+                        Irrigação
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
+                    <a href="configuracoes.html" class="sidebar-nav-link">
+                        <i class="fas fa-cog"></i>
+                        Configurações
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div style="margin-top: auto; padding-top: var(--spacing-xl);">
+            <div class="sidebar-nav-item">
+                <a href="#" class="sidebar-nav-link" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair
+                </a>
+            </div>
+            <div style="padding: var(--spacing-md); text-align: center; font-size: 0.75rem; color: var(--text-gray);">
+                © 2024 WR10
+            </div>
+        </div>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+        <div class="content-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div style="display: flex; align-items: center; gap: var(--spacing-md); flex: 1;">
+                    <button class="btn-hamburger" data-sidebar-toggle>
+                        <div class="hamburger-line"></div>
+                        <div class="hamburger-line"></div>
+                        <div class="hamburger-line"></div>
+                    </button>
+                    <div>
+                        <h1 style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--dark-gray);">
+                            <i class="fas fa-wind" style="color: var(--accent-green); margin-right: var(--spacing-sm);"></i>
+                            Monitoramento de Vento
+                        </h1>
+                        <p style="margin: var(--spacing-xs) 0 0 0; color: var(--text-gray); font-size: 0.875rem;">
+                            Acompanhe velocidade, direção e rajadas de vento em tempo real
+                        </p>
+                    </div>
+                </div>
+                <div class="ml-auto" style="display: flex; gap: var(--spacing-sm);">
+                    <button class="btn btn-secondary" onclick="exportWindData()">
+                        <i class="fas fa-download"></i>
+                        <span>Exportar</span>
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshWindData()">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Atualizar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-body">
+            <!-- Cards de Estatísticas do Vento -->
+            <div class="wind-stats-grid">
+                <div class="wind-stat-card">
+                    <div class="wind-stat-header">
+                        <div class="wind-stat-icon speed">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div class="wind-stat-content">
+                            <h3>Velocidade Atual</h3>
+                            <div class="wind-stat-value">
+                                <span id="currentWindSpeed">12.5</span>
+                                <span class="wind-stat-unit">km/h</span>
+                            </div>
+                            <div class="wind-stat-trend trend-up">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>+2.3 km/h desde ontem</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wind-stat-card">
+                    <div class="wind-stat-header">
+                        <div class="wind-stat-icon direction">
+                            <i class="fas fa-compass"></i>
+                        </div>
+                        <div class="wind-stat-content">
+                            <h3>Direção Atual</h3>
+                            <div class="wind-stat-value">
+                                <span id="currentWindDirection">NE</span>
+                                <span class="wind-stat-unit">(45°)</span>
+                            </div>
+                            <div class="wind-compass">
+                                <div class="compass-face">
+                                    <div class="compass-direction north">N</div>
+                                    <div class="compass-direction east">E</div>
+                                    <div class="compass-direction south">S</div>
+                                    <div class="compass-direction west">W</div>
+                                    <div class="wind-arrow" id="windArrow"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wind-stat-card">
+                    <div class="wind-stat-header">
+                        <div class="wind-stat-icon gust">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="wind-stat-content">
+                            <h3>Rajada Máxima</h3>
+                            <div class="wind-stat-value">
+                                <span id="maxWindGust">28.7</span>
+                                <span class="wind-stat-unit">km/h</span>
+                            </div>
+                            <div class="wind-stat-trend trend-down">
+                                <i class="fas fa-arrow-down"></i>
+                                <span>-5.2 km/h desde ontem</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wind-stat-card">
+                    <div class="wind-stat-header">
+                        <div class="wind-stat-icon pressure">
+                            <i class="fas fa-thermometer-half"></i>
+                        </div>
+                        <div class="wind-stat-content">
+                            <h3>Pressão Atmosférica</h3>
+                            <div class="wind-stat-value">
+                                <span id="atmosphericPressure">1013.2</span>
+                                <span class="wind-stat-unit">hPa</span>
+                            </div>
+                            <div class="wind-stat-trend trend-stable">
+                                <i class="fas fa-minus"></i>
+                                <span>Estável</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos de Vento -->
+            <div class="wind-charts-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">
+                            <i class="fas fa-chart-line"></i>
+                            Velocidade do Vento
+                        </h3>
+                        <select class="filter-selector" id="speedFilter" onchange="updateSpeedChart()">
+                            <option value="24h">Últimas 24h</option>
+                            <option value="7d">Últimos 7 dias</option>
+                            <option value="30d">Últimos 30 dias</option>
+                        </select>
+                    </div>
+                    <canvas id="windSpeedChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">
+                            <i class="fas fa-compass"></i>
+                            Direção do Vento
+                        </h3>
+                        <select class="filter-selector" id="directionFilter" onchange="updateDirectionChart()">
+                            <option value="24h">Últimas 24h</option>
+                            <option value="7d">Últimos 7 dias</option>
+                            <option value="30d">Últimos 30 dias</option>
+                        </select>
+                    </div>
+                    <canvas id="windDirectionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Rosa dos Ventos -->
+            <div class="wind-rose-container">
+                <h3 class="chart-title">
+                    <i class="fas fa-dharmachakra"></i>
+                    Rosa dos Ventos - Frequência por Direção
+                </h3>
+                <div class="wind-rose" id="windRose">
+                    <div class="wind-rose-direction"></div>
+                    <div class="wind-rose-direction"></div>
+                    <div class="wind-rose-direction"></div>
+                    <div class="wind-rose-direction"></div>
+                    <div class="wind-rose-direction"></div>
+                    <div class="wind-rose-direction"></div>
+                    <div class="wind-rose-direction"></div>
+                    <div class="wind-rose-direction"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../assets/js/app.js"></script>
+    <script>
+        // Variáveis globais dos gráficos
+        let windSpeedChart = null;
+        let windDirectionChart = null;
+
+        // Dados simulados
+        const windData = {
+            current: {
+                speed: 12.5,
+                direction: 45, // graus
+                directionText: 'NE',
+                gust: 28.7,
+                pressure: 1013.2
+            },
+            history: generateWindHistory()
+        };
+
+        // Função para gerar dados históricos simulados
+        function generateWindHistory() {
+            const history = [];
+            const now = new Date();
+            
+            for (let i = 168; i >= 0; i--) { // 7 dias de dados (24h * 7)
+                const timestamp = new Date(now.getTime() - (i * 60 * 60 * 1000)); // hora por hora
+                
+                // Simular padrões realistas de vento
+                const baseSpeed = 8 + Math.sin(i * 0.1) * 4 + Math.random() * 6;
+                const gustMultiplier = 1.2 + Math.random() * 0.8;
+                const direction = (i * 2 + Math.random() * 30) % 360;
+                
+                history.push({
+                    timestamp: timestamp.toISOString(),
+                    speed: Math.max(0, baseSpeed),
+                    gust: Math.max(baseSpeed, baseSpeed * gustMultiplier),
+                    direction: direction,
+                    pressure: 1010 + Math.sin(i * 0.05) * 10 + Math.random() * 5
+                });
+            }
+            
+            return history;
+        }
+
+        // Função para converter graus em direção cardeal
+        function degreesToCardinal(degrees) {
+            const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+            return directions[Math.round(degrees / 22.5) % 16];
+        }
+
+        // Função para filtrar dados por período
+        function filterDataByPeriod(data, period) {
+            const now = new Date();
+            let cutoffDate;
+            
+            switch(period) {
+                case '24h':
+                    cutoffDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                    break;
+                case '7d':
+                    cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    break;
+                case '30d':
+                    cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                    break;
+                default:
+                    return data;
+            }
+            
+            return data.filter(item => new Date(item.timestamp) >= cutoffDate);
+        }
+
+        // Função para atualizar gráfico de velocidade do vento
+        function updateSpeedChart() {
+            if (!windSpeedChart) return;
+            
+            const period = document.getElementById('speedFilter').value;
+            const filteredData = filterDataByPeriod(windData.history, period);
+            
+            const labels = filteredData.map(item => {
+                const date = new Date(item.timestamp);
+                if (period === '24h') {
+                    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                } else {
+                    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                }
+            });
+            
+            windSpeedChart.data.labels = labels;
+            windSpeedChart.data.datasets = [
+                {
+                    label: 'Velocidade Média',
+                    data: filteredData.map(item => item.speed),
+                    borderColor: '#3182ce',
+                    backgroundColor: '#3182ce20',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4
+                },
+                {
+                    label: 'Rajadas',
+                    data: filteredData.map(item => item.gust),
+                    borderColor: '#e53e3e',
+                    backgroundColor: '#e53e3e20',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    borderDash: [5, 5]
+                }
+            ];
+            
+            windSpeedChart.update();
+        }
+
+        // Função para atualizar gráfico de direção do vento
+        function updateDirectionChart() {
+            if (!windDirectionChart) return;
+            
+            const period = document.getElementById('directionFilter').value;
+            const filteredData = filterDataByPeriod(windData.history, period);
+            
+            const labels = filteredData.map(item => {
+                const date = new Date(item.timestamp);
+                if (period === '24h') {
+                    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                } else {
+                    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                }
+            });
+            
+            windDirectionChart.data.labels = labels;
+            windDirectionChart.data.datasets = [{
+                label: 'Direção do Vento (°)',
+                data: filteredData.map(item => item.direction),
+                borderColor: '#38a169',
+                backgroundColor: '#38a16920',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.4,
+                pointRadius: 3,
+                pointHoverRadius: 6
+            }];
+            
+            windDirectionChart.update();
+        }
+
+        // Função para atualizar a bússola
+        function updateWindCompass() {
+            const arrow = document.getElementById('windArrow');
+            const direction = windData.current.direction;
+            arrow.style.transform = `translate(-50%, -100%) rotate(${direction}deg)`;
+        }
+
+        // Função para atualizar valores atuais
+        function updateCurrentValues() {
+            document.getElementById('currentWindSpeed').textContent = windData.current.speed.toFixed(1);
+            document.getElementById('currentWindDirection').textContent = windData.current.directionText;
+            document.getElementById('maxWindGust').textContent = windData.current.gust.toFixed(1);
+            document.getElementById('atmosphericPressure').textContent = windData.current.pressure.toFixed(1);
+        }
+
+        // Função para simular dados em tempo real
+        function refreshWindData() {
+            // Atualizar dados atuais com alguma variação
+            windData.current.speed = Math.max(0, windData.current.speed + (Math.random() - 0.5) * 2);
+            windData.current.direction = (windData.current.direction + (Math.random() - 0.5) * 10) % 360;
+            windData.current.directionText = degreesToCardinal(windData.current.direction);
+            windData.current.gust = Math.max(windData.current.speed, windData.current.speed * (1.2 + Math.random() * 0.6));
+            windData.current.pressure = windData.current.pressure + (Math.random() - 0.5) * 2;
+            
+            // Adicionar novo ponto aos dados históricos
+            const now = new Date();
+            windData.history.push({
+                timestamp: now.toISOString(),
+                speed: windData.current.speed,
+                gust: windData.current.gust,
+                direction: windData.current.direction,
+                pressure: windData.current.pressure
+            });
+            
+            // Manter apenas os últimos 7 dias
+            if (windData.history.length > 168) {
+                windData.history.shift();
+            }
+            
+            // Atualizar interface
+            updateCurrentValues();
+            updateWindCompass();
+            updateSpeedChart();
+            updateDirectionChart();
+            
+            // Mostrar notificação
+            showNotification('success', 'Atualizado', 'Dados de vento atualizados com sucesso');
+        }
+
+        // Função de inicialização
+        function initWindPage() {
+            // Verificar autenticação
+            if (!AuthManager.isAuthenticated()) {
+                window.location.href = '../index.html';
+                return;
+            }
+
+            // Configurar sidebar
+            initializeSidebarEvents();
+
+            // Verificar modo admin
+            checkAdminMode();
+
+            // Atualizar valores iniciais
+            updateCurrentValues();
+            updateWindCompass();
+
+            // Inicializar gráficos
+            initWindCharts();
+
+            // Configurar atualização automática a cada 30 segundos
+            setInterval(refreshWindData, 30000);
+
+            console.log('Página de vento inicializada com sucesso');
+        }
+
+        // Função para inicializar eventos da sidebar
+        function initializeSidebarEvents() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('[data-sidebar-overlay]');
+            const hamburger = document.querySelector('[data-sidebar-toggle]');
+            
+            // Variável para controlar estado da sidebar
+            let sidebarAberto = false;
+            
+            // Inicializar estado da sidebar
+            if (sidebar && overlay) {
+                if (window.innerWidth <= 1024) {
+                    sidebar.style.cssText = `
+                        position: fixed !important;
+                        left: -300px !important;
+                        top: 0 !important;
+                        width: 280px !important;
+                        height: 100vh !important;
+                        z-index: -1 !important;
+                        transform: translateX(-100%) !important;
+                    `;
+                    
+                    overlay.style.cssText = `
+                        opacity: 0 !important;
+                        visibility: hidden !important;
+                        pointer-events: none !important;
+                        z-index: -1 !important;
+                    `;
+                }
+            }
+            
+            // Event listener para toggle da sidebar
+            if (hamburger) {
+                hamburger.addEventListener('click', function() {
+                    if (sidebarAberto) {
+                        fecharSidebar();
+                    } else {
+                        abrirSidebar();
+                    }
+                });
+            }
+            
+            // Event listener para fechar sidebar clicando no overlay
+            if (overlay) {
+                overlay.addEventListener('click', fecharSidebar);
+            }
+            
+            function abrirSidebar() {
+                if (!sidebar || !overlay) return;
+                
+                sidebar.style.cssText = `
+                    position: fixed !important;
+                    left: 0 !important;
+                    top: 0 !important;
+                    width: 280px !important;
+                    height: 100vh !important;
+                    z-index: 9999 !important;
+                    background: white !important;
+                    transform: translateX(0) !important;
+                    transition: transform 0.3s ease !important;
+                    box-shadow: 0 0 30px rgba(0,0,0,0.5) !important;
+                `;
+                
+                overlay.style.cssText = `
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    background: rgba(0,0,0,0.5) !important;
+                    z-index: 998 !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    pointer-events: auto !important;
+                `;
+                
+                if (hamburger) hamburger.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                sidebarAberto = true;
+            }
+            
+            function fecharSidebar() {
+                if (!sidebar || !overlay) return;
+                
+                sidebar.style.cssText = `
+                    position: fixed !important;
+                    left: -300px !important;
+                    top: 0 !important;
+                    width: 280px !important;
+                    height: 100vh !important;
+                    z-index: -1 !important;
+                    transform: translateX(-100%) !important;
+                    transition: all 0.3s ease !important;
+                `;
+                
+                overlay.style.cssText = `
+                    opacity: 0 !important;
+                    visibility: hidden !important;
+                    pointer-events: none !important;
+                    z-index: -1 !important;
+                    transition: all 0.3s ease !important;
+                `;
+                
+                if (hamburger) hamburger.classList.remove('active');
+                document.body.style.overflow = 'auto';
+                sidebarAberto = false;
+            }
+        }
+
+        // Função para verificar modo admin
+        function checkAdminMode() {
+            // Verificar se está no modo admin view
+            const urlParams = new URLSearchParams(window.location.search);
+            const adminCompanyId = urlParams.get('admin_company_id');
+            
+            if (adminCompanyId) {
+                window.adminViewCompanyId = adminCompanyId;
+                const statusBar = document.getElementById('adminStatusBar');
+                if (statusBar) {
+                    statusBar.style.display = 'flex';
+                }
+            }
+        }
+
+        // Função para sair do modo admin
+        function exitAdminView() {
+            window.adminViewCompanyId = null;
+            const statusBar = document.getElementById('adminStatusBar');
+            if (statusBar) {
+                statusBar.style.display = 'none';
+            }
+            // Remover parâmetro da URL
+            const url = new URL(window.location);
+            url.searchParams.delete('admin_company_id');
+            window.history.replaceState({}, '', url);
+        }
+
+        // Função para logout
+        function logout() {
+            if (AuthManager && AuthManager.logout) {
+                AuthManager.logout();
+            }
+            window.location.href = '../index.html';
+        }
+
+        // Função para exportar dados do vento
+        function exportWindData() {
+            try {
+                const csv = convertWindDataToCSV(windData.history);
+                downloadCSV(csv, `dados-vento-${new Date().toISOString().split('T')[0]}.csv`);
+                showNotification('success', 'Exportado', 'Dados de vento exportados com sucesso!');
+            } catch (error) {
+                console.error('Erro ao exportar dados:', error);
+                showNotification('error', 'Erro', 'Falha ao exportar dados de vento');
+            }
+        }
+
+        function convertWindDataToCSV(data) {
+            const headers = ['Data/Hora', 'Velocidade (km/h)', 'Rajada (km/h)', 'Direção (°)', 'Direção', 'Pressão (hPa)'];
+            const rows = data.map(item => {
+                const date = new Date(item.timestamp);
+                return [
+                    date.toLocaleString('pt-BR'),
+                    item.speed.toFixed(1),
+                    item.gust.toFixed(1),
+                    item.direction.toFixed(0),
+                    degreesToCardinal(item.direction),
+                    item.pressure.toFixed(1)
+                ];
+            });
+            
+            return [headers, ...rows]
+                .map(row => row.map(cell => `"${cell}"`).join(','))
+                .join('\n');
+        }
+
+        function downloadCSV(csv, filename) {
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Função para inicializar gráficos
+        function initWindCharts() {
+            // Gráfico de velocidade do vento
+            const speedCtx = document.getElementById('windSpeedChart').getContext('2d');
+            windSpeedChart = new Chart(speedCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} km/h`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Tempo'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Velocidade (km/h)'
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+
+            // Gráfico de direção do vento
+            const directionCtx = document.getElementById('windDirectionChart').getContext('2d');
+            windDirectionChart = new Chart(directionCtx, {
+                type: 'scatter',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const direction = context.parsed.y;
+                                    const cardinal = degreesToCardinal(direction);
+                                    return `Direção: ${direction.toFixed(0)}° (${cardinal})`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Tempo'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Direção (graus)'
+                            },
+                            min: 0,
+                            max: 360,
+                            ticks: {
+                                stepSize: 45,
+                                callback: function(value) {
+                                    return value + '°';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Carregar dados iniciais
+            updateSpeedChart();
+            updateDirectionChart();
+        }
+
+        // Função helper para notificações
+        function showNotification(type, title, message) {
+            // Implementação simples de notificação (pode ser melhorada)
+            console.log(`${type.toUpperCase()}: ${title} - ${message}`);
+        }
+
+        // Função para interceptar cliques em links desabilitados
+        function handleDisabledLinks() {
+            document.querySelectorAll('.sidebar-nav-link.disabled').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showNotification('info', 'Em breve', 'Esta funcionalidade estará disponível em breve');
+                });
+            });
+        }
+
+        // Inicializar página quando DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            initWindPage();
+            handleDisabledLinks();
+            
+            // Event listener para o botão de logout
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logout();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

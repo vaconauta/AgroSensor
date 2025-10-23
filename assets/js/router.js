@@ -9,6 +9,7 @@ class Router {
             '/dispositivos': 'pages/dispositivos.html',
             '/irrigacao': 'pages/irrigacao.html',
             '/dados': 'pages/dados.html',
+            '/vento': 'pages/vento.html',
             '/configuracoes': 'pages/configuracoes.html',
             '/admin': 'pages/admin-dashboard.html'
         };
@@ -152,4 +153,4 @@ window.resolveURL = (path) => router.resolvePath(path);
 window.getAssetURL = (path) => router.getAssetURL(path);
 window.navigateTo = (route) => router.navigate(route);
 
-console.log('Router inicializado com baseURL:', router.baseURL);
+console.log('Router inicializado com baseURL:', router.baseURL || '(vazio - desenvolvimento local)');
