@@ -2,7 +2,7 @@
 const CONFIG = {
     API_BASE_URL: 'https://api-estacao.onrender.com',
     // Para desenvolvimento local, descomente a linha abaixo:
-    // API_BASE_URL: 'http://localhost:3000',
+    // API_BASE_URL: 'http://192.168.5.188:3000',
     
     // Detecta automaticamente o baseURL para GitHub Pages
     get BASE_URL() {
@@ -114,6 +114,115 @@ class Utils {
             console.error('Erro ao copiar:', err);
             return false;
         }
+    }
+}
+
+// ===== UTILITÁRIOS DE VENTO =====
+class WindUtils {
+    // Obter seta de direção do vento
+    static getWindArrow(direction) {
+        const arrows = {
+            'N': '↑',
+            'NE': '↗',
+            'E': '→',
+            'SE': '↘',
+            'S': '↓',
+            'SW': '↙',
+            'W': '←',
+            'NW': '↖'
+        };
+        return arrows[direction] || '-';
+    }
+    
+    // Obter rotação CSS para a direção do vento
+    static getWindRotation(direction) {
+        const rotations = {
+            'N': 0,
+            'NE': 45,
+            'E': 90,
+            'SE': 135,
+            'S': 180,
+            'SW': 225,
+            'W': 270,
+            'NW': 315
+        };
+        return rotations[direction] || 0;
+    }
+    
+    // Classificar intensidade do vento
+    static getWindIntensity(velocidade) {
+        if (velocidade < 10) {
+            return { label: 'Calmo', color: '#27ae60', icon: 'fa-leaf' };
+        }
+        if (velocidade < 30) {
+            return { label: 'Moderado', color: '#f39c12', icon: 'fa-wind' };
+        }
+        if (velocidade < 50) {
+            return { label: 'Forte', color: '#e67e22', icon: 'fa-wind' };
+        }
+        return { label: 'Muito Forte', color: '#c0392b', icon: 'fa-hurricane' };
+    }
+    
+    // Calcular estatísticas do vento
+    static calcularEstatisticasVento(dados) {
+        // Aceita dados no formato transformado (speed, directionCardinal) ou original (velocidade_vento, direcao_vento_cardinal)
+        const velocidades = dados
+            .map(d => d.speed ?? d.velocidade_vento)
+            .filter(v => v !== null && v !== undefined && v > 0);
+        
+        const velocidadeMedia = velocidades.length > 0 
+            ? (velocidades.reduce((a, b) => a + b, 0) / velocidades.length).toFixed(1)
+            : 0;
+        
+        const velocidadeMaxima = velocidades.length > 0 
+            ? Math.max(...velocidades).toFixed(1)
+            : 0;
+        
+        const velocidadeMinima = velocidades.length > 0 
+            ? Math.min(...velocidades).toFixed(1)
+            : 0;
+        
+        // Direção mais frequente
+        const direcoes = dados
+            .map(d => d.directionCardinal ?? d.direcao_vento_cardinal)
+            .filter(d => d && d !== '-');
+        
+        const direcaoPredominante = direcoes.length > 0
+            ? direcoes.sort((a,b) =>
+                direcoes.filter(v => v === a).length - 
+                direcoes.filter(v => v === b).length
+              ).pop()
+            : '-';
+        
+        // Contar frequência de cada direção
+        const frequenciasDirecao = {};
+        direcoes.forEach(d => {
+            frequenciasDirecao[d] = (frequenciasDirecao[d] || 0) + 1;
+        });
+        
+        return { 
+            velocidadeMedia, 
+            velocidadeMaxima, 
+            velocidadeMinima,
+            direcaoPredominante,
+            frequenciasDirecao,
+            totalLeituras: velocidades.length
+        };
+    }
+    
+    // Formatar direção cardial completa
+    static getDirecaoCompleta(direction) {
+        const direcoes = {
+            'N': 'Norte',
+            'NE': 'Nordeste',
+            'E': 'Leste',
+            'SE': 'Sudeste',
+            'S': 'Sul',
+            'SW': 'Sudoeste',
+            'W': 'Oeste',
+            'NW': 'Noroeste'
+        };
+        return direcoes[direction] || 'Desconhecido';
     }
 }
 
@@ -780,6 +889,7 @@ function setupGlobalEvents() {
 // ===== EXPORTAR PARA ESCOPO GLOBAL =====
 window.CONFIG = CONFIG;
 window.Utils = Utils;
+window.WindUtils = WindUtils;
 window.StateManager = stateManager;
 window.AuthManager = AuthManager;
 window.ApiClient = ApiClient;

@@ -5,7 +5,7 @@
   "homepage": "index.html",
   "config": {
     "api": {
-      "baseUrl": "https://api-estacao.onrender.com/api",
+      "baseUrl": "https://api-estacao.onrender.com/api", 
       "timeout": 10000,
       "retryAttempts": 3
     },

@@ -585,10 +585,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            opacity: 0.5;
-            filter: grayscale(50%);
-            pointer-events: none;
-            cursor: not-allowed;
+            transition: var(--transition);
+        }
+        
+        .wind-compass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
         
         .wind-compass-container {
@@ -1289,6 +1291,12 @@
                     </a>
                 </li>
                 <li class="sidebar-nav-item">
+                    <a href="vento.html" class="sidebar-nav-link">
+                        <i class="fas fa-wind"></i>
+                        Vento
+                    </a>
+                </li>
+                <li class="sidebar-nav-item">
                     <a href="#" class="sidebar-nav-link disabled">
                         <i class="fas fa-tint"></i>
                         Irrigação
@@ -1384,10 +1392,8 @@
                     <div class="stats-card-label">Estações Online</div>
                 </div>
                 
-                <!-- Card de Vento - Em Breve -->
-                <div class="stats-card wind-compass-card">
-                    <span class="coming-soon-badge">Em Breve</span>
-                    
+                <!-- Card de Vento -->
+                <a href="vento.html" class="stats-card wind-compass-card" style="text-decoration: none; color: inherit;">
                     <div class="wind-compass-container">
                         <div class="wind-compass">
                             <!-- Indicador de direção (Seta) - Aponta para Norte por padrão -->
@@ -1413,14 +1419,14 @@
                             
                             <!-- Centro com velocidade -->
                             <div class="wind-center">
-                                <div class="wind-speed">6.9</div>
+                                <div class="wind-speed">0.0</div>
                                 <div class="wind-unit">km/h</div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="wind-label">Velocidade e Direção do Vento</div>
-                </div>
+                </a>
                 
                 <!-- Card Registros Hoje - OCULTO -->
                 <div class="stats-card" style="display: none;">
@@ -2036,6 +2042,59 @@
             } else {
                 document.getElementById('readingCount').textContent = readingCount;
                 document.getElementById('readingCount').title = 'Leituras atuais';
+            }
+            
+            // Atualizar card de vento
+            updateWindCard();
+        }
+        
+        // Função para atualizar card de vento no dashboard
+        async function updateWindCard() {
+            try {
+                // Buscar dados recentes
+                const companyId = window.adminViewCompanyId || adminCompanyId || AuthManager.getCompanyId();
+                const data = await ApiClient.getSensorsHistory(companyId, '24h');
+                
+                if (data && data.dados && data.dados.length > 0) {
+                    // Filtrar apenas dados com vento válido
+                    const dadosComVento = data.dados.filter(item => 
+                        item.velocidade_vento !== null && item.velocidade_vento !== undefined
+                    );
+                    
+                    if (dadosComVento.length > 0) {
+                        // Pegar leitura MAIS RECENTE por timestamp
+                        const latestWithWind = dadosComVento.reduce((newest, current) => {
+                            const newestTime = new Date(newest.timestamp).getTime();
+                            const currentTime = new Date(current.timestamp).getTime();
+                            return currentTime > newestTime ? current : newest;
+                        });
+                        
+                        const velocidade = latestWithWind.velocidade_vento || 0;
+                        const direcao = latestWithWind.direcao_vento_cardinal || 'N';
+                        const rotacao = WindUtils.getWindRotation(direcao);
+                        
+                        // Atualizar velocidade
+                        const speedElement = document.querySelector('.wind-speed');
+                        if (speedElement) {
+                            speedElement.textContent = velocidade.toFixed(1);
+                        }
+                        
+                        // Atualizar seta de direção
+                        const arrowElement = document.querySelector('.wind-arrow');
+                        if (arrowElement) {
+                            arrowElement.style.transform = `translateX(-50%) rotate(${rotacao}deg)`;
+                        }
+                        
+                        // Remover badge "Em Breve"
+                        const badge = document.querySelector('.coming-soon-badge');
+                        if (badge) {
+                            badge.style.display = 'none';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar card de vento:', error);
+                // Manter valores padrão em caso de erro
             }
         }
         
