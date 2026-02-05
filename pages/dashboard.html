@@ -1368,7 +1368,7 @@
         <div class="content-body">
             <!-- Status Cards -->
             <div class="stats-grid">
-                <div class="stats-card">
+                <div class="stats-card" style="display: none;">
                     <div class="stats-card-icon info">
                         <i class="fas fa-tint"></i>
                     </div>
@@ -1382,6 +1382,22 @@
                     </div>
                     <div class="stats-card-value" id="totalRain">0mm</div>
                     <div class="stats-card-label">Precipitação no Período</div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="stats-card-icon success">
+                        <i class="fas fa-wind"></i>
+                    </div>
+                    <div class="stats-card-value" id="avgTemp">0°C</div>
+                    <div class="stats-card-label">Temperatura do Ar</div>
+                </div>
+                
+                <div class="stats-card">
+                    <div class="stats-card-icon info">
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <div class="stats-card-value" id="avgRelativeHumidity">0%</div>
+                    <div class="stats-card-label">Umidade Relativa do Ar</div>
                 </div>
                 
                 <div class="stats-card">
@@ -2046,6 +2062,54 @@
             
             // Atualizar card de vento
             updateWindCard();
+            
+            // Atualizar cards de temperatura e umidade relativa
+            updateAirTemperatureAndHumidityCard();
+        }
+        
+        // Função para atualizar card de temperatura do ar e umidade relativa
+        async function updateAirTemperatureAndHumidityCard() {
+            try {
+                // Buscar dados recentes
+                const companyId = window.adminViewCompanyId || adminCompanyId || AuthManager.getCompanyId();
+                const data = await ApiClient.getSensorsHistory(companyId, '24h');
+                
+                if (data && data.dados && data.dados.length > 0) {
+                    // Calcular média de temperatura do ar
+                    let totalTemp = 0;
+                    let tempCount = 0;
+                    let totalRelativeHumidity = 0;
+                    let humidityCount = 0;
+                    
+                    data.dados.forEach(item => {
+                        if (item.temperatura_ar !== null && item.temperatura_ar !== undefined) {
+                            totalTemp += item.temperatura_ar;
+                            tempCount++;
+                        }
+                        if (item.umidade_relativa !== null && item.umidade_relativa !== undefined) {
+                            totalRelativeHumidity += item.umidade_relativa;
+                            humidityCount++;
+                        }
+                    });
+                    
+                    const avgTemp = tempCount > 0 ? (totalTemp / tempCount).toFixed(1) : '0';
+                    const avgRelHumidity = humidityCount > 0 ? (totalRelativeHumidity / humidityCount).toFixed(1) : '0';
+                    
+                    // Atualizar UI
+                    const tempElement = document.getElementById('avgTemp');
+                    if (tempElement) {
+                        tempElement.textContent = avgTemp + '°C';
+                    }
+                    
+                    const humidityElement = document.getElementById('avgRelativeHumidity');
+                    if (humidityElement) {
+                        humidityElement.textContent = avgRelHumidity + '%';
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar dados de temperatura e umidade relativa:', error);
+                // Manter valores padrão em caso de erro
+            }
         }
         
         // Função para atualizar card de vento no dashboard
