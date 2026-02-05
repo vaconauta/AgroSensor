@@ -1368,20 +1368,40 @@
         <div class="content-body">
             <!-- Status Cards -->
             <div class="stats-grid">
-                <div class="stats-card">
+                <!-- Card Umidade do Solo - OCULTO -->
+                <div class="stats-card" style="display: none;">
                     <div class="stats-card-icon info">
                         <i class="fas fa-tint"></i>
                     </div>
-                    <div class="stats-card-value" id="avgHumidity">0%</div>
+                    <div class="stats-card-value" id="avgHumidity" style="visibility: hidden;">0%</div>
                     <div class="stats-card-label">Umidade Média do Solo</div>
                 </div>
                 
-                <div class="stats-card">
+                <!-- Card Precipitação - OCULTO -->
+                <div class="stats-card" style="display: none;">
                     <div class="stats-card-icon warning">
                         <i class="fas fa-cloud-rain"></i>
                     </div>
-                    <div class="stats-card-value" id="totalRain">0mm</div>
+                    <div class="stats-card-value" id="totalRain" style="visibility: hidden;">0mm</div>
                     <div class="stats-card-label">Precipitação no Período</div>
+                </div>
+                
+                <!-- Card Umidade do Ar - NOVO -->
+                <div class="stats-card">
+                    <div class="stats-card-icon info">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <div class="stats-card-value" id="airHumidity">0%</div>
+                    <div class="stats-card-label">Umidade do Ar</div>
+                </div>
+                
+                <!-- Card Temperatura - NOVO -->
+                <div class="stats-card">
+                    <div class="stats-card-icon warning">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <div class="stats-card-value" id="temperature">0°C</div>
+                    <div class="stats-card-label">Temperatura</div>
                 </div>
                 
                 <div class="stats-card">
@@ -1443,6 +1463,8 @@
             
             <!-- Gráficos -->
             <div class="row">
+                <!-- Gráfico de Umidade do Solo - OCULTO -->
+                <!--
                 <div class="col-6">
                     <div class="chart-container" id="humidityChartContainer">
                         <div class="chart-header">
@@ -1519,8 +1541,10 @@
                         <canvas id="humidityChart"></canvas>
                     </div>
                 </div>
+                -->
+
                 
-                <div class="col-6">
+                <div class="col-12">
                     <div class="chart-container" id="rainChartContainer">
                         <div class="chart-header">
                             <h3 class="chart-title">
@@ -1594,6 +1618,163 @@
                             </div>
                         </div>
                         <canvas id="rainChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gráficos de Umidade do Ar e Temperatura -->
+            <div class="row">
+                <div class="col-6">
+                    <div class="chart-container" id="airHumidityChartContainer">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fas fa-water"></i>
+                                <span>Umidade do Ar</span>
+                            </h3>
+                            <div class="chart-actions">
+                                <select class="filter-selector" id="airHumidityFilter" onchange="updateAirHumidityChart()">
+                                    <option value="24h">Últimas 24h</option>
+                                    <option value="7d">Últimos 7 dias</option>
+                                    <option value="30d">Últimos 30 dias</option>
+                                    <option value="all">Todos os dados</option>
+                                </select>
+                                <div style="position: relative;">
+                                    <button class="chart-control-btn" id="airHumiditySettingsBtn" onclick="toggleChartSettings('airHumidity')">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                    <div class="chart-settings-dropdown" id="airHumiditySettings">
+                                        <div class="chart-settings-section">
+                                            <label class="chart-settings-label">Tipo de Gráfico</label>
+                                            <div class="chart-type-buttons">
+                                                <button class="chart-type-btn active" data-type="line" onclick="changeChartType('airHumidity', 'line')">
+                                                    <i class="fas fa-chart-line"></i>
+                                                    <span>Linha</span>
+                                                </button>
+                                                <button class="chart-type-btn" data-type="bar" onclick="changeChartType('airHumidity', 'bar')">
+                                                    <i class="fas fa-chart-bar"></i>
+                                                    <span>Barra</span>
+                                                </button>
+                                                <button class="chart-type-btn" data-type="area" onclick="changeChartType('airHumidity', 'area')">
+                                                    <i class="fas fa-chart-area"></i>
+                                                    <span>Área</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="chart-settings-section">
+                                            <div class="chart-settings-toggle">
+                                                <span>Mostrar Grid</span>
+                                                <div class="toggle-switch active" onclick="toggleChartGrid('airHumidity')" id="airHumidityGridToggle"></div>
+                                            </div>
+                                            <div class="chart-settings-toggle">
+                                                <span>Mostrar Pontos</span>
+                                                <div class="toggle-switch active" onclick="toggleChartPoints('airHumidity')" id="airHumidityPointsToggle"></div>
+                                            </div>
+                                            <div class="chart-settings-toggle">
+                                                <span>Preencher Área</span>
+                                                <div class="toggle-switch active" onclick="toggleChartFill('airHumidity')" id="airHumidityFillToggle"></div>
+                                            </div>
+                                        </div>
+                                        <div class="chart-settings-section">
+                                            <label class="chart-settings-label">Limite de Registros</label>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <input 
+                                                    type="number" 
+                                                    id="airHumidityMaxRecords" 
+                                                    min="10" 
+                                                    max="10000" 
+                                                    step="10" 
+                                                    value="100" 
+                                                    onchange="changeChartMaxRecords('airHumidity', this.value)"
+                                                    style="flex: 1; padding: 6px 8px; border: 1px solid var(--border-gray); border-radius: var(--radius-sm); font-size: 0.875rem;"
+                                                />
+                                                <span style="font-size: 0.75rem; color: var(--text-gray); white-space: nowrap;">registros</span>
+                                            </div>
+                                            <div style="margin-top: 4px; font-size: 0.7rem; color: var(--text-gray);">
+                                                Menos registros = gráfico mais rápido
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <canvas id="airHumidityChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="col-6">
+                    <div class="chart-container" id="temperatureChartContainer">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="fas fa-thermometer-half"></i>
+                                <span>Temperatura</span>
+                            </h3>
+                            <div class="chart-actions">
+                                <select class="filter-selector" id="temperatureFilter" onchange="updateTemperatureChart()">
+                                    <option value="24h">Últimas 24h</option>
+                                    <option value="7d">Últimos 7 dias</option>
+                                    <option value="30d">Últimos 30 dias</option>
+                                    <option value="all">Todos os dados</option>
+                                </select>
+                                <div style="position: relative;">
+                                    <button class="chart-control-btn" id="temperatureSettingsBtn" onclick="toggleChartSettings('temperature')">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                    <div class="chart-settings-dropdown" id="temperatureSettings">
+                                        <div class="chart-settings-section">
+                                            <label class="chart-settings-label">Tipo de Gráfico</label>
+                                            <div class="chart-type-buttons">
+                                                <button class="chart-type-btn active" data-type="line" onclick="changeChartType('temperature', 'line')">
+                                                    <i class="fas fa-chart-line"></i>
+                                                    <span>Linha</span>
+                                                </button>
+                                                <button class="chart-type-btn" data-type="bar" onclick="changeChartType('temperature', 'bar')">
+                                                    <i class="fas fa-chart-bar"></i>
+                                                    <span>Barra</span>
+                                                </button>
+                                                <button class="chart-type-btn" data-type="area" onclick="changeChartType('temperature', 'area')">
+                                                    <i class="fas fa-chart-area"></i>
+                                                    <span>Área</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="chart-settings-section">
+                                            <div class="chart-settings-toggle">
+                                                <span>Mostrar Grid</span>
+                                                <div class="toggle-switch active" onclick="toggleChartGrid('temperature')" id="temperatureGridToggle"></div>
+                                            </div>
+                                            <div class="chart-settings-toggle">
+                                                <span>Mostrar Pontos</span>
+                                                <div class="toggle-switch active" onclick="toggleChartPoints('temperature')" id="temperaturePointsToggle"></div>
+                                            </div>
+                                            <div class="chart-settings-toggle">
+                                                <span>Preencher Área</span>
+                                                <div class="toggle-switch active" onclick="toggleChartFill('temperature')" id="temperatureFillToggle"></div>
+                                            </div>
+                                        </div>
+                                        <div class="chart-settings-section">
+                                            <label class="chart-settings-label">Limite de Registros</label>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <input 
+                                                    type="number" 
+                                                    id="temperatureMaxRecords" 
+                                                    min="10" 
+                                                    max="10000" 
+                                                    step="10" 
+                                                    value="100" 
+                                                    onchange="changeChartMaxRecords('temperature', this.value)"
+                                                    style="flex: 1; padding: 6px 8px; border: 1px solid var(--border-gray); border-radius: var(--radius-sm); font-size: 0.875rem;"
+                                                />
+                                                <span style="font-size: 0.75rem; color: var(--text-gray); white-space: nowrap;">registros</span>
+                                            </div>
+                                            <div style="margin-top: 4px; font-size: 0.7rem; color: var(--text-gray);">
+                                                Menos registros = gráfico mais rápido
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <canvas id="temperatureChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -1737,6 +1918,8 @@
         // Variáveis globais dos gráficos
         let humidityChart = null;
         let rainChart = null;
+        let airHumidityChart = null;
+        let temperatureChart = null;
         let humidityAvgChart = null;
         let rainAvgChart = null;
         
@@ -2244,7 +2427,8 @@
             Chart.defaults.font.family = 'Inter, sans-serif';
             Chart.defaults.color = '#4a5568';
             
-            // Gráfico de Umidade
+            // Gráfico de Umidade - COMENTADO (gráfico oculto)
+            /*
             const humidityCtx = document.getElementById('humidityChart').getContext('2d');
             humidityChart = new Chart(humidityCtx, {
                 type: 'line',
@@ -2356,6 +2540,7 @@
                     }
                 }
             });
+            */
             
             // Gráfico de Chuva
             const rainCtx = document.getElementById('rainChart').getContext('2d');
@@ -2556,6 +2741,231 @@
                 }
             });
             
+            // Gráfico de Umidade do Ar
+            const airHumidityCtx = document.getElementById('airHumidityChart').getContext('2d');
+            airHumidityChart = new Chart(airHumidityCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Umidade do Ar (%)',
+                        data: [],
+                        borderColor: '#4299e1',
+                        backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    layout: {
+                        padding: {
+                            top: 10,
+                            bottom: 30,
+                            left: 10,
+                            right: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 12,
+                                    family: 'Inter, sans-serif'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            callbacks: {
+                                footer: function(context) {
+                                    // Adicionar informações de agrupamento se disponível
+                                    if (context.length > 0) {
+                                        const dataIndex = context[0].dataIndex;
+                                        const datasetIndex = context[0].datasetIndex;
+                                        const chart = context[0].chart;
+                                        const dataset = chart.data.datasets[datasetIndex];
+                                        
+                                        // Verificar se há informações de agrupamento armazenadas
+                                        if (dataset.agrupamentoInfo && dataset.agrupamentoInfo[dataIndex]) {
+                                            const info = dataset.agrupamentoInfo[dataIndex];
+                                            return [
+                                                '',
+                                                `📊 ${info.tipo}`,
+                                                `📈 ${info.leituras_agrupadas} leituras agrupadas`
+                                            ];
+                                        }
+                                    }
+                                    return [];
+                                }
+                            }
+                        },
+                        zoom: {
+                            zoom: {
+                                wheel: {
+                                    enabled: true
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x'
+                            },
+                            limits: {
+                                x: {min: 'original', max: 'original'}
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            display: true
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: 3,
+                            hoverRadius: 6
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de Temperatura
+            const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+            temperatureChart = new Chart(temperatureCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Temperatura (°C)',
+                        data: [],
+                        borderColor: '#e53e3e',
+                        backgroundColor: 'rgba(229, 62, 62, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    layout: {
+                        padding: {
+                            top: 10,
+                            bottom: 30,
+                            left: 10,
+                            right: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 12,
+                                    family: 'Inter, sans-serif'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            callbacks: {
+                                footer: function(context) {
+                                    // Adicionar informações de agrupamento se disponível
+                                    if (context.length > 0) {
+                                        const dataIndex = context[0].dataIndex;
+                                        const datasetIndex = context[0].datasetIndex;
+                                        const chart = context[0].chart;
+                                        const dataset = chart.data.datasets[datasetIndex];
+                                        
+                                        // Verificar se há informações de agrupamento armazenadas
+                                        if (dataset.agrupamentoInfo && dataset.agrupamentoInfo[dataIndex]) {
+                                            const info = dataset.agrupamentoInfo[dataIndex];
+                                            return [
+                                                '',
+                                                `📊 ${info.tipo}`,
+                                                `📈 ${info.leituras_agrupadas} leituras agrupadas`
+                                            ];
+                                        }
+                                    }
+                                    return [];
+                                }
+                            }
+                        },
+                        zoom: {
+                            zoom: {
+                                wheel: {
+                                    enabled: true
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x'
+                            },
+                            limits: {
+                                x: {min: 'original', max: 'original'}
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '°C';
+                                }
+                            }
+                        },
+                        x: {
+                            display: true
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: 3,
+                            hoverRadius: 6
+                        }
+                    }
+                }
+            });
+            
             // Aplicar preferências salvas do localStorage aos gráficos recém-criados
             loadChartPreferences();
             
@@ -2565,8 +2975,10 @@
         async function updateCharts() {
             // Aguardar carregamento dos gráficos em paralelo
             await Promise.all([
-                updateHumidityChart(),
-                updateRainChart()
+                // updateHumidityChart(), // DESATIVADO - gráfico oculto
+                updateRainChart(),
+                updateAirHumidityChart(),
+                updateTemperatureChart()
             ]);
             // updateHumidityAvgChart(); // DESATIVADO TEMPORARIAMENTE
             // updateRainAvgChart(); // DESATIVADO TEMPORARIAMENTE
@@ -2894,6 +3306,336 @@
                 rainChart.data.labels = [];
                 rainChart.data.datasets = [];
                 rainChart.update();
+            }
+        }
+        
+        async function updateAirHumidityChart() {
+            // Verificar se o gráfico foi inicializado
+            if (!airHumidityChart) {
+                console.warn('Gráfico de umidade do ar não foi inicializado ainda');
+                return;
+            }
+            
+            const filter = document.getElementById('airHumidityFilter').value;
+            
+            // Resetar zoom ao mudar de período
+            if (airHumidityChart.resetZoom) {
+                airHumidityChart.resetZoom();
+            }
+            
+            // Salvar período selecionado
+            chartConfigs.airHumidity.period = filter;
+            saveChartPreferences();
+            
+            const colors = [
+                '#4299e1', '#3182ce', '#2c5282', '#2a69ac', '#3182ce',
+                '#4299e1', '#63b3ed', '#90cdf4', '#bee3f8', '#ebf8ff'
+            ];
+            
+            try {
+                // Carregar dados da API com filtro de período
+                const companyId = window.adminViewCompanyId || adminCompanyId || AuthManager.getCompanyId();
+                const period = filter === 'all' ? null : filter;
+                const response = await ApiClient.getSensorsHistory(companyId, period);
+                
+                // Extrair array de dados da resposta da API
+                const historyData = response?.dados || response || [];
+                
+                // Processar dados para o gráfico
+                if (!historyData || historyData.length === 0) {
+                    airHumidityChart.data.labels = [];
+                    airHumidityChart.data.datasets = [];
+                    airHumidityChart.update();
+                    return;
+                }
+                
+                // Agrupar dados por device_key
+                const dataByDevice = {};
+                historyData.forEach(reading => {
+                    const deviceKey = reading.device_key;
+                    if (!dataByDevice[deviceKey]) {
+                        const sensorName = reading.sensor_id?.nome || 
+                                         sensorsDataByDevice[deviceKey]?.name || 
+                                         generateDeviceName(deviceKey).name;
+                        dataByDevice[deviceKey] = {
+                            name: sensorName,
+                            readings: []
+                        };
+                    }
+                    dataByDevice[deviceKey].readings.push(reading);
+                });
+                
+                // Coletar todos os timestamps únicos
+                let allTimestamps = new Set();
+                Object.values(dataByDevice).forEach(sensor => {
+                    sensor.readings.forEach(reading => {
+                        allTimestamps.add(reading.timestamp);
+                    });
+                });
+                
+                // Converter para array ordenado
+                let timestamps = Array.from(allTimestamps).sort();
+                
+                // Aplicar limite de registros APENAS se o filtro for '24h' (tempo real)
+                if (filter === '24h') {
+                    const maxRecords = chartConfigs.airHumidity.maxRecords || 100;
+                    if (timestamps.length > maxRecords) {
+                        timestamps = timestamps.slice(-maxRecords);
+                    }
+                }
+                
+                // Criar labels para o eixo X
+                airHumidityChart.data.labels = timestamps.map(timestamp => {
+                    const date = new Date(timestamp);
+                    if (filter === '24h') {
+                        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    } else if (filter === '7d') {
+                        return date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+                    } else if (filter === '30d') {
+                        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                    } else if (filter === 'all') {
+                        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' });
+                    } else {
+                        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                    }
+                });
+                
+                // Limpar datasets anteriores
+                airHumidityChart.data.datasets = [];
+                
+                // Criar dataset para cada sensor
+                let colorIndex = 0;
+                Object.entries(dataByDevice).forEach(([deviceKey, sensor]) => {
+                    // Criar array de dados e informações de agrupamento alinhados com os timestamps
+                    const data = [];
+                    const agrupamentoInfo = [];
+                    
+                    timestamps.forEach(timestamp => {
+                        const reading = sensor.readings.find(r => r.timestamp === timestamp);
+                        data.push(reading ? reading.umidade_ar : null);
+                        
+                        // Armazenar informações de agrupamento para cada ponto
+                        if (reading?.agrupamento) {
+                            agrupamentoInfo.push({
+                                tipo: reading.agrupamento.tipo,
+                                leituras_agrupadas: reading.agrupamento.leituras_agrupadas,
+                                data_local: reading.agrupamento.data_local
+                            });
+                        } else {
+                            agrupamentoInfo.push(null);
+                        }
+                    });
+                    
+                    const color = colors[colorIndex % colors.length];
+                    
+                    // Adicionar dataset para este sensor
+                    airHumidityChart.data.datasets.push({
+                        label: sensor.name,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        agrupamentoInfo: agrupamentoInfo
+                    });
+                    
+                    colorIndex++;
+                });
+                
+                // Aplicar preferências salvas (tipo de gráfico, fill, pontos, etc)
+                applyChartPreferencesToSingleChart('airHumidity');
+                
+                airHumidityChart.update('none');
+                
+                // Calcular e atualizar card de umidade do ar
+                let totalAirHumidity = 0;
+                let count = 0;
+                Object.values(dataByDevice).forEach(sensor => {
+                    if (sensor.readings.length > 0) {
+                        sensor.readings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        if (sensor.readings[0].umidade_ar !== null && sensor.readings[0].umidade_ar !== undefined) {
+                            totalAirHumidity += sensor.readings[0].umidade_ar;
+                            count++;
+                        }
+                    }
+                });
+                if (count > 0) {
+                    document.getElementById('airHumidity').textContent = (totalAirHumidity / count).toFixed(1) + '%';
+                }
+                
+            } catch (error) {
+                console.error('Erro ao atualizar gráfico de umidade do ar:', error);
+                airHumidityChart.data.labels = [];
+                airHumidityChart.data.datasets = [];
+                airHumidityChart.update();
+            }
+        }
+        
+        async function updateTemperatureChart() {
+            // Verificar se o gráfico foi inicializado
+            if (!temperatureChart) {
+                console.warn('Gráfico de temperatura não foi inicializado ainda');
+                return;
+            }
+            
+            const filter = document.getElementById('temperatureFilter').value;
+            
+            // Resetar zoom ao mudar de período
+            if (temperatureChart.resetZoom) {
+                temperatureChart.resetZoom();
+            }
+            
+            // Salvar período selecionado
+            chartConfigs.temperature.period = filter;
+            saveChartPreferences();
+            
+            const colors = [
+                '#e53e3e', '#c53030', '#9b2c2c', '#742a2a', '#e53e3e',
+                '#fc8181', '#feb2b2', '#fed7d7', '#fff5f5', '#fed7cc'
+            ];
+            
+            try {
+                // Carregar dados da API com filtro de período
+                const companyId = window.adminViewCompanyId || adminCompanyId || AuthManager.getCompanyId();
+                const period = filter === 'all' ? null : filter;
+                const response = await ApiClient.getSensorsHistory(companyId, period);
+                
+                // Extrair array de dados da resposta da API
+                const historyData = response?.dados || response || [];
+                
+                // Processar dados para o gráfico
+                if (!historyData || historyData.length === 0) {
+                    temperatureChart.data.labels = [];
+                    temperatureChart.data.datasets = [];
+                    temperatureChart.update();
+                    return;
+                }
+                
+                // Agrupar dados por device_key
+                const dataByDevice = {};
+                historyData.forEach(reading => {
+                    const deviceKey = reading.device_key;
+                    if (!dataByDevice[deviceKey]) {
+                        const sensorName = reading.sensor_id?.nome || 
+                                         sensorsDataByDevice[deviceKey]?.name || 
+                                         generateDeviceName(deviceKey).name;
+                        dataByDevice[deviceKey] = {
+                            name: sensorName,
+                            readings: []
+                        };
+                    }
+                    dataByDevice[deviceKey].readings.push(reading);
+                });
+                
+                // Coletar todos os timestamps únicos
+                let allTimestamps = new Set();
+                Object.values(dataByDevice).forEach(sensor => {
+                    sensor.readings.forEach(reading => {
+                        allTimestamps.add(reading.timestamp);
+                    });
+                });
+                
+                // Converter para array ordenado
+                let timestamps = Array.from(allTimestamps).sort();
+                
+                // Aplicar limite de registros APENAS se o filtro for '24h' (tempo real)
+                if (filter === '24h') {
+                    const maxRecords = chartConfigs.temperature.maxRecords || 100;
+                    if (timestamps.length > maxRecords) {
+                        timestamps = timestamps.slice(-maxRecords);
+                    }
+                }
+                
+                // Criar labels para o eixo X
+                temperatureChart.data.labels = timestamps.map(timestamp => {
+                    const date = new Date(timestamp);
+                    if (filter === '24h') {
+                        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    } else if (filter === '7d') {
+                        return date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+                    } else if (filter === '30d') {
+                        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                    } else if (filter === 'all') {
+                        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' });
+                    } else {
+                        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+                    }
+                });
+                
+                // Limpar datasets anteriores
+                temperatureChart.data.datasets = [];
+                
+                // Criar dataset para cada sensor
+                let colorIndex = 0;
+                Object.entries(dataByDevice).forEach(([deviceKey, sensor]) => {
+                    // Criar array de dados e informações de agrupamento alinhados com os timestamps
+                    const data = [];
+                    const agrupamentoInfo = [];
+                    
+                    timestamps.forEach(timestamp => {
+                        const reading = sensor.readings.find(r => r.timestamp === timestamp);
+                        data.push(reading ? reading.temperatura : null);
+                        
+                        // Armazenar informações de agrupamento para cada ponto
+                        if (reading?.agrupamento) {
+                            agrupamentoInfo.push({
+                                tipo: reading.agrupamento.tipo,
+                                leituras_agrupadas: reading.agrupamento.leituras_agrupadas,
+                                data_local: reading.agrupamento.data_local
+                            });
+                        } else {
+                            agrupamentoInfo.push(null);
+                        }
+                    });
+                    
+                    const color = colors[colorIndex % colors.length];
+                    
+                    // Adicionar dataset para este sensor
+                    temperatureChart.data.datasets.push({
+                        label: sensor.name,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                        agrupamentoInfo: agrupamentoInfo
+                    });
+                    
+                    colorIndex++;
+                });
+                
+                // Aplicar preferências salvas (tipo de gráfico, fill, pontos, etc)
+                applyChartPreferencesToSingleChart('temperature');
+                
+                temperatureChart.update('none');
+                
+                // Calcular e atualizar card de temperatura
+                let totalTemperature = 0;
+                let count = 0;
+                Object.values(dataByDevice).forEach(sensor => {
+                    if (sensor.readings.length > 0) {
+                        sensor.readings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        if (sensor.readings[0].temperatura !== null && sensor.readings[0].temperatura !== undefined) {
+                            totalTemperature += sensor.readings[0].temperatura;
+                            count++;
+                        }
+                    }
+                });
+                if (count > 0) {
+                    document.getElementById('temperature').textContent = (totalTemperature / count).toFixed(1) + '°C';
+                }
+                
+            } catch (error) {
+                console.error('Erro ao atualizar gráfico de temperatura:', error);
+                temperatureChart.data.labels = [];
+                temperatureChart.data.datasets = [];
+                temperatureChart.update();
             }
         }
         
@@ -3260,6 +4002,20 @@
                 maxRecords: 100,  // Quantidade máxima de registros a exibir
                 period: '24h'  // Período selecionado
             },
+            airHumidity: {
+                type: 'line',  // Pode ser: 'line', 'area', 'bar'
+                showGrid: true,
+                showPoints: true,
+                maxRecords: 100,  // Quantidade máxima de registros a exibir
+                period: '24h'  // Período selecionado
+            },
+            temperature: {
+                type: 'line',  // Pode ser: 'line', 'area', 'bar'
+                showGrid: true,
+                showPoints: true,
+                maxRecords: 100,  // Quantidade máxima de registros a exibir
+                period: '24h'  // Período selecionado
+            },
             humidityAvg: {
                 type: 'bar',  // Pode ser: 'line', 'area', 'bar'
                 showGrid: true,
@@ -3460,7 +4216,7 @@
             
             // Atualizar gráfico imediatamente
             if (chartName === 'humidity') {
-                updateHumidityChart();
+                // updateHumidityChart(); // DESATIVADO - gráfico oculto
             } else {
                 updateRainChart();
             }
@@ -3573,6 +4329,8 @@
             let chart;
             if (chartName === 'humidity') chart = humidityChart;
             else if (chartName === 'rain') chart = rainChart;
+            else if (chartName === 'airHumidity') chart = airHumidityChart;
+            else if (chartName === 'temperature') chart = temperatureChart;
             else if (chartName === 'humidityAvg') chart = humidityAvgChart;
             else if (chartName === 'rainAvg') chart = rainAvgChart;
             
