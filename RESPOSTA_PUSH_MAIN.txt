@@ -1,0 +1,74 @@
+╔════════════════════════════════════════════════════════════════════╗
+║  RESPOSTA: Como fazer "git push origin main" no GitHub?           ║
+╚════════════════════════════════════════════════════════════════════╝
+
+PERGUNTA:
+  "git push origin main - como eu faço isso aqui pelo github?"
+
+RESPOSTA RÁPIDA:
+  👉 A maneira mais FÁCIL é fazer o MERGE deste Pull Request no GitHub!
+
+═══════════════════════════════════════════════════════════════════════
+
+🎯 SOLUÇÃO RECOMENDADA (Sem usar git na linha de comando):
+
+   1️⃣  Vá para: https://github.com/vaconauta/AgroSensor/pulls
+   
+   2️⃣  Encontre o PR: "Merge master: Add air humidity..."
+   
+   3️⃣  Clique no botão verde "Merge pull request"
+   
+   4️⃣  Confirme clicando em "Confirm merge"
+   
+   ✅ PRONTO! A branch main foi atualizada automaticamente!
+
+═══════════════════════════════════════════════════════════════════════
+
+📖 Para instruções mais detalhadas, veja:
+   👉 COMO_ATUALIZAR_MAIN.md (neste repositório)
+
+═══════════════════════════════════════════════════════════════════════
+
+💡 POR QUE USAR O PULL REQUEST?
+
+   ✅ Mais seguro
+   ✅ Não precisa de senha/token
+   ✅ Mantém histórico limpo
+   ✅ Padrão recomendado do GitHub
+   ✅ Permite revisão antes do merge
+
+═══════════════════════════════════════════════════════════════════════
+
+📦 O QUE VAI SER ADICIONADO NA MAIN:
+
+   • Monitoramento de temperatura 🌡️
+   • Monitoramento de umidade do ar 💧
+   • Gráficos e visualizações 📊
+   • Scripts de automação (PowerShell) 📜
+   • Configuração npm (package.json) 📦
+
+   Total: 6 arquivos alterados (+2.831 linhas)
+
+═══════════════════════════════════════════════════════════════════════
+
+🔧 ALTERNATIVA (Se você preferir usar git na linha de comando):
+
+   # No seu computador local:
+   git checkout main
+   git merge master
+   git push origin main
+
+   ⚠️  ATENÇÃO: Você vai precisar de:
+   - Permissões de escrita no repositório
+   - Token de acesso pessoal (não funciona com senha)
+   - Git configurado corretamente
+
+   Token: https://github.com/settings/tokens
+
+═══════════════════════════════════════════════════════════════════════
+
+❓ DÚVIDAS?
+
+   Consulte o arquivo COMO_ATUALIZAR_MAIN.md para mais detalhes!
+
+═══════════════════════════════════════════════════════════════════════
