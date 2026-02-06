@@ -1949,13 +1949,16 @@
             
             // Agrupar dados por device_key
             rawData.forEach(reading => {
-                const deviceKey = reading.device_key;
+                const deviceKey = getReadingDeviceKey(reading);
+                if (!deviceKey) {
+                    return;
+                }
                 
                 if (!sensorsDataByDevice[deviceKey]) {
                     // Usar o nome do sensor da API se disponível, senão gerar nome
                     const sensorName = reading.sensor_id?.nome || null;
                     const deviceName = sensorName ? 
-                        { name: sensorName, location: `Dispositivo ${deviceKey.substring(0, 8)}` } : 
+                        { name: sensorName, location: `Dispositivo ${String(deviceKey).substring(0, 8)}` } : 
                         generateDeviceName(deviceKey);
                     
                     sensorsDataByDevice[deviceKey] = {
@@ -2003,9 +2006,32 @@
             });
         }
         
+        function getReadingDeviceKey(reading) {
+            if (!reading) {
+                return null;
+            }
+            if (reading.device_key) {
+                return reading.device_key;
+            }
+            if (reading.sensor_id && typeof reading.sensor_id === 'string') {
+                return reading.sensor_id;
+            }
+            if (reading.sensor_id && reading.sensor_id._id) {
+                return reading.sensor_id._id;
+            }
+            if (reading._id && reading._id.sensor_id) {
+                return reading._id.sensor_id;
+            }
+            return null;
+        }
+
         function generateDeviceName(deviceKey) {
+            if (!deviceKey) {
+                return { name: 'Sensor desconhecido', location: 'Area desconhecida' };
+            }
+            const keyString = String(deviceKey);
             // Extrair parte única do device_key para criar nomes mais amigáveis
-            const shortKey = deviceKey.split('-')[1]?.substring(0, 8) || deviceKey.substring(0, 8);
+            const shortKey = keyString.split('-')[1]?.substring(0, 8) || keyString.substring(0, 8);
             
             // Mapear para nomes mais descritivos baseados no hash
             const nameMap = {
@@ -2680,7 +2706,10 @@
                 // Agrupar dados por device_key
                 const dataByDevice = {};
                 historyData.forEach(reading => {
-                    const deviceKey = reading.device_key;
+                    const deviceKey = getReadingDeviceKey(reading);
+                    if (!deviceKey) {
+                        return;
+                    }
                     if (!dataByDevice[deviceKey]) {
                         // Usar o nome do sensor da API se disponível, senão usar o nome do sensorsDataByDevice ou gerar
                         const sensorName = reading.sensor_id?.nome || 
@@ -2842,7 +2871,10 @@
                 // Agrupar dados por device_key
                 const dataByDevice = {};
                 historyData.forEach(reading => {
-                    const deviceKey = reading.device_key;
+                    const deviceKey = getReadingDeviceKey(reading);
+                    if (!deviceKey) {
+                        return;
+                    }
                     if (!dataByDevice[deviceKey]) {
                         // Usar o nome do sensor da API se disponível, senão usar o nome do sensorsDataByDevice ou gerar
                         const sensorName = reading.sensor_id?.nome || 
@@ -2997,7 +3029,10 @@
                 const dataByDeviceAndDay = {};
                 
                 historyData.forEach(reading => {
-                    const deviceKey = reading.device_key;
+                    const deviceKey = getReadingDeviceKey(reading);
+                    if (!deviceKey) {
+                        return;
+                    }
                     const date = new Date(reading.timestamp);
                     const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                     
@@ -3109,7 +3144,10 @@
                 const dataByDeviceAndDay = {};
                 
                 historyData.forEach(reading => {
-                    const deviceKey = reading.device_key;
+                    const deviceKey = getReadingDeviceKey(reading);
+                    if (!deviceKey) {
+                        return;
+                    }
                     const date = new Date(reading.timestamp);
                     const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                     
@@ -3209,7 +3247,10 @@
                 }
                 
                 // Agrupar por device_key para evitar somar leituras duplicadas do mesmo sensor
-                const deviceKey = reading.device_key;
+                const deviceKey = getReadingDeviceKey(reading);
+                if (!deviceKey) {
+                    return;
+                }
                 if (!groups[key].byDevice[deviceKey]) {
                     groups[key].byDevice[deviceKey] = [];
                 }
