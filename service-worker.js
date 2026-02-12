@@ -1,5 +1,5 @@
 // Service Worker para PWA - WR10 Dashboard
-const CACHE_NAME = 'wr10-cache-v2';
+const CACHE_NAME = 'wr10-cache-v3';
 const OFFLINE_URL = '/offline.html';
 
 // Arquivos essenciais para cache inicial

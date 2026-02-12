@@ -495,13 +495,17 @@
                 setTimeout(() => {
                     console.log('🔍 Verificando redirecionamento...');
                     console.log('🔍 response.userType === "admin":', response.userType === 'admin');
+                    console.log('🔍 Modo PWA:', window.isPWA ? window.isPWA() : 'detectando...');
+                    
+                    // Usar caminho absoluto para funcionar no modo PWA
+                    const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
                     
                     if (response.userType === 'admin') {
                         console.log('✅ Redirecionando para admin dashboard');
-                        window.location.href = 'pages/admin-dashboard.html';
+                        window.location.href = baseUrl + 'pages/admin-dashboard.html';
                     } else {
                         console.log('➡️ Redirecionando para dashboard comum');
-                        window.location.href = 'pages/dashboard.html';
+                        window.location.href = baseUrl + 'pages/dashboard.html';
                     }
                 }, 1000);
                 
@@ -578,13 +582,17 @@
         if (AuthManager.isAuthenticated()) {
             const userType = AuthManager.getUserType();
             console.log('🔍 Usuário já autenticado, tipo:', userType);
+            console.log('🔍 Modo PWA:', window.isPWA ? window.isPWA() : 'detectando...');
+            
+            // Usar caminho absoluto para funcionar no modo PWA
+            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
             
             if (userType === 'admin') {
                 console.log('✅ Redirecionando admin para admin dashboard');
-                window.location.href = 'pages/admin-dashboard.html';
+                window.location.href = baseUrl + 'pages/admin-dashboard.html';
             } else {
                 console.log('➡️ Redirecionando usuário para dashboard comum');
-                window.location.href = 'pages/dashboard.html';
+                window.location.href = baseUrl + 'pages/dashboard.html';
             }
             return;
         }
