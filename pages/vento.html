@@ -134,15 +134,40 @@
             color: var(--text-gray);
         }
 
-        /* Compass para direção do vento */
+        /* Compass para direção do vento - Versão Melhorada */
         .wind-compass {
             width: 200px;
             height: 200px;
             margin: var(--spacing-lg) auto 0;
             position: relative;
-            border: 3px solid var(--border-gray);
             border-radius: 50%;
-            background: var(--light-gray);
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Círculos concêntricos de fundo */
+        .wind-compass::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            height: 85%;
+            border-radius: 50%;
+            border: 2px dashed rgba(124, 179, 66, 0.2);
+        }
+
+        .wind-compass::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            height: 60%;
+            border-radius: 50%;
+            border: 2px dashed rgba(124, 179, 66, 0.1);
         }
 
         .compass-face {
@@ -152,41 +177,116 @@
             border-radius: 50%;
         }
 
+        /* Centro decorativo da bússola */
+        .compass-face::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--accent-green), #2d7a3e);
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 2px rgba(255,255,255,0.3);
+            z-index: 10;
+        }
+
         .compass-direction {
             position: absolute;
             font-size: 0.875rem;
             font-weight: 700;
             color: var(--dark-gray);
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+            z-index: 5;
         }
 
-        .compass-direction.north { top: 8px; left: 50%; transform: translateX(-50%); }
-        .compass-direction.east { right: 8px; top: 50%; transform: translateY(-50%); }
-        .compass-direction.south { bottom: 8px; left: 50%; transform: translateX(-50%); }
-        .compass-direction.west { left: 8px; top: 50%; transform: translateY(-50%); }
+        .compass-direction.north { 
+            top: 6px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            font-size: 1rem;
+            color: var(--error);
+        }
+        .compass-direction.east { 
+            right: 12px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+        }
+        .compass-direction.south { 
+            bottom: 6px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+        }
+        .compass-direction.west { 
+            left: 12px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+        }
+
+        /* Pontos cardeais intermediários */
+        .compass-direction.northeast { 
+            top: 18px; 
+            right: 18px; 
+            font-size: 0.7rem;
+            color: var(--text-gray);
+        }
+        .compass-direction.southeast { 
+            bottom: 18px; 
+            right: 18px; 
+            font-size: 0.7rem;
+            color: var(--text-gray);
+        }
+        .compass-direction.southwest { 
+            bottom: 18px; 
+            left: 18px; 
+            font-size: 0.7rem;
+            color: var(--text-gray);
+        }
+        .compass-direction.northwest { 
+            top: 18px; 
+            left: 18px; 
+            font-size: 0.7rem;
+            color: var(--text-gray);
+        }
 
         .wind-arrow {
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 4px;
-            height: 70px;
-            background: var(--error);
-            border-radius: 2px;
-            transform-origin: bottom center;
-            transform: translate(-50%, -100%) rotate(0deg);
-            transition: transform 0.5s ease;
+            width: 0;
+            height: 0;
+            transform-origin: 50% 50%;
+            transform: translate(-50%, -50%) rotate(0deg);
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 8;
         }
 
+        /* Seta principal */
         .wind-arrow::before {
             content: '';
             position: absolute;
-            top: -8px;
-            left: -6px;
+            top: -70px;
+            left: -3px;
+            width: 6px;
+            height: 70px;
+            background: linear-gradient(180deg, var(--error) 0%, #c53030 100%);
+            border-radius: 3px;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Ponta da seta */
+        .wind-arrow::after {
+            content: '';
+            position: absolute;
+            top: -82px;
+            left: -10px;
             width: 0;
             height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 16px solid var(--error);
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 18px solid var(--error);
+            filter: drop-shadow(0 2px 4px rgba(239, 68, 68, 0.3));
         }
 
         /* Gráficos de vento */
@@ -203,8 +303,8 @@
             }
             
             .wind-compass {
-                width: 150px;
-                height: 150px;
+                width: 180px;
+                height: 180px;
             }
         }
 
@@ -302,6 +402,16 @@
             .wind-rose {
                 width: 300px;
                 height: 300px;
+            }
+            
+            /* Título ainda menor em telas muito pequenas */
+            .page-title-wind {
+                font-size: 1.25rem !important;
+                margin-left: 45px !important;
+            }
+            
+            .page-title-wind .fas.fa-wind {
+                font-size: 1.1rem;
             }
         }
 
@@ -406,6 +516,17 @@
         @media (max-width: 768px) {
             .btn-hamburger {
                 left: var(--spacing-sm);
+            }
+            
+            /* Ajuste de título no mobile */
+            .page-title-wind {
+                font-size: 1.4rem !important;
+                margin-left: 50px !important;
+            }
+            
+            .page-title-wind .title-text {
+                display: inline-block;
+                white-space: nowrap;
             }
         }
 
@@ -529,9 +650,9 @@
                         <div class="hamburger-line"></div>
                     </button>
                     <div>
-                        <h1 style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--dark-gray);">
+                        <h1 class="page-title-wind" style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--dark-gray);">
                             <i class="fas fa-wind" style="color: var(--accent-green); margin-right: var(--spacing-sm);"></i>
-                            Monitoramento de Vento
+                            <span class="title-text">Monitoramento de Vento</span>
                         </h1>
                         <p style="margin: var(--spacing-xs) 0 0 0; color: var(--text-gray); font-size: 0.875rem;">
                             Acompanhe velocidade, direção e rajadas de vento em tempo real
@@ -589,7 +710,11 @@
                                     <div class="compass-direction north">N</div>
                                     <div class="compass-direction east">E</div>
                                     <div class="compass-direction south">S</div>
-                                    <div class="compass-direction west">W</div>
+                                    <div class="compass-direction west">O</div>
+                                    <div class="compass-direction northeast">NE</div>
+                                    <div class="compass-direction southeast">SE</div>
+                                    <div class="compass-direction southwest">SO</div>
+                                    <div class="compass-direction northwest">NO</div>
                                     <div class="wind-arrow" id="windArrow"></div>
                                 </div>
                             </div>
@@ -616,7 +741,7 @@
                     </div>
                 </div>
 
-                <div class="wind-stat-card">
+                <div class="wind-stat-card" style="display: none;">
                     <div class="wind-stat-header">
                         <div class="wind-stat-icon pressure">
                             <i class="fas fa-thermometer-half"></i>
@@ -708,45 +833,89 @@
             return directions[Math.round(degrees / 22.5) % 16];
         }
 
-        // Função para buscar dados históricos da API
-        async function fetchWindData(period = '24h') {
+        // Cache de dados históricos para otimização
+        const windDataCache = {
+            '24h': { data: null, timestamp: null, loading: false },
+            '7d': { data: null, timestamp: null, loading: false },
+            '30d': { data: null, timestamp: null, loading: false }
+        };
+
+        // Função para buscar dados históricos da API (com cache)
+        async function fetchWindData(period = '24h', forceRefresh = false) {
             try {
-                LoadingManager.show();
+                const now = Date.now();
+                const cache = windDataCache[period];
                 
-                const companyId = window.adminViewCompanyId || AuthManager.getCompanyId();
-                const data = await ApiClient.getSensorsHistory(companyId, period);
+                // Verificar se já temos os dados deste período em cache (válido por 3 segundos)
+                const cacheValid = cache.data && 
+                                  cache.timestamp &&
+                                  (now - cache.timestamp < 3000);
                 
-                console.log('Dados recebidos da API:', data);
-                
-                if (data && data.dados && data.dados.length > 0) {
-                    // Processar dados históricos
-                    windData.history = data.dados.map(item => {
-                        const direcaoCardinal = item.direcao_vento_cardinal || '-';
-                        const direcaoGraus = WindUtils.getWindRotation(direcaoCardinal);
-                        
-                        return {
-                            timestamp: item.timestamp,
-                            speed: item.velocidade_vento || 0,
-                            gust: item.velocidade_vento ? item.velocidade_vento * 1.3 : 0,
-                            direction: direcaoGraus,
-                            directionCardinal: direcaoCardinal,
-                            pressure: item.pressao || 0,
-                            temperature: item.temperatura || 0,
-                            humidity: item.umidade_solo || 0
-                        };
-                    });
-                    
-                    console.log(`${windData.history.length} leituras processadas`);
-                    
-                    // Atualizar dados atuais com a leitura mais recente
+                if (cacheValid && !forceRefresh) {
+                    console.log(`📦 Usando cache (período: ${period}, ${cache.data.length} registros)`);
+                    windData.history = cache.data;
                     extractCurrentDataFromHistory();
-                } else {
-                    console.warn('Nenhum dado de vento disponível na API');
-                    windData.history = [];
+                    return cache.data;
                 }
                 
-                LoadingManager.hide();
-                return windData.history;
+                // Se já está carregando, aguardar
+                if (cache.loading) {
+                    console.log(`⏳ Aguardando requisição em andamento (${period})...`);
+                    while (cache.loading) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                    windData.history = cache.data;
+                    extractCurrentDataFromHistory();
+                    return cache.data;
+                }
+                
+                try {
+                    cache.loading = true;
+                    LoadingManager.show();
+                    
+                    const companyId = window.adminViewCompanyId || AuthManager.getCompanyId();
+                    const data = await ApiClient.getSensorsHistory(companyId, period);
+                    
+                    console.log('Dados recebidos da API:', data);
+                    
+                    if (data && data.dados && data.dados.length > 0) {
+                        // Processar dados históricos
+                        windData.history = data.dados.map(item => {
+                            const direcaoCardinal = item.direcao_vento_cardinal || '-';
+                            const direcaoGraus = WindUtils.getWindRotation(direcaoCardinal);
+                            
+                            return {
+                                timestamp: item.timestamp,
+                                speed: item.velocidade_vento || 0,
+                                gust: item.velocidade_vento ? item.velocidade_vento * 1.3 : 0,
+                                direction: direcaoGraus,
+                                directionCardinal: direcaoCardinal,
+                                pressure: item.pressao || 0,
+                                temperature: item.temperatura || 0,
+                                humidity: item.umidade_solo || 0
+                            };
+                        });
+                        
+                        // Armazenar no cache
+                        cache.data = windData.history;
+                        cache.timestamp = Date.now();
+                        
+                        console.log(`${windData.history.length} leituras processadas`);
+                        
+                        // Atualizar dados atuais com a leitura mais recente
+                        extractCurrentDataFromHistory();
+                    } else {
+                        console.warn('Nenhum dado de vento disponível na API');
+                        windData.history = [];
+                        cache.data = [];
+                        cache.timestamp = Date.now();
+                    }
+                    
+                    LoadingManager.hide();
+                    return windData.history;
+                } finally {
+                    cache.loading = false;
+                }
             } catch (error) {
                 console.error('Erro ao buscar dados de vento:', error);
                 LoadingManager.hide();
@@ -996,7 +1165,8 @@
             if (!arrow) return;
             
             const direction = windData.current.direction;
-            arrow.style.transform = `translate(-50%, -100%) rotate(${direction}deg)`;
+            // A seta agora aponta para onde o vento está indo (rotação direta)
+            arrow.style.transform = `translate(-50%, -50%) rotate(${direction}deg)`;
             
             // Atualizar texto da direção
             const directionElement = document.getElementById('currentWindDirection');
@@ -1025,11 +1195,11 @@
                 gustElement.textContent = windData.current.gust.toFixed(1);
             }
             
-            // Pressão
-            const pressureElement = document.getElementById('atmosphericPressure');
-            if (pressureElement) {
-                pressureElement.textContent = windData.current.pressure.toFixed(1);
-            }
+            // Pressão (card oculto)
+            // const pressureElement = document.getElementById('atmosphericPressure');
+            // if (pressureElement) {
+            //     pressureElement.textContent = windData.current.pressure.toFixed(1);
+            // }
             
             // Atualizar estatísticas de tendência se houver dados históricos
             if (windData.history.length > 1) {
@@ -1068,7 +1238,7 @@
                 updateDirectionChart();
                 
                 LoadingManager.hide();
-                notificationManager.success('Atualizado', 'Dados de vento atualizados com sucesso');
+                // notificationManager.success('Atualizado', 'Dados de vento atualizados com sucesso');
             } catch (error) {
                 console.error('Erro ao atualizar dados:', error);
                 LoadingManager.hide();
@@ -1430,6 +1600,33 @@
                 });
             }
         });
+
+        // ===== OTIMIZAÇÕES DE PERFORMANCE =====
+        
+        // Handler de resize dos gráficos
+        function handleResize() {
+            // Ajustar gráficos quando a tela redimensiona
+            if (speedChart) {
+                speedChart.resize();
+            }
+            if (directionChart) {
+                directionChart.resize();
+            }
+            if (windRoseChart) {
+                windRoseChart.resize();
+            }
+        }
+        
+        // Debounce para otimizar performance no resize
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(handleResize, 150);
+        });
+        
+        // Executar uma vez no carregamento
+        handleResize();
+
     </script>
 </body>
 </html>
