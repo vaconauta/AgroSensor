@@ -405,15 +405,7 @@
                 height: 320px;
             }
             
-            /* Título ainda menor em telas muito pequenas */
-            .page-title-wind {
-                font-size: 1.25rem !important;
-                margin-left: 45px !important;
-            }
-            
-            .page-title-wind .fas.fa-wind {
-                font-size: 1.1rem;
-            }
+
         }
 
         /* Links desabilitados */
@@ -506,28 +498,62 @@
         /* Responsividade */
         @media (max-width: 1024px) {
             .btn-hamburger {
-                display: flex;
-                position: absolute;
-                left: var(--spacing-md);
-                top: 50%;
-                transform: translateY(-50%);
+                display: flex !important;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%) !important;
+                transition: transform 0.3s ease !important;
+                z-index: 1001 !important;
+                position: fixed !important;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0) !important;
+                box-shadow: var(--shadow-xl) !important;
+            }
+            
+            .main-content {
+                margin-left: 0 !important;
+                transition: margin-left 0.3s ease !important;
             }
         }
         
+        /* Regras adicionais para garantir funcionamento */
+        @media (max-width: 1024px) {
+            .sidebar {
+                left: 0 !important;
+                top: 0 !important;
+                width: 280px !important;
+                height: 100vh !important;
+                background: var(--white) !important;
+            }
+        }
+        
+        /* Melhorias adicionais para telas muito pequenas */
         @media (max-width: 768px) {
+            .content-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .content-header p {
+                font-size: 0.875rem;
+            }
+            
             .btn-hamburger {
-                left: var(--spacing-sm);
+                width: 40px;
+                height: 40px;
             }
-            
-            /* Ajuste de título no mobile */
-            .page-title-wind {
-                font-size: 1.4rem !important;
-                margin-left: 50px !important;
-            }
-            
-            .page-title-wind .title-text {
-                display: inline-block;
-                white-space: nowrap;
+        }
+        
+        /* CSS SIMPLIFICADO - só o essencial */
+        @media (max-width: 1024px) {
+            .btn-hamburger {
+                display: flex !important;
+                position: absolute !important;
+                right: 20px !important;
+                top: 20px !important;
+                z-index: 100 !important;
             }
         }
 
@@ -644,31 +670,30 @@
     <main class="main-content">
         <div class="content-header">
             <div class="d-flex justify-content-between align-items-start">
-                <div style="display: flex; align-items: center; gap: var(--spacing-md); flex: 1;">
-                    <button class="btn-hamburger" data-sidebar-toggle>
-                        <div class="hamburger-line"></div>
-                        <div class="hamburger-line"></div>
-                        <div class="hamburger-line"></div>
-                    </button>
-                    <div>
-                        <h1 class="page-title-wind" style="margin: 0; font-size: 1.75rem; font-weight: 700; color: var(--dark-gray);">
-                            <i class="fas fa-wind" style="color: var(--accent-green); margin-right: var(--spacing-sm);"></i>
-                            <span class="title-text">Monitoramento de Vento</span>
-                        </h1>
-                        <p style="margin: var(--spacing-xs) 0 0 0; color: var(--text-gray); font-size: 0.875rem;">
-                            Acompanhe velocidade, direção e rajadas de vento em tempo real
-                        </p>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h1 class="mb-1">Monitoramento de Vento</h1>
+                            <p class="mb-0 text-muted">Acompanhe velocidade, direção e rajadas de vento em tempo real</p>
+                        </div>
+                        <div class="ml-auto">
+                            <button class="btn-hamburger" data-sidebar-toggle aria-label="Abrir/Fechar Menu">
+                                <span class="hamburger-line"></span>
+                                <span class="hamburger-line"></span>
+                                <span class="hamburger-line"></span>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="ml-auto" style="display: flex; gap: var(--spacing-sm);">
-                    <button class="btn btn-secondary" onclick="exportWindData()">
-                        <i class="fas fa-download"></i>
-                        <span>Exportar</span>
-                    </button>
-                    <button class="btn btn-primary" onclick="refreshWindData()">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Atualizar</span>
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-secondary btn-sm" onclick="exportWindData()">
+                            <i class="fas fa-download"></i>
+                            Exportar
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="refreshWindData()">
+                            <i class="fas fa-sync-alt"></i>
+                            Atualizar
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
