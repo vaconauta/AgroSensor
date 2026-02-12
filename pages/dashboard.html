@@ -2394,9 +2394,9 @@
         // Função para atualizar card de temperatura do ar e umidade relativa
         async function updateAirTemperatureAndHumidityCard() {
             try {
-                // Buscar dados recentes
-                const companyId = window.adminViewCompanyId || adminCompanyId || AuthManager.getCompanyId();
-                const data = await ApiClient.getSensorsHistory(companyId, '24h');
+                // Usar cache compartilhado em vez de nova requisição
+                const historyData = await fetchSharedHistoryData('24h');
+                const data = { dados: historyData };
                 
                 if (data && data.dados && data.dados.length > 0) {
                     // Calcular média de temperatura do ar
@@ -2450,9 +2450,9 @@
         // Função para atualizar card de vento no dashboard
         async function updateWindCard() {
             try {
-                // Buscar dados recentes
-                const companyId = window.adminViewCompanyId || adminCompanyId || AuthManager.getCompanyId();
-                const data = await ApiClient.getSensorsHistory(companyId, '24h');
+                // Usar cache compartilhado em vez de nova requisição
+                const historyData = await fetchSharedHistoryData('24h');
+                const data = { dados: historyData };
                 
                 if (data && data.dados && data.dados.length > 0) {
                     // Filtrar apenas dados com vento válido
@@ -4085,10 +4085,18 @@
             ];
             
             try {
-                const companyId = window.adminViewCompanyId || adminCompanyId || AuthManager.getCompanyId();
                 const period = filter === 'all' ? null : filter;
-                const response = await ApiClient.getSensorsHistory(companyId, period);
-                const historyData = response?.dados || response || [];
+                
+                // Usar cache compartilhado para períodos conhecidos
+                let historyData;
+                if (period && ['24h', '7d', '30d'].includes(period)) {
+                    historyData = await fetchSharedHistoryData(period);
+                } else {
+                    // Para 'all' ou períodos especiais, fazer requisição direta
+                    const companyId = window.adminViewCompanyId || adminCompanyId || AuthManager.getCompanyId();
+                    const response = await ApiClient.getSensorsHistory(companyId, period);
+                    historyData = response?.dados || response || [];
+                }
                 
                 if (!historyData || historyData.length === 0) {
                     humidityAvgChart.data.labels = [];
@@ -4200,10 +4208,18 @@
             ];
             
             try {
-                const companyId = window.adminViewCompanyId || adminCompanyId || AuthManager.getCompanyId();
                 const period = filter === 'all' ? null : filter;
-                const response = await ApiClient.getSensorsHistory(companyId, period);
-                const historyData = response?.dados || response || [];
+                
+                // Usar cache compartilhado para períodos conhecidos
+                let historyData;
+                if (period && ['24h', '7d', '30d'].includes(period)) {
+                    historyData = await fetchSharedHistoryData(period);
+                } else {
+                    // Para 'all' ou períodos especiais, fazer requisição direta
+                    const companyId = window.adminViewCompanyId || adminCompanyId || AuthManager.getCompanyId();
+                    const response = await ApiClient.getSensorsHistory(companyId, period);
+                    historyData = response?.dados || response || [];
+                }
                 
                 if (!historyData || historyData.length === 0) {
                     rainAvgChart.data.labels = [];
