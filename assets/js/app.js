@@ -374,6 +374,8 @@ class ApiClient {
                 'Content-Type': 'application/json',
                 ...options.headers
             },
+            mode: 'cors', // Explicitamente usar CORS
+            credentials: 'omit', // Não enviar cookies (evita problemas CORS)
             ...options
         };
         
@@ -381,8 +383,24 @@ class ApiClient {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
         
+        // Log detalhado para debug
+        console.log('🌐 API Request:', {
+            endpoint,
+            url,
+            method: config.method || 'GET',
+            hasAuth: !!token
+        });
+        
         try {
             const response = await fetch(url, config);
+            
+            // Log da resposta
+            console.log('📡 API Response:', {
+                status: response.status,
+                ok: response.ok,
+                url: response.url
+            });
+            
             const data = await response.json();
             
             if (!response.ok) {
@@ -398,7 +416,21 @@ class ApiClient {
             
             return data;
         } catch (error) {
-            console.error(`API Error (${endpoint}):`, error);
+            // Log detalhado do erro
+            console.error(`❌ API Error (${endpoint}):`, {
+                message: error.message,
+                type: error.name,
+                endpoint,
+                url
+            });
+            
+            // Verificar se é erro de CORS
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                console.error('🚫 Possível erro de CORS ou rede');
+                console.error('💡 Verifique se a API permite requisições do domínio:', window.location.origin);
+                throw new Error('Erro de conexão com a API. Verifique se o backend está online e configurado para aceitar requisições deste domínio.');
+            }
+            
             throw error;
         }
     }
