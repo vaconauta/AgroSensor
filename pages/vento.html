@@ -834,89 +834,45 @@
             return directions[Math.round(degrees / 22.5) % 16];
         }
 
-        // Cache de dados históricos para otimização
-        const windDataCache = {
-            '24h': { data: null, timestamp: null, loading: false },
-            '7d': { data: null, timestamp: null, loading: false },
-            '30d': { data: null, timestamp: null, loading: false }
-        };
-
-        // Função para buscar dados históricos da API (com cache)
-        async function fetchWindData(period = '24h', forceRefresh = false) {
+        // Função para buscar dados históricos da API (sem cache - sempre dados frescos)
+        async function fetchWindData(period = '24h') {
             try {
-                const now = Date.now();
-                const cache = windDataCache[period];
+                LoadingManager.show();
                 
-                // Verificar se já temos os dados deste período em cache (válido por 3 segundos)
-                const cacheValid = cache.data && 
-                                  cache.timestamp &&
-                                  (now - cache.timestamp < 3000);
+                const companyId = window.adminViewCompanyId || AuthManager.getCompanyId();
+                const data = await ApiClient.getSensorsHistory(companyId, period);
                 
-                if (cacheValid && !forceRefresh) {
-                    console.log(`📦 Usando cache (período: ${period}, ${cache.data.length} registros)`);
-                    windData.history = cache.data;
+                console.log('Dados recebidos da API:', data);
+                
+                if (data && data.dados && data.dados.length > 0) {
+                    // Processar dados históricos
+                    windData.history = data.dados.map(item => {
+                        const direcaoCardinal = item.direcao_vento_cardinal || '-';
+                        const direcaoGraus = WindUtils.getWindRotation(direcaoCardinal);
+                        
+                        return {
+                            timestamp: item.timestamp,
+                            speed: item.velocidade_vento || 0,
+                            gust: item.velocidade_vento ? item.velocidade_vento * 1.3 : 0,
+                            direction: direcaoGraus,
+                            directionCardinal: direcaoCardinal,
+                            pressure: item.pressao || 0,
+                            temperature: item.temperatura || 0,
+                            humidity: item.umidade_solo || 0
+                        };
+                    });
+                    
+                    console.log(`${windData.history.length} leituras processadas`);
+                    
+                    // Atualizar dados atuais com a leitura mais recente
                     extractCurrentDataFromHistory();
-                    return cache.data;
+                } else {
+                    console.warn('Nenhum dado de vento disponível na API');
+                    windData.history = [];
                 }
                 
-                // Se já está carregando, aguardar
-                if (cache.loading) {
-                    console.log(`⏳ Aguardando requisição em andamento (${period})...`);
-                    while (cache.loading) {
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                    }
-                    windData.history = cache.data;
-                    extractCurrentDataFromHistory();
-                    return cache.data;
-                }
-                
-                try {
-                    cache.loading = true;
-                    LoadingManager.show();
-                    
-                    const companyId = window.adminViewCompanyId || AuthManager.getCompanyId();
-                    const data = await ApiClient.getSensorsHistory(companyId, period);
-                    
-                    console.log('Dados recebidos da API:', data);
-                    
-                    if (data && data.dados && data.dados.length > 0) {
-                        // Processar dados históricos
-                        windData.history = data.dados.map(item => {
-                            const direcaoCardinal = item.direcao_vento_cardinal || '-';
-                            const direcaoGraus = WindUtils.getWindRotation(direcaoCardinal);
-                            
-                            return {
-                                timestamp: item.timestamp,
-                                speed: item.velocidade_vento || 0,
-                                gust: item.velocidade_vento ? item.velocidade_vento * 1.3 : 0,
-                                direction: direcaoGraus,
-                                directionCardinal: direcaoCardinal,
-                                pressure: item.pressao || 0,
-                                temperature: item.temperatura || 0,
-                                humidity: item.umidade_solo || 0
-                            };
-                        });
-                        
-                        // Armazenar no cache
-                        cache.data = windData.history;
-                        cache.timestamp = Date.now();
-                        
-                        console.log(`${windData.history.length} leituras processadas`);
-                        
-                        // Atualizar dados atuais com a leitura mais recente
-                        extractCurrentDataFromHistory();
-                    } else {
-                        console.warn('Nenhum dado de vento disponível na API');
-                        windData.history = [];
-                        cache.data = [];
-                        cache.timestamp = Date.now();
-                    }
-                    
-                    LoadingManager.hide();
-                    return windData.history;
-                } finally {
-                    cache.loading = false;
-                }
+                LoadingManager.hide();
+                return windData.history;
             } catch (error) {
                 console.error('Erro ao buscar dados de vento:', error);
                 LoadingManager.hide();

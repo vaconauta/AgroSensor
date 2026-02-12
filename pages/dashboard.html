@@ -2062,12 +2062,12 @@
         let sensorsDataByDevice = {};
         let latestReadings = [];
         
-        // Sistema de dados compartilhados entre gráficos (reduz requisições)
-        let sharedHistoryData = {
-            '24h': { data: null, timestamp: null, loading: false },
-            '7d': { data: null, timestamp: null, loading: false },
-            '30d': { data: null, timestamp: null, loading: false },
-            'all': { data: null, timestamp: null, loading: false }
+        // Sistema para evitar requisições duplicadas simultâneas (sem cache)
+        let pendingRequests = {
+            '24h': null,
+            '7d': null,
+            '30d': null,
+            'all': null
         };
         
         // Inicialização da página
@@ -2185,60 +2185,43 @@
             }
         }
         
-        // Função para buscar dados compartilhados (reduz requisições de 5 para 1-4)
-        async function fetchSharedHistoryData(period = '24h', forceRefresh = false) {
+        // Função para buscar dados sem cache (sempre dados frescos)
+        // Evita apenas requisições duplicadas simultâneas
+        async function fetchSharedHistoryData(period = '24h') {
             const companyId = window.adminViewCompanyId || adminCompanyId || AuthManager.getCompanyId();
             
-            // Garantir que o período existe no cache
-            if (!sharedHistoryData[period]) {
-                sharedHistoryData[period] = { data: null, timestamp: null, loading: false };
-            }
-            
-            const cache = sharedHistoryData[period];
-            
-            // Verificar se já temos os dados deste período (cache local)
-            const now = Date.now();
-            const cacheValid = cache.data && 
-                              cache.timestamp &&
-                              (now - cache.timestamp < 3000); // Cache de 3 segundos
-            
-            if (cacheValid && !forceRefresh) {
-                console.log(`📦 Usando cache (período: ${period}, ${cache.data.length} registros)`);
-                return cache.data;
-            }
-            
-            // Evitar requisições duplicadas simultâneas
-            if (cache.loading) {
+            // Se já há uma requisição em andamento para este período, aguardar ela
+            if (pendingRequests[period]) {
                 console.log(`⏳ Aguardando requisição em andamento (${period})...`);
-                // Aguardar até que a requisição termine
-                while (cache.loading) {
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                }
-                return cache.data;
+                return await pendingRequests[period];
             }
             
-            try {
-                cache.loading = true;
-                console.log(`🌐 Buscando dados da API (período: ${period})`);
-                
-                const periodParam = period === 'all' ? null : period;
-                const response = await ApiClient.getSensorsHistory(companyId, periodParam);
-                const historyData = response?.dados || response || [];
-                
-                // Armazenar no cache específico do período
-                cache.data = historyData;
-                cache.timestamp = Date.now();
-                
-                console.log(`✓ Dados carregados (${historyData.length} registros)`);
-                
-                return historyData;
-                
-            } catch (error) {
-                console.error('Erro ao buscar dados compartilhados:', error);
-                throw error;
-            } finally {
-                cache.loading = false;
-            }
+            // Criar nova requisição
+            const requestPromise = (async () => {
+                try {
+                    console.log(`🌐 Buscando dados em tempo real da API (período: ${period})`);
+                    
+                    const periodParam = period === 'all' ? null : period;
+                    const response = await ApiClient.getSensorsHistory(companyId, periodParam);
+                    const historyData = response?.dados || response || [];
+                    
+                    console.log(`✓ Dados carregados (${historyData.length} registros)`);
+                    
+                    return historyData;
+                    
+                } catch (error) {
+                    console.error('Erro ao buscar dados:', error);
+                    throw error;
+                } finally {
+                    // Limpar requisição pendente
+                    pendingRequests[period] = null;
+                }
+            })();
+            
+            // Armazenar promise pendente
+            pendingRequests[period] = requestPromise;
+            
+            return await requestPromise;
         }
         
         function processMultiSensorData(rawData) {
