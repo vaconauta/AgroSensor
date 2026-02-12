@@ -376,14 +376,15 @@
         }
 
         .wind-rose {
-            width: 400px;
-            height: 400px;
+            width: 450px;
+            height: 450px;
             max-width: 100%;
             margin: 0 auto;
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: var(--spacing-md);
         }
 
         .wind-rose canvas {
@@ -393,15 +394,15 @@
 
         @media (max-width: 768px) {
             .wind-rose {
-                width: 350px;
-                height: 350px;
+                width: 380px;
+                height: 380px;
             }
         }
 
         @media (max-width: 480px) {
             .wind-rose {
-                width: 300px;
-                height: 300px;
+                width: 320px;
+                height: 320px;
             }
             
             /* Título ainda menor em telas muito pequenas */
@@ -1113,6 +1114,14 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: true,
+                    layout: {
+                        padding: {
+                            top: 20,
+                            bottom: 20,
+                            left: 20,
+                            right: 20
+                        }
+                    },
                     plugins: {
                         legend: {
                             position: 'bottom',
@@ -1148,10 +1157,22 @@
                             beginAtZero: true,
                             ticks: {
                                 display: true,
-                                stepSize: 1
+                                stepSize: 1,
+                                backdropColor: 'rgba(255, 255, 255, 0.8)',
+                                backdropPadding: 4,
+                                font: {
+                                    size: 11
+                                }
                             },
                             grid: {
                                 color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                },
+                                padding: 10
                             }
                         }
                     }
