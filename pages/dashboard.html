@@ -4395,15 +4395,41 @@
                 });
             }
             
-            // Atualização automática a cada intervalo configurado (padrão: 5 minutos)
-            if (typeof loadDashboardData === 'function') {
+            // ===== ATUALIZAÇÃO AUTOMÁTICA COM INTERVALO DINÂMICO =====
+            let autoRefreshTimer = null;
+            
+            function startAutoRefresh() {
+                if (typeof loadDashboardData !== 'function') return;
+                
+                // Limpar timer anterior se existir
+                if (autoRefreshTimer) {
+                    clearInterval(autoRefreshTimer);
+                    autoRefreshTimer = null;
+                }
+                
                 // Carregar intervalo do localStorage ou usar 5 minutos como padrão
                 const savedInterval = localStorage.getItem('dashboardRefreshInterval');
                 const refreshInterval = savedInterval ? parseInt(savedInterval) : 5 * 60 * 1000;
                 
-                console.log(`Dashboard será atualizado automaticamente a cada ${refreshInterval}ms (${refreshInterval / 60000} minutos)`);
+                console.log(`🔄 Dashboard será atualizado automaticamente a cada ${refreshInterval}ms (${refreshInterval / 60000} minutos)`);
                 
-                setInterval(loadDashboardData, refreshInterval);
+                // Iniciar novo timer
+                autoRefreshTimer = setInterval(loadDashboardData, refreshInterval);
+            }
+            
+            // Iniciar atualização automática
+            startAutoRefresh();
+            
+            // Escutar mudanças de configuração de outras abas
+            if ('BroadcastChannel' in window) {
+                const configChannel = new BroadcastChannel('dashboard_config');
+                
+                configChannel.onmessage = (event) => {
+                    if (event.data.type === 'refresh_interval_updated') {
+                        console.log('📡 Recebida atualização de intervalo:', event.data.interval);
+                        startAutoRefresh();
+                    }
+                };
             }
             
             // Fechar dropdowns ao clicar fora

@@ -903,6 +903,16 @@
             // Salvar no localStorage
             localStorage.setItem('dashboardRefreshInterval', intervalMs.toString());
             
+            // Notificar outras abas sobre a mudança via BroadcastChannel
+            if ('BroadcastChannel' in window) {
+                const configChannel = new BroadcastChannel('dashboard_config');
+                configChannel.postMessage({
+                    type: 'refresh_interval_updated',
+                    interval: intervalMs
+                });
+                configChannel.close();
+            }
+            
             showNotification(
                 'success',
                 'Configuração salva!', 
