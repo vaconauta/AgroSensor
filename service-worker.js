@@ -1,5 +1,5 @@
 // Service Worker para PWA - WR10 Dashboard
-const CACHE_NAME = 'wr10-cache-v1';
+const CACHE_NAME = 'wr10-cache-v2';
 const OFFLINE_URL = '/offline.html';
 
 // Arquivos essenciais para cache inicial
@@ -13,6 +13,7 @@ const PRECACHE_ASSETS = [
   '/assets/js/router.js',
   '/assets/js/pwa-register.js',
   '/pages/dashboard.html',
+  '/pages/admin-dashboard.html',
   '/pages/dados.html',
   '/pages/irrigacao.html',
   '/pages/vento.html',

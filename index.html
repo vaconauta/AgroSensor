@@ -574,35 +574,32 @@
             }
         });
 
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', () => {
-            // Verificar se já está logado
-            if (AuthManager.isAuthenticated()) {
-                const userType = AuthManager.getUserType();
-                console.log('🔍 Usuário já autenticado, tipo:', userType);
-                
-                if (userType === 'admin') {
-                    console.log('✅ Redirecionando admin para admin dashboard');
-                    window.location.href = 'pages/admin-dashboard.html';
-                } else {
-                    console.log('➡️ Redirecionando usuário para dashboard comum');
-                    window.location.href = 'pages/dashboard.html';
-                }
-                return;
-            }
+        // Inicialização - Verificar se já está logado
+        if (AuthManager.isAuthenticated()) {
+            const userType = AuthManager.getUserType();
+            console.log('🔍 Usuário já autenticado, tipo:', userType);
             
-            // Mostrar formulário de login por padrão
-            showLogin();
-            
-            // Verificar parâmetros da URL
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('register') === 'true') {
-                showRegister();
+            if (userType === 'admin') {
+                console.log('✅ Redirecionando admin para admin dashboard');
+                window.location.href = 'pages/admin-dashboard.html';
+            } else {
+                console.log('➡️ Redirecionando usuário para dashboard comum');
+                window.location.href = 'pages/dashboard.html';
             }
+            return;
+        }
+        
+        // Mostrar formulário de login por padrão
+        showLogin();
+        
+        // Verificar parâmetros da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('register') === 'true') {
+            showRegister();
+        }
 
-            // Focar no primeiro campo
-            document.getElementById('loginUsername').focus();
-        });
+        // Focar no primeiro campo
+        document.getElementById('loginUsername').focus();
         
         }); // Fechamento do DOMContentLoaded
     </script>
