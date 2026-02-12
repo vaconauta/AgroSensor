@@ -2,7 +2,7 @@
   "name": "WR10 - Sistema de Monitoramento Inteligente",
   "short_name": "WR10",
   "description": "Sistema inteligente de monitoramento agrícola e ambiental",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2d7a3e",

@@ -1,26 +1,26 @@
 // Service Worker para PWA - WR10 Dashboard
-const CACHE_NAME = 'wr10-cache-v3';
-const OFFLINE_URL = '/offline.html';
+const CACHE_NAME = 'wr10-cache-v4';
+const OFFLINE_URL = './offline.html';
 
 // Arquivos essenciais para cache inicial
 const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/offline.html',
-  '/manifest.json',
-  '/assets/css/style.css',
-  '/assets/js/app.js',
-  '/assets/js/router.js',
-  '/assets/js/pwa-register.js',
-  '/pages/dashboard.html',
-  '/pages/admin-dashboard.html',
-  '/pages/dados.html',
-  '/pages/irrigacao.html',
-  '/pages/vento.html',
-  '/pages/dispositivos.html',
-  '/pages/configuracoes.html',
-  '/assets/icons/icon-192x192.png',
-  '/assets/icons/icon-512x512.png'
+  './',
+  './index.html',
+  './offline.html',
+  './manifest.json',
+  './assets/css/style.css',
+  './assets/js/app.js',
+  './assets/js/router.js',
+  './assets/js/pwa-register.js',
+  './pages/dashboard.html',
+  './pages/admin-dashboard.html',
+  './pages/dados.html',
+  './pages/irrigacao.html',
+  './pages/vento.html',
+  './pages/dispositivos.html',
+  './pages/configuracoes.html',
+  './assets/icons/icon-192x192.png',
+  './assets/icons/icon-512x512.png'
 ];
 
 // Instalar Service Worker
