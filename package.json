@@ -1,5 +1,17 @@
 {
+  "name": "wr10-dashboard",
+  "version": "1.0.0",
+  "description": "WR10 - Sistema de Monitoramento Inteligente (PWA)",
+  "scripts": {
+    "start": "http-server -p $PORT -c-1",
+    "dev": "http-server -p 8080 -c-1",
+    "generate-icons": "node generate-icons.js"
+  },
   "dependencies": {
+    "http-server": "^14.1.1",
     "sharp": "^0.34.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

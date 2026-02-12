@@ -7,14 +7,14 @@
     // Registrar Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            // Calcular path correto do service-worker.js (relativo ao base do site)
-            const baseUrl = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-            const swPath = baseUrl + 'service-worker.js';
-            
-            navigator.serviceWorker.register(swPath)
+            // Usar path relativo simples
+            navigator.serviceWorker.register('./service-worker.js', {
+                scope: './'
+            })
                 .then((registration) => {
                     console.log('[PWA] ✅ Service Worker registrado:', registration.scope);
-                    console.log('[PWA] 📍 Path:', swPath);
+                    console.log('[PWA] 📍 URL:', window.location.href);
+                    console.log('[PWA] 📂 Base:', window.location.pathname);
                     
                     // Verificar atualizações
                     registration.addEventListener('updatefound', () => {

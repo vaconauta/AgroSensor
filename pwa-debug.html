@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA Debug - WR10</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #0f0;
+            font-size: 12px;
+        }
+        .status { margin: 10px 0; padding: 10px; background: #2a2a2a; border-radius: 5px; }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        .info { color: #0af; }
+        button { 
+            background: #2d7a3e; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 PWA Debug - WR10</h1>
+    
+    <button onclick="checkAll()">🔄 Verificar Tudo</button>
+    <button onclick="clearAll()">🗑️ Limpar Tudo</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = msg;
+            output.appendChild(div);
+        }
+        
+        function clearLog() {
+            output.innerHTML = '';
+        }
+        
+        async function checkAll() {
+            clearLog();
+            
+            log('📍 URL atual: ' + window.location.href, 'info');
+            log('📂 Pathname: ' + window.location.pathname, 'info');
+            log('🌐 Origin: ' + window.location.origin, 'info');
+            log('---', 'info');
+            
+            // Service Worker
+            if ('serviceWorker' in navigator) {
+                log('✅ Service Worker suportado', 'success');
+                
+                try {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration) {
+                        log('✅ Service Worker registrado', 'success');
+                        log('📍 Scope: ' + registration.scope, 'info');
+                        log('📄 Script URL: ' + registration.active?.scriptURL, 'info');
+                    } else {
+                        log('❌ Service Worker NÃO registrado', 'error');
+                        log('→ Tentando registrar...', 'info');
+                        
+                        const reg = await navigator.serviceWorker.register('./service-worker.js', {
+                            scope: './'
+                        });
+                        log('✅ Registrado com sucesso!', 'success');
+                        log('📍 Scope: ' + reg.scope, 'info');
+                    }
+                } catch (err) {
+                    log('❌ Erro: ' + err.message, 'error');
+                }
+            } else {
+                log('❌ Service Worker NÃO suportado', 'error');
+            }
+            
+            log('---', 'info');
+            
+            // Manifest
+            try {
+                const response = await fetch('./manifest.json');
+                if (response.ok) {
+                    const manifest = await response.json();
+                    log('✅ Manifest carregado', 'success');
+                    log('📱 Nome: ' + manifest.name, 'info');
+                    log('🎨 Start URL: ' + manifest.start_url, 'info');
+                    log('🖼️ Ícones: ' + manifest.icons.length, 'info');
+                } else {
+                    log('❌ Erro ao carregar manifest: ' + response.status, 'error');
+                }
+            } catch (err) {
+                log('❌ Erro no manifest: ' + err.message, 'error');
+            }
+            
+            log('---', 'info');
+            
+            // Ícones
+            const iconSizes = [72, 96, 128, 144, 152, 192, 384, 512];
+            for (const size of iconSizes) {
+                try {
+                    const response = await fetch(`./assets/icons/icon-${size}x${size}.png`, { method: 'HEAD' });
+                    if (response.ok) {
+                        log(`✅ Ícone ${size}x${size} OK`, 'success');
+                    } else {
+                        log(`❌ Ícone ${size}x${size} não encontrado (${response.status})`, 'error');
+                    }
+                } catch (err) {
+                    log(`❌ Erro no ícone ${size}x${size}: ${err.message}`, 'error');
+                }
+            }
+            
+            log('---', 'info');
+            
+            // PWA instalável
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                log('✅ Rodando como PWA instalado', 'success');
+            } else {
+                log('ℹ️ Rodando no navegador', 'info');
+            }
+            
+            // BeforeInstallPrompt
+            log('---', 'info');
+            log('💡 Se "Instalar App" não aparece:', 'info');
+            log('1. Limpe o cache (botão "Limpar Tudo")', 'info');
+            log('2. Feche e reabra o navegador', 'info');
+            log('3. Aguarde alguns segundos', 'info');
+            log('4. Chrome: menu (⋮) → "Instalar aplicativo"', 'info');
+        }
+        
+        async function clearAll() {
+            if (!confirm('Limpar cache e dados do Service Worker?')) return;
+            
+            clearLog();
+            
+            try {
+                // Desregistrar service workers
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    await registration.unregister();
+                    log('✅ Service Worker desregistrado', 'success');
+                }
+                
+                // Limpar cache
+                const cacheNames = await caches.keys();
+                for (const cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                    log('✅ Cache deletado: ' + cacheName, 'success');
+                }
+                
+                log('---', 'info');
+                log('✅ Tudo limpo! Recarregue a página.', 'success');
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (err) {
+                log('❌ Erro: ' + err.message, 'error');
+            }
+        }
+        
+        // Auto-check ao carregar
+        window.addEventListener('load', () => {
+            setTimeout(checkAll, 500);
+        });
+    </script>
+</body>
+</html>
