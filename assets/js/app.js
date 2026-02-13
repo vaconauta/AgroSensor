@@ -372,14 +372,11 @@ class ApiClient {
         const config = {
             headers: {
                 'Content-Type': 'application/json',
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0',
                 ...options.headers
             },
             mode: 'cors', // Explicitamente usar CORS
             credentials: 'omit', // Não enviar cookies (evita problemas CORS)
-            cache: 'no-store', // Desabilitar cache completamente
+            cache: 'no-store', // Desabilitar cache completamente (propriedade fetch, não header HTTP)
             ...options
         };
         
