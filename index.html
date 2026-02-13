@@ -630,40 +630,23 @@
         function redirectToDashboard(userType) {
             console.log('🚀 redirectToDashboard chamada com userType:', userType);
             console.log('📍 window.location.href atual:', window.location.href);
-            console.log('📍 window.location.pathname:', window.location.pathname);
-            console.log('📍 window.location.origin:', window.location.origin);
             
-            // Determinar o caminho base
-            let basePath = '';
+            // Determinar a página de destino
+            const targetPage = userType === 'admin' ? 'admin-dashboard.html' : 'dashboard.html';
+            console.log('🎯 Página de destino:', targetPage);
             
-            // Se estamos em GitHub Pages ou subdiretório
-            if (window.location.pathname.includes('/AgroSensor/')) {
-                basePath = '/AgroSensor/';
-            } 
-            // Se estamos no index.html diretamente
-            else if (window.location.pathname.endsWith('index.html')) {
-                basePath = window.location.pathname.replace('index.html', '');
+            // Estratégia 1: Caminho relativo simples (funciona na maioria dos casos)
+            try {
+                const relativePath = 'pages/' + targetPage;
+                console.log('🔄 Tentando redirect relativo:', relativePath);
+                window.location.replace(relativePath);
+            } catch (err) {
+                console.error('❌ Erro no redirect:', err);
+                // Estratégia 2: Caminho absoluto
+                const absolutePath = window.location.origin + '/pages/' + targetPage;
+                console.log('🔄 Tentando redirect absoluto:', absolutePath);
+                window.location.replace(absolutePath);
             }
-            // Se estamos no root
-            else if (window.location.pathname === '/' || window.location.pathname === '') {
-                basePath = '/';
-            }
-            // Qualquer outro caso, tenta pegar o diretório pai
-            else {
-                const parts = window.location.pathname.split('/');
-                parts.pop(); // Remove o último elemento
-                basePath = parts.join('/') + '/';
-            }
-            
-            const targetPage = userType === 'admin' ? 'pages/admin-dashboard.html' : 'pages/dashboard.html';
-            const fullUrl = window.location.origin + basePath + targetPage;
-            
-            console.log('✅ Base path calculado:', basePath);
-            console.log('✅ Target page:', targetPage);
-            console.log('✅ URL completa de destino:', fullUrl);
-            console.log('🔄 Executando redirecionamento...');
-            
-            window.location.href = fullUrl;
         }
         
         // Funções de Biometria
