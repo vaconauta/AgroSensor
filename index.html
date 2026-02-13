@@ -621,6 +621,23 @@
             REGISTER_FORM.classList.add('active');
         }
         
+        // Função auxiliar para redirecionamento (escopo global)
+        function redirectToDashboard(userType) {
+            console.log('🚀 redirectToDashboard chamada com userType:', userType);
+            // Usar caminho absoluto para funcionar no modo PWA
+            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+            
+            if (userType === 'admin') {
+                console.log('✅ Redirecionando para admin dashboard');
+                console.log('📍 URL:', baseUrl + 'pages/admin-dashboard.html');
+                window.location.href = baseUrl + 'pages/admin-dashboard.html';
+            } else {
+                console.log('➡️ Redirecionando para dashboard comum');
+                console.log('📍 URL:', baseUrl + 'pages/dashboard.html');
+                window.location.href = baseUrl + 'pages/dashboard.html';
+            }
+        }
+        
         // Funções de Biometria
         function showBiometricModal() {
             document.getElementById('biometricModal').classList.add('active');
@@ -840,20 +857,6 @@
                 LoadingManager.hide(submitButton);
             }
         });
-        
-        // Função auxiliar para redirecionamento
-        function redirectToDashboard(userType) {
-            // Usar caminho absoluto para funcionar no modo PWA
-            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
-            
-            if (userType === 'admin') {
-                console.log('✅ Redirecionando para admin dashboard');
-                window.location.href = baseUrl + 'pages/admin-dashboard.html';
-            } else {
-                console.log('➡️ Redirecionando para dashboard comum');
-                window.location.href = baseUrl + 'pages/dashboard.html';
-            }
-        }
 
         REGISTER_FORM.addEventListener('submit', async (e) => {
             e.preventDefault();
