@@ -626,6 +626,28 @@
             REGISTER_FORM.classList.add('active');
         }
         
+        // Detectar se é dispositivo móvel
+        function isMobileDevice() {
+            // Verifica se é mobile através do user agent e características do dispositivo
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+            // Verifica se tem touch e tamanho de tela mobile
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const isSmallScreen = window.innerWidth <= 768;
+            
+            // Verifica user agent para Android, iOS, etc
+            const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+            
+            console.log('📱 Detecção de dispositivo:', {
+                isTouchDevice,
+                isSmallScreen,
+                isMobileUA,
+                userAgent: userAgent.substring(0, 50)
+            });
+            
+            return isMobileUA || (isTouchDevice && isSmallScreen);
+        }
+        
         // Função auxiliar para redirecionamento (escopo global)
         function redirectToDashboard(userType) {
             console.log('🚀 redirectToDashboard chamada com userType:', userType);
@@ -870,10 +892,18 @@
                 
                 showNotification('success', 'Login realizado!', response.message);
                 
-                // Verificar se deve mostrar configuração de biometria
-                const shouldShowBiometric = biometricAuth && 
+                // Verificar se deve mostrar configuração de biometria (APENAS EM MOBILE)
+                const isMobile = isMobileDevice();
+                const shouldShowBiometric = isMobile &&
+                    biometricAuth && 
                     await biometricAuth.isPlatformAuthenticatorAvailable() &&
                     biometricAuth.shouldShowBiometricSetup();
+                
+                console.log('🔍 Verificação de biometria:', {
+                    isMobile,
+                    biometricAuth: !!biometricAuth,
+                    shouldShowBiometric
+                });
                 
                 // Redirecionar baseado no tipo de usuário
                 setTimeout(() => {
