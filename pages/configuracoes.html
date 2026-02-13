@@ -629,6 +629,72 @@
                     </div>
                 </div>
 
+                <!-- Autenticação Biométrica -->
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3 class="config-title">
+                            <i class="fas fa-fingerprint"></i>
+                            Autenticação Biométrica
+                        </h3>
+                        <p class="config-description">
+                            Configure login com digital ou reconhecimento facial
+                        </p>
+                    </div>
+                    <div class="config-body">
+                        <div id="biometricNotAvailable" style="display: none;">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <div>
+                                    <strong>Não disponível</strong>
+                                    <p style="margin: 4px 0 0 0; font-size: 0.875rem;">
+                                        Seu dispositivo não suporta autenticação biométrica ou você está acessando de um navegador não compatível.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="biometricAvailable" style="display: none;">
+                            <div id="biometricEnabled" style="display: none;">
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle"></i>
+                                    <div>
+                                        <strong>Biometria ativada</strong>
+                                        <p style="margin: 4px 0 0 0; font-size: 0.875rem;">
+                                            Você pode fazer login usando sua digital ou face.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="config-item" style="margin-top: var(--spacing-md);">
+                                    <button type="button" class="btn btn-danger btn-full" onclick="disableBiometricAuth()">
+                                        <i class="fas fa-times-circle"></i>
+                                        Desativar Biometria
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="biometricDisabled" style="display: none;">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <div>
+                                        <strong>Biometria disponível</strong>
+                                        <p style="margin: 4px 0 0 0; font-size: 0.875rem;">
+                                            Ative o login biométrico para acessar o sistema de forma rápida e segura usando sua digital ou face.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="config-item" style="margin-top: var(--spacing-md);">
+                                    <button type="button" class="btn btn-primary btn-full" onclick="enableBiometricAuth()">
+                                        <i class="fas fa-fingerprint"></i>
+                                        Ativar Biometria
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Zona de Perigo -->
                 <div class="config-section danger-zone">
                     <div class="config-header">
@@ -747,6 +813,7 @@
 
     <!-- Scripts -->
     <script src="../assets/js/app.js"></script>
+    <script src="../assets/js/biometric-auth.js"></script>
     <script>
         // Verificar autenticação e permissões
         if (!AuthManager.redirectIfNotAuthenticated()) {
@@ -1540,6 +1607,105 @@
                 }
             });
         }
+        
+        // ===== FUNÇÕES DE BIOMETRIA =====
+        
+        async function initBiometricSection() {
+            if (!window.biometricAuth) {
+                console.log('⚠️ BiometricAuth não disponível');
+                document.getElementById('biometricNotAvailable').style.display = 'block';
+                return;
+            }
+            
+            try {
+                const isAvailable = await biometricAuth.isPlatformAuthenticatorAvailable();
+                
+                if (!isAvailable) {
+                    document.getElementById('biometricNotAvailable').style.display = 'block';
+                    return;
+                }
+                
+                document.getElementById('biometricAvailable').style.display = 'block';
+                
+                const isEnabled = biometricAuth.isBiometricEnabled();
+                
+                if (isEnabled) {
+                    document.getElementById('biometricEnabled').style.display = 'block';
+                    document.getElementById('biometricDisabled').style.display = 'none';
+                } else {
+                    document.getElementById('biometricEnabled').style.display = 'none';
+                    document.getElementById('biometricDisabled').style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('Erro ao inicializar seção de biometria:', error);
+                document.getElementById('biometricNotAvailable').style.display = 'block';
+            }
+        }
+        
+        async function enableBiometricAuth() {
+            const username = localStorage.getItem('username');
+            const fullName = localStorage.getItem('fullName');
+            
+            if (!username) {
+                NotificationManager.error('Erro', 'Usuário não identificado');
+                return;
+            }
+            
+            const btn = event.target;
+            LoadingManager.show(btn);
+            
+            try {
+                // Permitir configuração se foi dispensada anteriormente
+                biometricAuth.allowBiometricSetup();
+                
+                await biometricAuth.registerBiometric(username, fullName || username);
+                
+                NotificationManager.success(
+                    'Biometria ativada!', 
+                    'Você poderá usar sua digital ou face nos próximos acessos'
+                );
+                
+                // Atualizar interface
+                await initBiometricSection();
+                
+            } catch (error) {
+                console.error('Erro ao ativar biometria:', error);
+                NotificationManager.error('Erro', error.message);
+            } finally {
+                LoadingManager.hide(btn);
+            }
+        }
+        
+        async function disableBiometricAuth() {
+            if (!confirm('Tem certeza que deseja desativar a autenticação biométrica?')) {
+                return;
+            }
+            
+            const btn = event.target;
+            LoadingManager.show(btn);
+            
+            try {
+                biometricAuth.disableBiometric();
+                
+                NotificationManager.success(
+                    'Biometria desativada', 
+                    'A autenticação biométrica foi removida com sucesso'
+                );
+                
+                // Atualizar interface
+                await initBiometricSection();
+                
+            } catch (error) {
+                console.error('Erro ao desativar biometria:', error);
+                NotificationManager.error('Erro', 'Falha ao desativar biometria');
+            } finally {
+                LoadingManager.hide(btn);
+            }
+        }
+        
+        // Inicializar seção de biometria quando a página carregar
+        window.addEventListener('DOMContentLoaded', initBiometricSection);
 
         // Responsividade
         function checkScreenSize() {
