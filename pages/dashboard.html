@@ -2415,7 +2415,11 @@
                     
                     if (statsDisplayMode === 'latest') {
                         // Exibir o ÚLTIMO valor (mais recente)
-                        const latestData = data.dados[data.dados.length - 1];
+                        // Encontrar a leitura mais recente independente da ordem de sort da API
+                        const latestData = data.dados.reduce((newest, current) => {
+                            if (!newest) return current;
+                            return new Date(current.timestamp) > new Date(newest.timestamp) ? current : newest;
+                        }, null);
                         
                         displayTemp = latestData.temperatura_ar !== null && latestData.temperatura_ar !== undefined 
                             ? latestData.temperatura_ar 
