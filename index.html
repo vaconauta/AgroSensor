@@ -674,6 +674,20 @@
             }
         }
         
+        // Função global de notificações (com fallback seguro)
+        function showNotification(type, title, message) {
+            try {
+                if (window.NotificationManager && typeof window.NotificationManager[type] === 'function') {
+                    window.NotificationManager[type](title, message);
+                } else {
+                    alert(title + ': ' + message);
+                }
+            } catch (e) {
+                console.warn('⚠️ Erro ao exibir notificação:', e);
+                alert(title + ': ' + message);
+            }
+        }
+        
         // Funções de Biometria
         // Flag para controlar se o modal está ativo
         let biometricModalActive = false;
@@ -720,14 +734,7 @@
                 await biometricAuth.registerBiometric(username, fullName || username);
                 hideBiometricModal();
                 
-                if (window.NotificationManager && typeof window.NotificationManager.success === 'function') {
-                    NotificationManager.success(
-                        'Biometria ativada!', 
-                        'Você poderá usar sua digital ou face nos próximos acessos'
-                    );
-                } else {
-                    alert('Biometria ativada com sucesso!');
-                }
+                showNotification('success', 'Biometria ativada!', 'Você poderá usar sua digital ou face nos próximos acessos');
                 
                 // Redirecionar após configurar
                 setTimeout(() => {
@@ -737,11 +744,7 @@
                 
             } catch (error) {
                 console.error('Erro ao configurar biometria:', error);
-                if (window.NotificationManager && typeof window.NotificationManager.error === 'function') {
-                    NotificationManager.error('Erro', error.message);
-                } else {
-                    alert('Erro ao configurar biometria: ' + error.message);
-                }
+                showNotification('error', 'Erro', error.message);
             } finally {
                 LoadingManager.hide(document.querySelector('#biometricModal .btn-biometric'));
             }
@@ -778,9 +781,7 @@
                     
                     localStorage.setItem(CONFIG.STORAGE_KEYS.USERNAME, result.username);
                     
-                    if (window.NotificationManager && typeof window.NotificationManager.success === 'function') {
-                        NotificationManager.success('Autenticado!', 'Bem-vindo de volta, ' + result.fullName);
-                    }
+                    showNotification('success', 'Autenticado!', 'Bem-vindo de volta, ' + result.fullName);
                     
                     console.log('🚀 Preparando redirecionamento...');
                     console.log('📊 UserType para redirect:', result.userType);
@@ -812,9 +813,7 @@
                     const userType = AuthManager.getUserType();
                     console.log('📊 UserType (fallback):', userType);
                     
-                    if (window.NotificationManager && typeof window.NotificationManager.success === 'function') {
-                        NotificationManager.success('Autenticado!', 'Bem-vindo de volta!');
-                    }
+                    showNotification('success', 'Autenticado!', 'Bem-vindo de volta!');
                     
                     // Esconder loading antes do redirect
                     LoadingManager.hide(btn);
@@ -839,11 +838,7 @@
                 
             } catch (error) {
                 console.error('❌ Erro no login biométrico:', error);
-                if (window.NotificationManager && typeof window.NotificationManager.error === 'function') {
-                    NotificationManager.error('Erro', error.message);
-                } else {
-                    alert('Erro: ' + error.message);
-                }
+                showNotification('error', 'Erro', error.message);
             } finally {
                 LoadingManager.hide(btn);
             }
@@ -852,19 +847,6 @@
         // Aguardar DOM carregar completamente
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🔍 DOM carregado, NotificationManager disponível:', !!window.NotificationManager);
-            
-            // Função helper para notificações
-            function showNotification(type, title, message) {
-                console.log('🔍 Tentando mostrar notificação:', type, title, message);
-                if (window.NotificationManager && typeof window.NotificationManager[type] === 'function') {
-                    console.log('✅ Usando NotificationManager');
-                    window.NotificationManager[type](title, message);
-                } else {
-                    console.log('⚠️ NotificationManager não disponível, usando alert');
-                    // Fallback para alert se NotificationManager não estiver disponível
-                    alert(`${title}: ${message}`);
-                }
-            }
             
             // Variáveis globais
             const LOGIN_FORM = document.getElementById('loginForm');
