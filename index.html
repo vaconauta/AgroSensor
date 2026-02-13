@@ -629,18 +629,41 @@
         // Função auxiliar para redirecionamento (escopo global)
         function redirectToDashboard(userType) {
             console.log('🚀 redirectToDashboard chamada com userType:', userType);
-            // Usar caminho absoluto para funcionar no modo PWA
-            const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+            console.log('📍 window.location.href atual:', window.location.href);
+            console.log('📍 window.location.pathname:', window.location.pathname);
+            console.log('📍 window.location.origin:', window.location.origin);
             
-            if (userType === 'admin') {
-                console.log('✅ Redirecionando para admin dashboard');
-                console.log('📍 URL:', baseUrl + 'pages/admin-dashboard.html');
-                window.location.href = baseUrl + 'pages/admin-dashboard.html';
-            } else {
-                console.log('➡️ Redirecionando para dashboard comum');
-                console.log('📍 URL:', baseUrl + 'pages/dashboard.html');
-                window.location.href = baseUrl + 'pages/dashboard.html';
+            // Determinar o caminho base
+            let basePath = '';
+            
+            // Se estamos em GitHub Pages ou subdiretório
+            if (window.location.pathname.includes('/AgroSensor/')) {
+                basePath = '/AgroSensor/';
+            } 
+            // Se estamos no index.html diretamente
+            else if (window.location.pathname.endsWith('index.html')) {
+                basePath = window.location.pathname.replace('index.html', '');
             }
+            // Se estamos no root
+            else if (window.location.pathname === '/' || window.location.pathname === '') {
+                basePath = '/';
+            }
+            // Qualquer outro caso, tenta pegar o diretório pai
+            else {
+                const parts = window.location.pathname.split('/');
+                parts.pop(); // Remove o último elemento
+                basePath = parts.join('/') + '/';
+            }
+            
+            const targetPage = userType === 'admin' ? 'pages/admin-dashboard.html' : 'pages/dashboard.html';
+            const fullUrl = window.location.origin + basePath + targetPage;
+            
+            console.log('✅ Base path calculado:', basePath);
+            console.log('✅ Target page:', targetPage);
+            console.log('✅ URL completa de destino:', fullUrl);
+            console.log('🔄 Executando redirecionamento...');
+            
+            window.location.href = fullUrl;
         }
         
         // Funções de Biometria
@@ -737,24 +760,44 @@
                         NotificationManager.success('Autenticado!', 'Bem-vindo de volta, ' + result.fullName);
                     }
                     
-                    console.log('🚀 Redirecionando para dashboard...');
+                    console.log('🚀 Preparando redirecionamento...');
+                    console.log('📊 UserType para redirect:', result.userType);
+                    console.log('🔍 Função redirectToDashboard existe?', typeof redirectToDashboard);
+                    
                     // Redirecionar baseado no tipo de usuário
+                    // Reduzir timeout e garantir execução
                     setTimeout(() => {
-                        redirectToDashboard(result.userType);
-                    }, 500);
+                        console.log('⏰ Timeout executado, chamando redirectToDashboard...');
+                        try {
+                            redirectToDashboard(result.userType);
+                        } catch (err) {
+                            console.error('❌ Erro ao chamar redirectToDashboard:', err);
+                            // Fallback: redirect direto
+                            const page = result.userType === 'admin' ? 'admin-dashboard.html' : 'dashboard.html';
+                            window.location.href = 'pages/' + page;
+                        }
+                    }, 100);
                     
                 } else if (AuthManager.isAuthenticated()) {
                     // Fallback: se já tem token válido mas backend não respondeu
                     console.log('⚠️ Usando token existente (fallback)');
                     const userType = AuthManager.getUserType();
+                    console.log('📊 UserType (fallback):', userType);
                     
                     if (window.NotificationManager) {
                         NotificationManager.success('Autenticado!', 'Bem-vindo de volta!');
                     }
                     
                     setTimeout(() => {
-                        redirectToDashboard(userType);
-                    }, 500);
+                        console.log('⏰ Timeout fallback executado, chamando redirectToDashboard...');
+                        try {
+                            redirectToDashboard(userType);
+                        } catch (err) {
+                            console.error('❌ Erro ao chamar redirectToDashboard (fallback):', err);
+                            const page = userType === 'admin' ? 'admin-dashboard.html' : 'dashboard.html';
+                            window.location.href = 'pages/' + page;
+                        }
+                    }, 100);
                 } else {
                     console.error('❌ Nenhum token válido disponível');
                     throw new Error('Sessão expirada. Por favor, faça login novamente com suas credenciais');
