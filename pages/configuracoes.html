@@ -700,6 +700,74 @@
                     </div>
                 </div>
 
+                <!-- Exibição de Dados dos Stats -->
+                <div class="config-section">
+                    <div class="config-header">
+                        <h3 class="config-title">
+                            <i class="fas fa-chart-line"></i>
+                            Exibição de Dados
+                        </h3>
+                        <p class="config-description">
+                            Configure como os dados são exibidos nos cards
+                        </p>
+                    </div>
+                    <div class="config-body">
+                        <form id="statsDisplayForm">
+                            <div class="config-item">
+                                <label class="form-label">
+                                    <i class="fas fa-thermometer-half"></i>
+                                    Modo de Exibição dos Stats Cards
+                                </label>
+                                <p style="font-size: 0.875rem; color: var(--text-gray); margin-bottom: var(--spacing-md);">
+                                    Escolha se deseja ver a média das últimas 24h ou o último valor registrado
+                                </p>
+                                
+                                <div style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                                    <label style="display: flex; align-items: center; gap: var(--spacing-sm); font-weight: 500; padding: var(--spacing-sm) var(--spacing-md); background: var(--light-gray); border-radius: var(--radius-md); cursor: pointer; transition: var(--transition);" id="avgLabel" onmouseover="this.style.background='#e8f5e9'" onmouseout="this.style.background='var(--light-gray)'">
+                                        <input 
+                                            type="radio" 
+                                            id="statsDisplayAvg" 
+                                            name="statsDisplay" 
+                                            value="average" 
+                                            checked
+                                            onchange="handleStatsDisplayChange()"
+                                            style="cursor: pointer;"
+                                        >
+                                        <span>
+                                            <strong>Média (24h)</strong>
+                                            <div style="font-size: 0.75rem; color: var(--text-gray); font-weight: normal; margin-top: var(--spacing-xs);">
+                                                Exibe a média dos valores dos últimos 24 horas
+                                            </div>
+                                        </span>
+                                    </label>
+                                    
+                                    <label style="display: flex; align-items: center; gap: var(--spacing-sm); font-weight: 500; padding: var(--spacing-sm) var(--spacing-md); background: var(--light-gray); border-radius: var(--radius-md); cursor: pointer; transition: var(--transition);" id="latestLabel" onmouseover="this.style.background='#e8f5e9'" onmouseout="this.style.background='var(--light-gray)'">
+                                        <input 
+                                            type="radio" 
+                                            id="statsDisplayLatest" 
+                                            name="statsDisplay" 
+                                            value="latest"
+                                            onchange="handleStatsDisplayChange()"
+                                            style="cursor: pointer;"
+                                        >
+                                        <span>
+                                            <strong>Último Valor</strong>
+                                            <div style="font-size: 0.75rem; color: var(--text-gray); font-weight: normal; margin-top: var(--spacing-xs);">
+                                                Exibe o último valor registrado mais recente
+                                            </div>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-full">
+                                <i class="fas fa-save"></i>
+                                Salvar Preferências
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- Zona de Perigo -->
                 <div class="config-section danger-zone">
                     <div class="config-header">
@@ -898,6 +966,9 @@
                 // Carregar intervalo de atualização do dashboard do localStorage
                 loadDashboardRefreshInterval();
                 
+                // Carregar preferência de exibição de stats
+                loadStatsDisplayPreference();
+                
             } catch (error) {
                 console.error('Erro ao inicializar página:', error);
                 showNotification('error', 'Erro', 'Falha ao carregar configurações');
@@ -962,6 +1033,26 @@
             const intervalMs = savedInterval ? parseInt(savedInterval) : 300000; // 5 minutos padrão
             
             setDashboardRefreshFromMs(intervalMs);
+        }
+
+        function loadStatsDisplayPreference() {
+            // Carregar preferência de exibição de stats do localStorage
+            const savedMode = localStorage.getItem('statsDisplayMode') || 'average';
+            
+            // Marcar o radio button apropriado
+            if (savedMode === 'latest') {
+                document.getElementById('statsDisplayLatest').checked = true;
+                document.getElementById('statsDisplayAvg').checked = false;
+            } else {
+                document.getElementById('statsDisplayAvg').checked = true;
+                document.getElementById('statsDisplayLatest').checked = false;
+            }
+        }
+
+        function handleStatsDisplayChange() {
+            // Feedback imediato visual quando o usuário muda a opção
+            const selectedMode = document.querySelector('input[name="statsDisplay"]:checked').value;
+            console.log('Modo de exibição selecionado:', selectedMode);
         }
 
         function saveDashboardRefreshInterval() {
@@ -1543,6 +1634,45 @@
                 } catch (error) {
                     console.error('Erro ao salvar configurações:', error);
                     showNotification('error', 'Erro', error.message || 'Falha ao salvar configurações do sistema');
+                } finally {
+                    LoadingManager.hide(submitButton);
+                }
+            });
+
+            // Form de exibição de dados dos stats
+            document.getElementById('statsDisplayForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const statsDisplay = formData.get('statsDisplay');
+                
+                const submitButton = this.querySelector('button[type="submit"]');
+                LoadingManager.show(submitButton);
+
+                try {
+                    // Salvar preferência no localStorage
+                    localStorage.setItem('statsDisplayMode', statsDisplay);
+                    
+                    const modeLabel = statsDisplay === 'average' ? 'Média (24h)' : 'Último Valor';
+                    
+                    showNotification(
+                        'success',
+                        'Preferência salva!', 
+                        `O dashboard agora exibirá ${modeLabel.toLowerCase()}`
+                    );
+                    
+                    // Notificar o dashboard via BroadcastChannel
+                    if ('BroadcastChannel' in window) {
+                        const configChannel = new BroadcastChannel('dashboard_config');
+                        configChannel.postMessage({
+                            type: 'stats_display_mode_updated',
+                            statsDisplayMode: statsDisplay
+                        });
+                    }
+                    
+                } catch (error) {
+                    console.error('Erro ao salvar preferência:', error);
+                    showNotification('error', 'Erro', error.message || 'Falha ao salvar preferência');
                 } finally {
                     LoadingManager.hide(submitButton);
                 }

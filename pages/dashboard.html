@@ -2387,46 +2387,68 @@
                 const data = { dados: historyData };
                 
                 if (data && data.dados && data.dados.length > 0) {
-                    // Calcular média de temperatura do ar
-                    let totalTemp = 0;
-                    let tempCount = 0;
-                    let totalRelativeHumidity = 0;
-                    let humidityCount = 0;
+                    // Verificar preferência de exibição (média ou último valor)
+                    const statsDisplayMode = localStorage.getItem('statsDisplayMode') || 'average';
                     
-                    data.dados.forEach(item => {
-                        // Aceitar tanto temperatura_ar quanto temperatura
-                        const temp = item.temperatura_ar !== null && item.temperatura_ar !== undefined 
-                            ? item.temperatura_ar 
-                            : item.temperatura;
-                        
-                        if (temp !== null && temp !== undefined) {
-                            totalTemp += temp;
-                            tempCount++;
-                        }
-                        
-                        // Aceitar tanto umidade_relativa quanto umidade_ar
-                        const humidity = item.umidade_relativa !== null && item.umidade_relativa !== undefined
-                            ? item.umidade_relativa
-                            : item.umidade_ar;
-                        
-                        if (humidity !== null && humidity !== undefined) {
-                            totalRelativeHumidity += humidity;
-                            humidityCount++;
-                        }
-                    });
+                    let displayTemp, displayHumidity;
                     
-                    const avgTemp = tempCount > 0 ? (totalTemp / tempCount).toFixed(1) : '0';
-                    const avgRelHumidity = humidityCount > 0 ? (totalRelativeHumidity / humidityCount).toFixed(1) : '0';
+                    if (statsDisplayMode === 'latest') {
+                        // Exibir o ÚLTIMO valor (mais recente)
+                        const latestData = data.dados[data.dados.length - 1];
+                        
+                        displayTemp = latestData.temperatura_ar !== null && latestData.temperatura_ar !== undefined 
+                            ? latestData.temperatura_ar 
+                            : (latestData.temperatura !== null && latestData.temperatura !== undefined 
+                                ? latestData.temperatura 
+                                : '0');
+                        
+                        displayHumidity = latestData.umidade_relativa !== null && latestData.umidade_relativa !== undefined
+                            ? latestData.umidade_relativa
+                            : (latestData.umidade_ar !== null && latestData.umidade_ar !== undefined
+                                ? latestData.umidade_ar
+                                : '0');
+                    } else {
+                        // Exibir MÉDIA (padrão)
+                        let totalTemp = 0;
+                        let tempCount = 0;
+                        let totalRelativeHumidity = 0;
+                        let humidityCount = 0;
+                        
+                        data.dados.forEach(item => {
+                            // Aceitar tanto temperatura_ar quanto temperatura
+                            const temp = item.temperatura_ar !== null && item.temperatura_ar !== undefined 
+                                ? item.temperatura_ar 
+                                : item.temperatura;
+                            
+                            if (temp !== null && temp !== undefined) {
+                                totalTemp += temp;
+                                tempCount++;
+                            }
+                            
+                            // Aceitar tanto umidade_relativa quanto umidade_ar
+                            const humidity = item.umidade_relativa !== null && item.umidade_relativa !== undefined
+                                ? item.umidade_relativa
+                                : item.umidade_ar;
+                            
+                            if (humidity !== null && humidity !== undefined) {
+                                totalRelativeHumidity += humidity;
+                                humidityCount++;
+                            }
+                        });
+                        
+                        displayTemp = tempCount > 0 ? (totalTemp / tempCount).toFixed(1) : '0';
+                        displayHumidity = humidityCount > 0 ? (totalRelativeHumidity / humidityCount).toFixed(1) : '0';
+                    }
                     
                     // Atualizar UI
                     const tempElement = document.getElementById('avgTemp');
                     if (tempElement) {
-                        tempElement.textContent = avgTemp + '°C';
+                        tempElement.textContent = displayTemp + '°C';
                     }
                     
                     const humidityElement = document.getElementById('avgRelativeHumidity');
                     if (humidityElement) {
-                        humidityElement.textContent = avgRelHumidity + '%';
+                        humidityElement.textContent = displayHumidity + '%';
                     }
                 }
             } catch (error) {
@@ -4432,6 +4454,12 @@
                     if (event.data.type === 'refresh_interval_updated') {
                         console.log('📡 Recebida atualização de intervalo:', event.data.interval);
                         startAutoRefresh();
+                    }
+                    
+                    if (event.data.type === 'stats_display_mode_updated') {
+                        console.log('📊 Recebida atualização de modo de exibição de stats:', event.data.statsDisplayMode);
+                        // Recarregar os dados dos stats cards com a nova preferência
+                        updateAirTemperatureAndHumidityCard();
                     }
                 };
             }
