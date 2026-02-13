@@ -685,7 +685,10 @@
             
             try {
                 LoadingManager.show(btn);
+                console.log('🔐 Iniciando autenticação biométrica...');
+                
                 const result = await biometricAuth.authenticateWithBiometric();
+                console.log('🔐 Resultado da autenticação:', result);
                 
                 if (!result.success) {
                     throw new Error('Falha na autenticação biométrica');
@@ -693,15 +696,18 @@
                 
                 // Se recebeu token do backend, salvar dados de autenticação
                 if (result.token) {
+                    console.log('✅ Token recebido do backend');
                     AuthManager.setToken(result.token);
                     
                     // Salvar dados do usuário
-                    AuthManager.setUserData({
+                    const userData = {
                         userType: result.userType,
                         company_id: result.company_id,
                         fullName: result.fullName,
                         username: result.username
-                    });
+                    };
+                    console.log('💾 Salvando dados do usuário:', userData);
+                    AuthManager.setUserData(userData);
                     
                     localStorage.setItem(CONFIG.STORAGE_KEYS.USERNAME, result.username);
                     
@@ -709,6 +715,7 @@
                         NotificationManager.success('Autenticado!', 'Bem-vindo de volta, ' + result.fullName);
                     }
                     
+                    console.log('🚀 Redirecionando para dashboard...');
                     // Redirecionar baseado no tipo de usuário
                     setTimeout(() => {
                         redirectToDashboard(result.userType);
@@ -716,6 +723,7 @@
                     
                 } else if (AuthManager.isAuthenticated()) {
                     // Fallback: se já tem token válido mas backend não respondeu
+                    console.log('⚠️ Usando token existente (fallback)');
                     const userType = AuthManager.getUserType();
                     
                     if (window.NotificationManager) {
@@ -726,11 +734,12 @@
                         redirectToDashboard(userType);
                     }, 500);
                 } else {
+                    console.error('❌ Nenhum token válido disponível');
                     throw new Error('Sessão expirada. Por favor, faça login novamente com suas credenciais');
                 }
                 
             } catch (error) {
-                console.error('Erro no login biométrico:', error);
+                console.error('❌ Erro no login biométrico:', error);
                 if (window.NotificationManager) {
                     NotificationManager.error('Erro', error.message);
                 } else {

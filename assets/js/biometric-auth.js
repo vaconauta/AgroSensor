@@ -206,9 +206,13 @@ class BiometricAuth {
                 throw new Error('Usuário biométrico não encontrado');
             }
 
+            console.log('🔐 Username biométrico:', username);
+            console.log('🔐 CredentialId:', credentialIdBase64);
+
             // Autenticar no backend
             if (window.ApiClient) {
                 try {
+                    console.log('📡 Enviando requisição para o backend...');
                     const response = await window.ApiClient.request('/api/auth/biometric/authenticate', {
                         method: 'POST',
                         body: JSON.stringify({
@@ -220,6 +224,7 @@ class BiometricAuth {
                     });
 
                     console.log('✅ Autenticação biométrica bem-sucedida no servidor');
+                    console.log('📦 Resposta do servidor:', response);
                     
                     // Retornar resposta do servidor com token
                     return {
@@ -231,7 +236,7 @@ class BiometricAuth {
                         fullName: response.fullName
                     };
                 } catch (apiError) {
-                    console.error('Erro na autenticação no servidor:', apiError);
+                    console.error('❌ Erro na autenticação no servidor:', apiError);
                     throw new Error('Falha na autenticação: ' + apiError.message);
                 }
             }
