@@ -577,6 +577,9 @@
                 <p class="modal-description">
                     Use sua digital ou reconhecimento facial para acessar o sistema de forma rápida e segura nos próximos logins.
                 </p>
+                <p class="modal-warning" style="color: #ff9800; font-size: 0.9rem; margin-top: 0.5rem; font-weight: 500;">
+                    <i class="fas fa-info-circle"></i> Por favor, escolha uma opção para continuar
+                </p>
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-secondary" onclick="dismissBiometricSetup()">
@@ -672,13 +675,27 @@
         }
         
         // Funções de Biometria
+        // Flag para controlar se o modal está ativo
+        let biometricModalActive = false;
+        
         function showBiometricModal() {
             document.getElementById('biometricModal').classList.add('active');
+            biometricModalActive = true;
         }
         
         function hideBiometricModal() {
             document.getElementById('biometricModal').classList.remove('active');
+            biometricModalActive = false;
         }
+        
+        // Prevenir saída/atualização enquanto modal está ativo
+        window.addEventListener('beforeunload', function(e) {
+            if (biometricModalActive) {
+                e.preventDefault();
+                e.returnValue = 'Você ainda não escolheu sobre a biometria. Tem certeza que deseja sair?';
+                return e.returnValue;
+            }
+        });
         
         function dismissBiometricSetup() {
             biometricAuth.dismissBiometricSetup();
@@ -703,7 +720,7 @@
                 await biometricAuth.registerBiometric(username, fullName || username);
                 hideBiometricModal();
                 
-                if (window.NotificationManager) {
+                if (window.NotificationManager && typeof window.NotificationManager.success === 'function') {
                     NotificationManager.success(
                         'Biometria ativada!', 
                         'Você poderá usar sua digital ou face nos próximos acessos'
@@ -720,7 +737,7 @@
                 
             } catch (error) {
                 console.error('Erro ao configurar biometria:', error);
-                if (window.NotificationManager) {
+                if (window.NotificationManager && typeof window.NotificationManager.error === 'function') {
                     NotificationManager.error('Erro', error.message);
                 } else {
                     alert('Erro ao configurar biometria: ' + error.message);
@@ -761,7 +778,7 @@
                     
                     localStorage.setItem(CONFIG.STORAGE_KEYS.USERNAME, result.username);
                     
-                    if (window.NotificationManager) {
+                    if (window.NotificationManager && typeof window.NotificationManager.success === 'function') {
                         NotificationManager.success('Autenticado!', 'Bem-vindo de volta, ' + result.fullName);
                     }
                     
@@ -795,7 +812,7 @@
                     const userType = AuthManager.getUserType();
                     console.log('📊 UserType (fallback):', userType);
                     
-                    if (window.NotificationManager) {
+                    if (window.NotificationManager && typeof window.NotificationManager.success === 'function') {
                         NotificationManager.success('Autenticado!', 'Bem-vindo de volta!');
                     }
                     
@@ -822,7 +839,7 @@
                 
             } catch (error) {
                 console.error('❌ Erro no login biométrico:', error);
-                if (window.NotificationManager) {
+                if (window.NotificationManager && typeof window.NotificationManager.error === 'function') {
                     NotificationManager.error('Erro', error.message);
                 } else {
                     alert('Erro: ' + error.message);
@@ -914,10 +931,8 @@
                     // Mostrar modal de biometria se aplicável
                     if (shouldShowBiometric) {
                         showBiometricModal();
-                        // Aguardar resposta do modal antes de redirecionar
-                        setTimeout(() => {
-                            redirectToDashboard(response.userType);
-                        }, 8000); // 8 segundos para o usuário decidir
+                        // O modal agora espera a decisão do usuário, sem timeout
+                        // O redirecionamento acontece em dismissBiometricSetup() ou setupBiometric()
                     } else {
                         redirectToDashboard(response.userType);
                     }
