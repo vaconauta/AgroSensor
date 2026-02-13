@@ -747,6 +747,9 @@
                     console.log('📊 UserType para redirect:', result.userType);
                     console.log('🔍 Função redirectToDashboard existe?', typeof redirectToDashboard);
                     
+                    // Esconder loading antes do redirect
+                    LoadingManager.hide(btn);
+                    
                     // Redirecionar baseado no tipo de usuário
                     // Reduzir timeout e garantir execução
                     setTimeout(() => {
@@ -761,6 +764,9 @@
                         }
                     }, 100);
                     
+                    // Retornar para evitar executar o finally que esconde o loading novamente
+                    return;
+                    
                 } else if (AuthManager.isAuthenticated()) {
                     // Fallback: se já tem token válido mas backend não respondeu
                     console.log('⚠️ Usando token existente (fallback)');
@@ -770,6 +776,9 @@
                     if (window.NotificationManager) {
                         NotificationManager.success('Autenticado!', 'Bem-vindo de volta!');
                     }
+                    
+                    // Esconder loading antes do redirect
+                    LoadingManager.hide(btn);
                     
                     setTimeout(() => {
                         console.log('⏰ Timeout fallback executado, chamando redirectToDashboard...');
@@ -781,6 +790,9 @@
                             window.location.href = 'pages/' + page;
                         }
                     }, 100);
+                    
+                    // Retornar para evitar executar o finally
+                    return;
                 } else {
                     console.error('❌ Nenhum token válido disponível');
                     throw new Error('Sessão expirada. Por favor, faça login novamente com suas credenciais');
