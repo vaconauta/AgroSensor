@@ -2337,19 +2337,38 @@
             const onlineDevices = devices.filter(d => d.isOnline).length;
             const totalDevices = devices.length;
             
-            // Calcular umidade média de todos os sensores (última leitura de cada)
-            let totalHumidity = 0;
+            // Verificar preferência de exibição (média ou último valor)
+            const statsDisplayMode = localStorage.getItem('statsDisplayMode') || 'average';
+            
+            // Calcular umidade do solo respeitando a configuração
+            let avgHumidity = 0;
             let readingCount = 0;
             
-            devices.forEach(sensor => {
-                const latestReading = sensor.readings[sensor.readings.length - 1];
-                if (latestReading) {
-                    totalHumidity += latestReading.umidade_solo;
-                    readingCount++;
-                }
-            });
-            
-            const avgHumidity = readingCount > 0 ? totalHumidity / readingCount : 0;
+            if (statsDisplayMode === 'latest') {
+                // Exibir a ÚLTIMA leitura de cada sensor
+                devices.forEach(sensor => {
+                    const latestReading = sensor.readings[sensor.readings.length - 1];
+                    if (latestReading) {
+                        avgHumidity += latestReading.umidade_solo;
+                        readingCount++;
+                    }
+                });
+                avgHumidity = readingCount > 0 ? avgHumidity / readingCount : 0;
+            } else {
+                // Exibir MÉDIA de todas as leituras de todos os sensores
+                let totalHumidity = 0;
+                let totalReadings = 0;
+                devices.forEach(sensor => {
+                    sensor.readings.forEach(reading => {
+                        if (reading.umidade_solo !== null && reading.umidade_solo !== undefined) {
+                            totalHumidity += reading.umidade_solo;
+                            totalReadings++;
+                        }
+                    });
+                });
+                avgHumidity = totalReadings > 0 ? totalHumidity / totalReadings : 0;
+                readingCount = totalReadings;
+            }
             
             // Calcular total de leituras agrupadas (dados originais)
             let totalLeiturasAgrupadas = 0;
@@ -2380,10 +2399,12 @@
         }
         
         // Função para atualizar card de temperatura do ar e umidade relativa
+        // Usa o mesmo período do gráfico de temperatura para manter consistência
         async function updateAirTemperatureAndHumidityCard() {
             try {
-                // Usar cache compartilhado em vez de nova requisição
-                const historyData = await fetchSharedHistoryData('24h');
+                // Usar o período do gráfico de temperatura para manter consistência com os gráficos
+                const airTempPeriod = document.getElementById('airTempFilter')?.value || '24h';
+                const historyData = await fetchSharedHistoryData(airTempPeriod);
                 const data = { dados: historyData };
                 
                 if (data && data.dados && data.dados.length > 0) {
@@ -2458,10 +2479,12 @@
         }
         
         // Função para atualizar card de vento no dashboard
+        // Usa o mesmo período do gráfico de vento para manter consistência
         async function updateWindCard() {
             try {
-                // Usar cache compartilhado em vez de nova requisição
-                const historyData = await fetchSharedHistoryData('24h');
+                // Usar o período do gráfico de vento para manter consistência
+                const windPeriod = document.getElementById('windFilter')?.value || '24h';
+                const historyData = await fetchSharedHistoryData(windPeriod);
                 const data = { dados: historyData };
                 
                 if (data && data.dados && data.dados.length > 0) {
@@ -2471,15 +2494,38 @@
                     );
                     
                     if (dadosComVento.length > 0) {
-                        // Pegar leitura MAIS RECENTE por timestamp
-                        const latestWithWind = dadosComVento.reduce((newest, current) => {
-                            const newestTime = new Date(newest.timestamp).getTime();
-                            const currentTime = new Date(current.timestamp).getTime();
-                            return currentTime > newestTime ? current : newest;
-                        });
+                        // Verificar preferência de exibição (média ou último valor)
+                        const windDisplayMode = localStorage.getItem('statsDisplayMode') || 'average';
                         
-                        const velocidade = latestWithWind.velocidade_vento || 0;
-                        const direcao = latestWithWind.direcao_vento_cardinal || 'N';
+                        let velocidade, direcao;
+                        
+                        if (windDisplayMode === 'latest') {
+                            // Modo 'latest': pegar leitura MAIS RECENTE
+                            const latestWithWind = dadosComVento.reduce((newest, current) => {
+                                const newestTime = new Date(newest.timestamp).getTime();
+                                const currentTime = new Date(current.timestamp).getTime();
+                                return currentTime > newestTime ? current : newest;
+                            });
+                            velocidade = latestWithWind.velocidade_vento || 0;
+                            direcao = latestWithWind.direcao_vento_cardinal || 'N';
+                        } else {
+                            // Modo 'average': calcular média da velocidade
+                            const totalVelocidade = dadosComVento.reduce((sum, item) => sum + (item.velocidade_vento || 0), 0);
+                            velocidade = totalVelocidade / dadosComVento.length;
+                            
+                            // Direção predominante (mais frequente)
+                            const direcoes = dadosComVento
+                                .map(d => d.direcao_vento_cardinal)
+                                .filter(d => d && d !== '-');
+                            if (direcoes.length > 0) {
+                                const freq = {};
+                                direcoes.forEach(d => { freq[d] = (freq[d] || 0) + 1; });
+                                direcao = Object.entries(freq).sort((a, b) => b[1] - a[1])[0][0];
+                            } else {
+                                direcao = 'N';
+                            }
+                        }
+                        
                         const rotacao = WindUtils.getWindRotation(direcao);
                         
                         // Atualizar velocidade
@@ -3523,7 +3569,7 @@
                 rainChart.data.labels = timestamps.map(timestamp => {
                     const date = new Date(timestamp);
                     if (filter === '24h') {
-                        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                        return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
                     } else if (filter === '7d') {
                         return date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
                     } else if (filter === '30d') {
@@ -3585,16 +3631,37 @@
                 
                 rainChart.update('none'); // Use 'none' para evitar animação que pode causar problemas
                 
-                // Calcular e atualizar card de precipitação baseado no período do gráfico
+                // Calcular e atualizar card de precipitação respeitando configuração
+                const rainDisplayMode = localStorage.getItem('statsDisplayMode') || 'average';
                 let totalRainPeriod = 0;
-                Object.values(dataByDevice).forEach(sensor => {
-                    // Para cada sensor, pegar a última leitura do período (valor acumulado)
-                    if (sensor.readings.length > 0) {
-                        sensor.readings.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                        totalRainPeriod += sensor.readings[0].quantidade_chuva || 0;
-                    }
-                });
+                
+                if (rainDisplayMode === 'latest') {
+                    // Modo 'latest': mostrar a última leitura de cada sensor
+                    Object.values(dataByDevice).forEach(sensor => {
+                        if (sensor.readings.length > 0) {
+                            // Ordenar por timestamp e pegar o mais recente
+                            const sorted = [...sensor.readings].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                            totalRainPeriod += sorted[0].quantidade_chuva || 0;
+                        }
+                    });
+                } else {
+                    // Modo 'average' (padrão): somar TODAS as leituras do período
+                    Object.values(dataByDevice).forEach(sensor => {
+                        if (sensor.readings.length > 0) {
+                            sensor.readings.forEach(reading => {
+                                totalRainPeriod += reading.quantidade_chuva || 0;
+                            });
+                        }
+                    });
+                }
                 document.getElementById('totalRain').textContent = totalRainPeriod.toFixed(1) + 'mm';
+                
+                // Atualizar label do card para refletir o período selecionado
+                const rainPeriodLabel = document.querySelector('#totalRain')?.closest('.stats-card')?.querySelector('.stats-card-label');
+                if (rainPeriodLabel) {
+                    const periodLabels = { '24h': 'Precipitação (24h)', '7d': 'Precipitação (7 dias)', '30d': 'Precipitação (30 dias)', 'all': 'Precipitação (Total)' };
+                    rainPeriodLabel.textContent = periodLabels[filter] || 'Precipitação no Período';
+                }
                 
             } catch (error) {
                 console.error('Erro ao atualizar gráfico de chuva:', error);
@@ -3673,7 +3740,7 @@
                 airTempChart.data.labels = timestamps.map(timestamp => {
                     const date = new Date(timestamp);
                     if (filter === '24h') {
-                        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                        return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
                     } else if (filter === '7d') {
                         return date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
                     } else if (filter === '30d') {
@@ -3805,7 +3872,7 @@
                 airHumidityChart.data.labels = timestamps.map(timestamp => {
                     const date = new Date(timestamp);
                     if (filter === '24h') {
-                        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                        return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
                     } else if (filter === '7d') {
                         return date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
                     } else if (filter === '30d') {
@@ -3987,7 +4054,7 @@
                 windChart.data.labels = timestamps.map(timestamp => {
                     const date = new Date(timestamp);
                     if (filter === '24h') {
-                        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                        return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
                     } else if (filter === '7d') {
                         return date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
                     } else if (filter === '30d') {
