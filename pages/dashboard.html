@@ -1414,7 +1414,7 @@
                 </div>
                 
                 <!-- Card de Vento -->
-                <a href="vento.html" class="stats-card wind-compass-card" style="text-decoration: none; color: inherit;">
+                <div class="stats-card wind-compass-card" onclick="Router.navigate('vento.html')" style="cursor: pointer;">
                     <div class="wind-compass-container">
                         <div class="wind-compass">
                             <!-- Indicador de direção (Seta) - Aponta para Norte por padrão -->
@@ -1447,7 +1447,7 @@
                     </div>
                     
                     <div class="wind-label">Velocidade e Direção do Vento</div>
-                </a>
+                </div>
                 
                 <!-- Card Registros Hoje - OCULTO -->
                 <div class="stats-card" style="display: none;">
@@ -1784,7 +1784,7 @@
                                 <span>Vento</span>
                             </h3>
                             <div class="chart-actions">
-                                <select class="filter-selector" id="windFilter" onchange="updateWindChart()">
+                                <select class="filter-selector" id="windFilter" onchange="updateWindChart(); updateWindCard()">
                                     <option value="24h">Últimas 24h</option>
                                     <option value="7d">Últimos 7 dias</option>
                                     <option value="30d">Últimos 30 dias</option>
@@ -2391,11 +2391,7 @@
                 document.getElementById('readingCount').title = 'Leituras atuais';
             }
             
-            // Atualizar card de vento
-            updateWindCard();
-            
-            // Atualizar cards de temperatura e umidade relativa
-            updateAirTemperatureAndHumidityCard();
+            // Cards de vento e temperatura são atualizados diretamente em updateCharts()
         }
         
         // Função para atualizar card de temperatura do ar e umidade relativa
@@ -2486,6 +2482,8 @@
         // Usa o mesmo período do gráfico de vento para manter consistência
         async function updateWindCard() {
             try {
+                console.log('🌬️ Atualizando card de vento...');
+                
                 // Usar o período do gráfico de vento para manter consistência
                 const windPeriod = document.getElementById('windFilter')?.value || '24h';
                 const historyData = await fetchSharedHistoryData(windPeriod);
@@ -2496,6 +2494,8 @@
                     const dadosComVento = data.dados.filter(item => 
                         item.velocidade_vento !== null && item.velocidade_vento !== undefined
                     );
+                    
+                    console.log(`📊 Dados de vento encontrados: ${dadosComVento.length} de ${data.dados.length} registros`);
                     
                     if (dadosComVento.length > 0) {
                         // Verificar preferência de exibição (média ou último valor)
@@ -2512,6 +2512,7 @@
                             });
                             velocidade = latestWithWind.velocidade_vento || 0;
                             direcao = latestWithWind.direcao_vento_cardinal || 'N';
+                            console.log(`📍 Modo: Último valor - Velocidade: ${velocidade.toFixed(1)} km/h, Direção: ${direcao}`);
                         } else {
                             // Modo 'average': calcular média da velocidade
                             const totalVelocidade = dadosComVento.reduce((sum, item) => sum + (item.velocidade_vento || 0), 0);
@@ -2528,20 +2529,28 @@
                             } else {
                                 direcao = 'N';
                             }
+                            console.log(`📍 Modo: Média - Velocidade: ${velocidade.toFixed(1)} km/h, Direção predominante: ${direcao}`);
                         }
                         
                         const rotacao = WindUtils.getWindRotation(direcao);
+                        console.log(`🧭 Rotação calculada: ${rotacao}° para direção ${direcao}`);
                         
                         // Atualizar velocidade
                         const speedElement = document.querySelector('.wind-speed');
                         if (speedElement) {
                             speedElement.textContent = velocidade.toFixed(1);
+                            console.log(`✓ Velocidade atualizada no DOM: ${velocidade.toFixed(1)} km/h`);
+                        } else {
+                            console.warn('⚠️ Elemento .wind-speed não encontrado no DOM');
                         }
                         
                         // Atualizar seta de direção
                         const arrowElement = document.querySelector('.wind-arrow');
                         if (arrowElement) {
                             arrowElement.style.transform = `translateX(-50%) rotate(${rotacao}deg)`;
+                            console.log(`✓ Seta de direção atualizada: rotate(${rotacao}deg)`);
+                        } else {
+                            console.warn('⚠️ Elemento .wind-arrow não encontrado no DOM');
                         }
                         
                         // Remover badge "Em Breve"
@@ -2549,10 +2558,16 @@
                         if (badge) {
                             badge.style.display = 'none';
                         }
+                        
+                        console.log('✅ Card de vento atualizado com sucesso!');
+                    } else {
+                        console.warn('⚠️ Nenhum dado válido de vento encontrado no período');
                     }
+                } else {
+                    console.warn('⚠️ Nenhum dado disponível para atualizar o card de vento');
                 }
             } catch (error) {
-                console.error('Erro ao atualizar card de vento:', error);
+                console.error('❌ Erro ao atualizar card de vento:', error);
                 // Manter valores padrão em caso de erro
             }
         }
@@ -3329,7 +3344,13 @@
                     updateWindChart()
                 ]);
                 
-                console.log(`✅ Gráficos atualizados (${periods.size} requisição(ões) à API)`);
+                // Atualizar os cards de estatísticas de forma independente
+                await Promise.all([
+                    updateWindCard(),
+                    updateAirTemperatureAndHumidityCard()
+                ]);
+                
+                console.log(`✅ Gráficos e cards atualizados (${periods.size} requisição(ões) à API)`);
                 
             } catch (error) {
                 console.error('Erro ao atualizar gráficos:', error);

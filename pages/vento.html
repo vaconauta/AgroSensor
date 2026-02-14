@@ -34,6 +34,22 @@
     <script src="../assets/js/router.js"></script>
     
     <style>
+        /* Prevenir overflow horizontal global */
+        body, html {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+        
+        .main-content {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+        
+        .content-body {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+
         /* Estilos específicos para a página de vento */
         .wind-stats-grid {
             display: grid;
@@ -320,6 +336,77 @@
             padding: var(--spacing-lg);
             height: 450px;
             box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: visible;
+        }
+
+        .chart-container canvas {
+            max-height: 360px !important;
+            width: 100% !important;
+            height: 360px !important;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                overflow-x: hidden;
+                padding: var(--spacing-md);
+                height: 400px;
+            }
+
+            .chart-container canvas {
+                max-height: 300px !important;
+                height: 300px !important;
+            }
+
+            .chart-header {
+                overflow: visible;
+                padding-bottom: var(--spacing-sm);
+            }
+
+            .chart-title {
+                font-size: 0.95rem;
+                max-width: 100%;
+            }
+
+            .chart-actions {
+                width: 100%;
+                flex-wrap: nowrap;
+                gap: var(--spacing-xs);
+            }
+
+            .filter-selector {
+                flex: 1;
+                min-width: 0;
+                font-size: 0.8rem;
+                padding: var(--spacing-xs) var(--spacing-sm);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chart-container {
+                padding: var(--spacing-sm);
+                height: 380px;
+            }
+
+            .chart-container canvas {
+                max-height: 280px !important;
+                height: 280px !important;
+            }
+
+            .chart-title {
+                font-size: 0.85rem;
+            }
+
+            .chart-title i {
+                font-size: 0.85rem;
+            }
+
+            .filter-selector {
+                font-size: 0.75rem;
+                padding: var(--spacing-xs);
+            }
         }
 
         .chart-header {
@@ -329,6 +416,9 @@
             margin-bottom: var(--spacing-lg);
             padding-bottom: var(--spacing-md);
             border-bottom: 1px solid var(--border-gray);
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+            position: relative;
         }
 
         .chart-title {
@@ -338,10 +428,14 @@
             display: flex;
             align-items: center;
             gap: var(--spacing-sm);
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin: 0;
         }
 
         .chart-title i {
             color: var(--accent-green);
+            flex-shrink: 0;
         }
 
         .filter-selector {
@@ -409,8 +503,197 @@
                 width: 320px;
                 height: 320px;
             }
-            
+        }
 
+        /* ===== CONTROLES DE CONFIGURAÇÃO DE GRÁFICOS ===== */
+        .chart-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .chart-control-btn {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+            color: var(--dark-gray);
+            white-space: nowrap;
+        }
+        
+        .chart-control-btn:hover {
+            background: var(--light-gray);
+            border-color: #3182ce;
+            color: #3182ce;
+        }
+        
+        .chart-control-btn.active {
+            background: #3182ce;
+            color: var(--white);
+            border-color: #3182ce;
+        }
+        
+        .chart-control-btn i {
+            font-size: 0.875rem;
+        }
+
+        /* Dropdown de personalização */
+        .chart-settings-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: var(--white);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            padding: var(--spacing-md);
+            min-width: 250px;
+            max-width: 90vw;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .chart-settings-dropdown.show {
+            display: block;
+        }
+
+        .chart-settings-section {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .chart-settings-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .chart-settings-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: var(--spacing-xs);
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .chart-type-buttons {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+        
+        .chart-type-btn {
+            flex: 1;
+            padding: var(--spacing-xs);
+            border: 1px solid var(--border-gray);
+            border-radius: var(--radius-sm);
+            background: var(--white);
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: var(--transition);
+            color: var(--text-gray);
+        }
+        
+        .chart-type-btn:hover {
+            background: var(--light-gray);
+            border-color: #3182ce;
+        }
+        
+        .chart-type-btn.active {
+            background: #3182ce;
+            color: var(--white);
+            border-color: #3182ce;
+        }
+        
+        .chart-type-btn i {
+            font-size: 1.25rem;
+        }
+        
+        .chart-settings-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--spacing-xs) 0;
+            font-size: 0.875rem;
+            color: var(--dark-gray);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: #cbd5e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+        
+        .toggle-switch.active {
+            background: #4299e1;
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+
+        /* Responsividade para controles */
+        @media (max-width: 768px) {
+            .chart-control-btn {
+                padding: var(--spacing-xs);
+                font-size: 0.8rem;
+                gap: 4px;
+            }
+            
+            .chart-settings-dropdown {
+                min-width: 240px;
+                max-width: calc(100vw - 40px);
+                right: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .chart-control-btn {
+                padding: 6px 8px;
+                font-size: 0.75rem;
+            }
+            
+            .chart-control-btn span {
+                display: none;
+            }
+            
+            .chart-control-btn i {
+                font-size: 0.9rem;
+                margin: 0;
+            }
+            
+            .chart-settings-dropdown {
+                min-width: 220px;
+                max-width: calc(100vw - 30px);
+                padding: var(--spacing-sm);
+                right: 5px;
+            }
         }
 
         /* Links desabilitados */
@@ -586,6 +869,67 @@
 
         .ml-auto {
             margin-left: auto !important;
+        }
+
+        .flex-grow-1 {
+            flex-grow: 1 !important;
+        }
+
+        .gap-2 {
+            gap: var(--spacing-sm) !important;
+        }
+
+        .mb-0 {
+            margin-bottom: 0 !important;
+        }
+
+        .mb-1 {
+            margin-bottom: var(--spacing-xs) !important;
+        }
+
+        .mb-3 {
+            margin-bottom: var(--spacing-md) !important;
+        }
+
+        .text-muted {
+            color: var(--text-gray) !important;
+        }
+
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .btn-sm {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: 0.8rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-green);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #5a9634;
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--dark-gray);
+            border: 1px solid var(--border-gray);
+        }
+
+        .btn-secondary:hover {
+            background: var(--light-gray);
         }
     </style>
 </head>
@@ -794,32 +1138,150 @@
 
             <!-- Gráficos de Vento -->
             <div class="wind-charts-grid">
-                <div class="chart-container">
+                <div class="chart-container" id="windSpeedChartContainer">
                     <div class="chart-header">
                         <h3 class="chart-title">
                             <i class="fas fa-chart-line"></i>
                             Velocidade do Vento
                         </h3>
-                        <select class="filter-selector" id="speedFilter" onchange="updateSpeedChart()">
-                            <option value="24h">Últimas 24h</option>
-                            <option value="7d">Últimos 7 dias</option>
-                            <option value="30d">Últimos 30 dias</option>
-                        </select>
+                        <div class="chart-actions">
+                            <select class="filter-selector" id="speedFilter" onchange="updateSpeedChart()">
+                                <option value="24h">Últimas 24h</option>
+                                <option value="7d">Últimos 7 dias</option>
+                                <option value="30d">Últimos 30 dias</option>
+                            </select>
+                            <div style="position: relative;">
+                                <button class="chart-control-btn" id="speedSettingsBtn" onclick="toggleChartSettings('speed')">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                                <div class="chart-settings-dropdown" id="speedSettings">
+                                    <div class="chart-settings-section">
+                                        <label class="chart-settings-label">Tipo de Gráfico</label>
+                                        <div class="chart-type-buttons">
+                                            <button class="chart-type-btn active" data-type="line" onclick="changeChartType('speed', 'line')">
+                                                <i class="fas fa-chart-line"></i>
+                                                <span>Linha</span>
+                                            </button>
+                                            <button class="chart-type-btn" data-type="bar" onclick="changeChartType('speed', 'bar')">
+                                                <i class="fas fa-chart-bar"></i>
+                                                <span>Barra</span>
+                                            </button>
+                                            <button class="chart-type-btn" data-type="area" onclick="changeChartType('speed', 'area')">
+                                                <i class="fas fa-chart-area"></i>
+                                                <span>Área</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-settings-section">
+                                        <div class="chart-settings-toggle">
+                                            <span>Mostrar Grid</span>
+                                            <div class="toggle-switch active" onclick="toggleChartGrid('speed')" id="speedGridToggle"></div>
+                                        </div>
+                                        <div class="chart-settings-toggle">
+                                            <span>Mostrar Pontos</span>
+                                            <div class="toggle-switch active" onclick="toggleChartPoints('speed')" id="speedPointsToggle"></div>
+                                        </div>
+                                        <div class="chart-settings-toggle">
+                                            <span>Preencher Área</span>
+                                            <div class="toggle-switch active" onclick="toggleChartFill('speed')" id="speedFillToggle"></div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-settings-section">
+                                        <label class="chart-settings-label">Limite de Registros</label>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <input 
+                                                type="number" 
+                                                id="speedMaxRecords" 
+                                                min="10" 
+                                                max="10000" 
+                                                step="10" 
+                                                value="100" 
+                                                onchange="changeChartMaxRecords('speed', this.value)"
+                                                style="flex: 1; padding: 6px 8px; border: 1px solid var(--border-gray); border-radius: var(--radius-sm); font-size: 0.875rem;"
+                                            />
+                                            <span style="font-size: 0.75rem; color: var(--text-gray); white-space: nowrap;">registros</span>
+                                        </div>
+                                        <div style="margin-top: 4px; font-size: 0.7rem; color: var(--text-gray);">
+                                            Menos registros = gráfico mais rápido
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <canvas id="windSpeedChart"></canvas>
                 </div>
 
-                <div class="chart-container">
+                <div class="chart-container" id="windDirectionChartContainer">
                     <div class="chart-header">
                         <h3 class="chart-title">
                             <i class="fas fa-compass"></i>
                             Direção do Vento
                         </h3>
-                        <select class="filter-selector" id="directionFilter" onchange="updateDirectionChart()">
-                            <option value="24h">Últimas 24h</option>
-                            <option value="7d">Últimos 7 dias</option>
-                            <option value="30d">Últimos 30 dias</option>
-                        </select>
+                        <div class="chart-actions">
+                            <select class="filter-selector" id="directionFilter" onchange="updateDirectionChart()">
+                                <option value="24h">Últimas 24h</option>
+                                <option value="7d">Últimos 7 dias</option>
+                                <option value="30d">Últimos 30 dias</option>
+                            </select>
+                            <div style="position: relative;">
+                                <button class="chart-control-btn" id="directionSettingsBtn" onclick="toggleChartSettings('direction')">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                                <div class="chart-settings-dropdown" id="directionSettings">
+                                    <div class="chart-settings-section">
+                                        <label class="chart-settings-label">Tipo de Gráfico</label>
+                                        <div class="chart-type-buttons">
+                                            <button class="chart-type-btn active" data-type="line" onclick="changeChartType('direction', 'line')">
+                                                <i class="fas fa-chart-line"></i>
+                                                <span>Linha</span>
+                                            </button>
+                                            <button class="chart-type-btn" data-type="bar" onclick="changeChartType('direction', 'bar')">
+                                                <i class="fas fa-chart-bar"></i>
+                                                <span>Barra</span>
+                                            </button>
+                                            <button class="chart-type-btn" data-type="area" onclick="changeChartType('direction', 'area')">
+                                                <i class="fas fa-chart-area"></i>
+                                                <span>Área</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-settings-section">
+                                        <div class="chart-settings-toggle">
+                                            <span>Mostrar Grid</span>
+                                            <div class="toggle-switch active" onclick="toggleChartGrid('direction')" id="directionGridToggle"></div>
+                                        </div>
+                                        <div class="chart-settings-toggle">
+                                            <span>Mostrar Pontos</span>
+                                            <div class="toggle-switch active" onclick="toggleChartPoints('direction')" id="directionPointsToggle"></div>
+                                        </div>
+                                        <div class="chart-settings-toggle">
+                                            <span>Preencher Área</span>
+                                            <div class="toggle-switch active" onclick="toggleChartFill('direction')" id="directionFillToggle"></div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-settings-section">
+                                        <label class="chart-settings-label">Limite de Registros</label>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <input 
+                                                type="number" 
+                                                id="directionMaxRecords" 
+                                                min="10" 
+                                                max="10000" 
+                                                step="10" 
+                                                value="100" 
+                                                onchange="changeChartMaxRecords('direction', this.value)"
+                                                style="flex: 1; padding: 6px 8px; border: 1px solid var(--border-gray); border-radius: var(--radius-sm); font-size: 0.875rem;"
+                                            />
+                                            <span style="font-size: 0.75rem; color: var(--text-gray); white-space: nowrap;">registros</span>
+                                        </div>
+                                        <div style="margin-top: 4px; font-size: 0.7rem; color: var(--text-gray);">
+                                            Menos registros = gráfico mais rápido
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <canvas id="windDirectionChart"></canvas>
                 </div>
@@ -858,6 +1320,9 @@
             history: []
         };
 
+        // Timer para atualização automática
+        let autoRefreshTimer = null;
+
         // Função para converter graus em direção cardeal
         function degreesToCardinal(degrees) {
             const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
@@ -867,32 +1332,60 @@
         // Função para buscar dados históricos da API (sem cache - sempre dados frescos)
         async function fetchWindData(period = '24h') {
             try {
-                LoadingManager.show();
-                
                 const companyId = window.adminViewCompanyId || AuthManager.getCompanyId();
                 const data = await ApiClient.getSensorsHistory(companyId, period);
                 
                 console.log('Dados recebidos da API:', data);
                 
                 if (data && data.dados && data.dados.length > 0) {
+                    // Debug: verificar primeiro item
+                    console.log('Primeiro item da API:', data.dados[0]);
+                    console.log('Campos disponíveis:', Object.keys(data.dados[0]));
+                    console.log('Valor de velocidade_vento:', data.dados[0].velocidade_vento);
+                    console.log('Valor de direcao_vento_cardinal:', data.dados[0].direcao_vento_cardinal);
+                    
                     // Processar dados históricos
                     windData.history = data.dados.map(item => {
                         const direcaoCardinal = item.direcao_vento_cardinal || '-';
                         const direcaoGraus = WindUtils.getWindRotation(direcaoCardinal);
+                        const velocidade = parseFloat(item.velocidade_vento) || 0;
                         
                         return {
                             timestamp: item.timestamp,
-                            speed: item.velocidade_vento || 0,
-                            gust: item.velocidade_vento ? item.velocidade_vento * 1.3 : 0,
+                            speed: velocidade,
+                            gust: velocidade > 0 ? velocidade * 1.3 : 0,
                             direction: direcaoGraus,
                             directionCardinal: direcaoCardinal,
-                            pressure: item.pressao || 0,
-                            temperature: item.temperatura || 0,
-                            humidity: item.umidade_solo || 0
+                            pressure: parseFloat(item.pressao) || 0,
+                            temperature: parseFloat(item.temperatura) || 0,
+                            humidity: parseFloat(item.umidade_solo) || 0
                         };
                     });
                     
-                    console.log(`${windData.history.length} leituras processadas`);
+                    // IMPORTANTE: Ordenar dados por timestamp (mais antigos primeiro, mais recentes no final)
+                    windData.history.sort((a, b) => {
+                        return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+                    });
+                    
+                    console.log(`${windData.history.length} leituras processadas e ordenadas`);
+                    console.log('Primeiros 3 itens (mais antigos):', windData.history.slice(0, 3).map(i => ({
+                        time: new Date(i.timestamp).toLocaleString('pt-BR'),
+                        speed: i.speed
+                    })));
+                    console.log('Últimos 3 itens (mais recentes):', windData.history.slice(-3).map(i => ({
+                        time: new Date(i.timestamp).toLocaleString('pt-BR'),
+                        speed: i.speed
+                    })));
+                    
+                    // Verificar quantos dados têm velocidade > 0
+                    const dadosComVento = windData.history.filter(item => item.speed > 0);
+                    console.log(`📊 Dados com velocidade > 0: ${dadosComVento.length} de ${windData.history.length} registros`);
+                    
+                    // Alertar se não houver dados de vento
+                    if (dadosComVento.length === 0) {
+                        console.warn('⚠️ ATENÇÃO: Todos os registros têm velocidade do vento = 0');
+                        notificationManager.warning('Aviso', 'Nenhum dado de velocidade do vento foi registrado no período');
+                    }
                     
                     // Atualizar dados atuais com a leitura mais recente
                     extractCurrentDataFromHistory();
@@ -901,11 +1394,9 @@
                     windData.history = [];
                 }
                 
-                LoadingManager.hide();
                 return windData.history;
             } catch (error) {
                 console.error('Erro ao buscar dados de vento:', error);
-                LoadingManager.hide();
                 notificationManager.error('Erro', 'Falha ao carregar dados de vento');
                 return [];
             }
@@ -914,9 +1405,11 @@
         // Função para extrair dados atuais do histórico
         function extractCurrentDataFromHistory() {
             if (windData.history.length === 0) {
-                console.warn('Sem dados históricos para extrair dados atuais');
+                console.warn('⚠️ Sem dados históricos para extrair dados atuais');
                 return;
             }
+            
+            console.log('Extraindo dados atuais de', windData.history.length, 'registros');
             
             // Pegar a leitura mais recente por timestamp (ordenar por data DESC)
             const latest = windData.history.reduce((newest, current) => {
@@ -933,19 +1426,42 @@
                 pressure: latest.pressure || 0
             };
             
-            console.log('Dados atuais extraídos (mais recente por timestamp):', windData.current, 'Timestamp:', latest.timestamp);
+            console.log('✓ Dados atuais extraídos (mais recente por timestamp):', windData.current, 'Timestamp:', latest.timestamp);
         }
 
         // Função para atualizar gráfico de velocidade do vento
-        async function updateSpeedChart() {
+        async function updateSpeedChart(skipFetch = false) {
+            console.log('updateSpeedChart chamada (skipFetch=', skipFetch, ')');
             const period = document.getElementById('speedFilter').value;
+            console.log('Período selecionado:', period);
             
-            // Buscar dados da API
-            await fetchWindData(period);
+            // Buscar dados da API se necessário (exceto se skipFetch for true)
+            if (!skipFetch && (windData.history.length === 0 || chartConfigs.speed.period !== period)) {
+                console.log('Buscando dados da API...');
+                await fetchWindData(period);
+                chartConfigs.speed.period = period;
+                saveChartPreferences();
+            } else {
+                console.log('Reutilizando dados já carregados (', windData.history.length, 'registros)');
+            }
             
-            if (!windSpeedChart || windData.history.length === 0) return;
+            if (!windSpeedChart || windData.history.length === 0) {
+                console.warn('⚠️ Gráfico de velocidade não pode ser atualizado: chart=', !!windSpeedChart, 'dados=', windData.history.length);
+                return;
+            }
             
-            const filteredData = windData.history;
+            // Filtrar dados: para 24h, pegar TODOS os dados (não limitar a 100)
+            // Para períodos maiores, aplicar o limite para performance
+            let filteredData = windData.history;
+            const maxRecords = chartConfigs.speed.maxRecords || 100;
+            
+            // Apenas limitar se não for 24h OU se ultrapassar muito o limite
+            if (period !== '24h' && filteredData.length > maxRecords) {
+                filteredData = filteredData.slice(-maxRecords);
+            } else if (period === '24h' && filteredData.length > 500) {
+                // Para 24h, limitar apenas se passar de 500 pontos
+                filteredData = filteredData.slice(-500);
+            }
             
             const labels = filteredData.map(item => {
                 const date = new Date(item.timestamp);
@@ -971,16 +1487,43 @@
                 }
             ];
             
+            console.log('Dados do gráfico de velocidade:', {
+                labels: labels.length,
+                primeiraLabel: labels[0],
+                ultimaLabel: labels[labels.length - 1],
+                data: filteredData.map(item => item.speed).slice(0, 5),
+                totalData: filteredData.length,
+                maxSpeed: Math.max(...filteredData.map(item => item.speed)),
+                minSpeed: Math.min(...filteredData.map(item => item.speed)),
+                avgSpeed: (filteredData.reduce((sum, item) => sum + item.speed, 0) / filteredData.length).toFixed(2)
+            });
+            
+            // Verificar se há dados com vento
+            const hasWindData = filteredData.some(item => item.speed > 0);
+            if (!hasWindData) {
+                console.warn('⚠️ Nenhum registro com velocidade do vento > 0 nos dados filtrados');
+            }
+            
+            // Aplicar preferências do usuário
+            applyChartPreferences('speed');
             windSpeedChart.update();
+            console.log('✓ Gráfico de velocidade atualizado');
         }
 
         // Função para atualizar gráfico de direção do vento
-        async function updateDirectionChart() {
+        async function updateDirectionChart(skipFetch = false) {
+            console.log('updateDirectionChart chamada (skipFetch=', skipFetch, ')');
             const period = document.getElementById('directionFilter').value;
+            console.log('Período selecionado:', period);
             
-            // Usar os dados já carregados se o período for o mesmo
-            if (windData.history.length === 0) {
+            // Buscar dados da API se necessário (exceto se skipFetch for true)
+            if (!skipFetch && (windData.history.length === 0 || chartConfigs.direction.period !== period)) {
+                console.log('Buscando dados da API...');
                 await fetchWindData(period);
+                chartConfigs.direction.period = period;
+                saveChartPreferences();
+            } else {
+                console.log('Reutilizando dados já carregados (', windData.history.length, 'registros)');
             }
             
             if (!windDirectionChart) {
@@ -995,11 +1538,21 @@
                 return;
             }
             
-            const filteredData = windData.history;
+            // Filtrar dados: para 24h, pegar TODOS os dados (não limitar a 100)
+            // Para períodos maiores, aplicar o limite para performance
+            let filteredData = windData.history;
+            const maxRecords = chartConfigs.direction.maxRecords || 100;
             
-            // Calcular frequência de cada direção para rosa dos ventos
-            const stats = WindUtils.calcularEstatisticasVento(filteredData);
-            console.log('Estatísticas calculadas:', stats);
+            // Apenas limitar se não for 24h OU se ultrapassar muito o limite
+            if (period !== '24h' && filteredData.length > maxRecords) {
+                filteredData = filteredData.slice(-maxRecords);
+            } else if (period === '24h' && filteredData.length > 500) {
+                // Para 24h, limitar apenas se passar de 500 pontos
+                filteredData = filteredData.slice(-500);
+            }
+            
+            // Calcular frequência de cada direção para rosa dos ventos (usar todos os dados)
+            const stats = WindUtils.calcularEstatisticasVento(windData.history);
             updateWindRose(stats.frequenciasDirecao);
             
             const labels = filteredData.map(item => {
@@ -1014,11 +1567,7 @@
             windDirectionChart.data.labels = labels;
             windDirectionChart.data.datasets = [{
                 label: 'Direção do Vento',
-                data: filteredData.map((item, index) => ({
-                    x: index,
-                    y: item.direction,
-                    cardinal: item.directionCardinal
-                })),
+                data: filteredData.map(item => item.direction),
                 borderColor: '#38a169',
                 backgroundColor: 'rgba(56, 161, 105, 0.1)',
                 borderWidth: 2,
@@ -1026,10 +1575,23 @@
                 tension: 0.4,
                 pointRadius: 3,
                 pointHoverRadius: 6,
-                showLine: true
+                showLine: true,
+                directionData: filteredData.map(item => item.directionCardinal)
             }];
             
+            console.log('Dados do gráfico de direção:', {
+                labels: labels.length,
+                primeiraLabel: labels[0],
+                ultimaLabel: labels[labels.length - 1],
+                data: filteredData.map(item => item.direction).slice(0, 5),
+                cardinals: filteredData.map(item => item.directionCardinal).slice(0, 5),
+                totalData: filteredData.length
+            });
+            
+            // Aplicar preferências do usuário
+            applyChartPreferences('direction');
             windDirectionChart.update();
+            console.log('✓ Gráfico de direção atualizado');
         }
 
         // Função para atualizar rosa dos ventos
@@ -1184,6 +1746,8 @@
 
         // Função para atualizar valores atuais
         function updateCurrentValues() {
+            console.log('Atualizando valores atuais:', windData.current);
+            
             // Velocidade atual
             const speedElement = document.getElementById('currentWindSpeed');
             if (speedElement) {
@@ -1230,25 +1794,27 @@
         // Função para buscar e atualizar todos os dados
         async function refreshWindData() {
             try {
-                LoadingManager.show();
+                console.log('Iniciando atualização dos dados de vento...');
                 
-                // Buscar dados históricos
-                await fetchWindData('24h');
+                // Buscar dados históricos do período atual
+                const speedPeriod = document.getElementById('speedFilter')?.value || '24h';
+                await fetchWindData(speedPeriod);
+                
+                console.log('Dados buscados:', windData.history.length, 'registros');
                 
                 // Extrair dados atuais do histórico
                 extractCurrentDataFromHistory();
                 
-                // Atualizar interface
+                // Atualizar interface (skipFetch=true para não buscar dados novamente)
                 updateCurrentValues();
                 updateWindCompass();
-                updateSpeedChart();
-                updateDirectionChart();
+                await updateSpeedChart(true);
+                await updateDirectionChart(true);
                 
-                LoadingManager.hide();
+                console.log('Atualização completa');
                 // notificationManager.success('Atualizado', 'Dados de vento atualizados com sucesso');
             } catch (error) {
                 console.error('Erro ao atualizar dados:', error);
-                LoadingManager.hide();
                 notificationManager.error('Erro', 'Falha ao atualizar dados de vento');
             }
         }
@@ -1261,22 +1827,67 @@
                 return;
             }
 
-            // Configurar sidebar
-            initializeSidebarEvents();
+            console.log('=== INICIANDO PÁGINA DE VENTO ===');
 
-            // Verificar modo admin
-            checkAdminMode();
+            // Mostrar loading apenas na inicialização
+            LoadingManager.showGlobalLoading('Carregando dados de vento...');
 
-            // Inicializar gráficos
-            initWindCharts();
+            try {
+                // Configurar sidebar
+                initializeSidebarEvents();
+                console.log('✓ Sidebar configurada');
 
-            // Buscar e atualizar dados
-            await refreshWindData();
+                // Verificar modo admin
+                checkAdminMode();
+                console.log('✓ Modo admin verificado');
 
-            // Configurar atualização automática a cada 30 segundos
-            setInterval(refreshWindData, 30000);
+                // Inicializar gráficos
+                initWindCharts();
 
-            console.log('Página de vento inicializada com sucesso');
+                // Buscar e atualizar dados
+                await refreshWindData();
+
+                // Configurar atualização automática
+                startAutoRefresh();
+
+                // Escutar mudanças de configuração de outras abas
+                if ('BroadcastChannel' in window) {
+                    const configChannel = new BroadcastChannel('dashboard_config');
+                    
+                    configChannel.onmessage = (event) => {
+                        if (event.data.type === 'refresh_interval_updated') {
+                            console.log('📡 Recebida atualização de intervalo:', event.data.interval);
+                            startAutoRefresh();
+                        }
+                    };
+                }
+
+            } catch (error) {
+                console.error('❌ Erro ao inicializar página de vento:', error);
+                notificationManager.error('Erro', 'Falha ao carregar página de vento');
+            } finally {
+                LoadingManager.hideGlobalLoading();
+            }
+        }
+
+        // Função para iniciar atualização automática
+        function startAutoRefresh() {
+            if (typeof refreshWindData !== 'function') return;
+            
+            // Limpar timer anterior se existir
+            if (autoRefreshTimer) {
+                clearInterval(autoRefreshTimer);
+                autoRefreshTimer = null;
+            }
+            
+            // Carregar intervalo do localStorage ou usar 5 minutos como padrão
+            const savedInterval = localStorage.getItem('dashboardRefreshInterval');
+            const refreshInterval = savedInterval ? parseInt(savedInterval) : 5 * 60 * 1000;
+            
+            console.log(`🔄 Página de vento será atualizada automaticamente a cada ${refreshInterval}ms (${refreshInterval / 60000} minutos)`);
+            
+            // Iniciar novo timer
+            autoRefreshTimer = setInterval(refreshWindData, refreshInterval);
         }
 
         // Função para inicializar eventos da sidebar
@@ -1476,8 +2087,11 @@
 
         // Função para inicializar gráficos
         function initWindCharts() {
+            console.log('Inicializando gráficos de vento...');
+            
             // Gráfico de velocidade do vento
             const speedCtx = document.getElementById('windSpeedChart').getContext('2d');
+            console.log('Canvas de velocidade obtido');
             windSpeedChart = new Chart(speedCtx, {
                 type: 'line',
                 data: {
@@ -1528,8 +2142,9 @@
 
             // Gráfico de direção do vento
             const directionCtx = document.getElementById('windDirectionChart').getContext('2d');
+            console.log('Canvas de direção obtido');
             windDirectionChart = new Chart(directionCtx, {
-                type: 'scatter',
+                type: 'line',
                 data: {
                     labels: [],
                     datasets: []
@@ -1542,6 +2157,8 @@
                             position: 'top',
                         },
                         tooltip: {
+                            mode: 'index',
+                            intersect: false,
                             callbacks: {
                                 label: function(context) {
                                     const direction = context.parsed.y;
@@ -1574,13 +2191,19 @@
                                 }
                             }
                         }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
                     }
                 }
             });
 
-            // Carregar dados iniciais
-            updateSpeedChart();
-            updateDirectionChart();
+            console.log('✓ Gráficos criados:', {
+                windSpeedChart: !!windSpeedChart,
+                windDirectionChart: !!windDirectionChart
+            });
         }
 
         // Função para interceptar cliques em links desabilitados
@@ -1593,10 +2216,320 @@
             });
         }
 
+        // ===== FUNÇÕES DE PERSONALIZAÇÃO DE GRÁFICOS =====
+        
+        // Armazenamento de configurações
+        const chartConfigs = {
+            speed: {
+                type: 'line',
+                showGrid: true,
+                showPoints: true,
+                maxRecords: 500,  // Aumentado para capturar mais dados com vento
+                period: '24h'
+            },
+            direction: {
+                type: 'line',
+                showGrid: true,
+                showPoints: true,
+                maxRecords: 500,  // Aumentado para capturar mais dados com vento
+                period: '24h'
+            }
+        };
+        
+        // Aplicar preferências salvas a um gráfico específico
+        function applyChartPreferences(chartName) {
+            const config = chartConfigs[chartName];
+            if (!config) return;
+            
+            const chart = chartName === 'speed' ? windSpeedChart : windDirectionChart;
+            if (!chart) return;
+            
+            // Aplicar tipo de gráfico (line, bar, area)
+            if (config.type === 'area') {
+                chart.config.type = 'line';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = true;
+                        dataset.backgroundColor = dataset.borderColor + '33';
+                    });
+                }
+            } else if (config.type === 'bar') {
+                chart.config.type = 'bar';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = false;
+                    });
+                }
+            } else { // line
+                chart.config.type = 'line';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = false;
+                    });
+                }
+            }
+            
+            // Aplicar grid
+            if (chart.options && chart.options.scales) {
+                chart.options.scales.x.grid = { display: config.showGrid };
+                chart.options.scales.y.grid = { display: config.showGrid };
+            }
+            
+            // Aplicar pontos
+            if (chart.data && chart.data.datasets) {
+                chart.data.datasets.forEach(dataset => {
+                    dataset.pointRadius = config.showPoints ? 3 : 0;
+                    dataset.pointHoverRadius = config.showPoints ? 6 : 0;
+                });
+            }
+            
+            // Atualizar UI dos toggles
+            const gridToggle = document.getElementById(`${chartName}GridToggle`);
+            const pointsToggle = document.getElementById(`${chartName}PointsToggle`);
+            const fillToggle = document.getElementById(`${chartName}FillToggle`);
+            
+            if (gridToggle) {
+                if (config.showGrid) {
+                    gridToggle.classList.add('active');
+                } else {
+                    gridToggle.classList.remove('active');
+                }
+            }
+            
+            if (pointsToggle) {
+                if (config.showPoints) {
+                    pointsToggle.classList.add('active');
+                } else {
+                    pointsToggle.classList.remove('active');
+                }
+            }
+            
+            if (fillToggle) {
+                if (config.type === 'area') {
+                    fillToggle.classList.add('active');
+                } else {
+                    fillToggle.classList.remove('active');
+                }
+            }
+            
+            // Atualizar botões de tipo
+            const container = document.getElementById(`${chartName}Settings`);
+            if (container) {
+                container.querySelectorAll('.chart-type-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.type === config.type) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        }
+        
+        // Toggle do menu de configurações
+        function toggleChartSettings(chartName) {
+            const dropdown = document.getElementById(`${chartName}Settings`);
+            const allDropdowns = document.querySelectorAll('.chart-settings-dropdown');
+            
+            // Fechar outros dropdowns
+            allDropdowns.forEach(d => {
+                if (d !== dropdown) {
+                    d.classList.remove('show');
+                }
+            });
+            
+            // Toggle do dropdown atual
+            dropdown.classList.toggle('show');
+        }
+        
+        // Mudar tipo de gráfico
+        function changeChartType(chartName, type) {
+            console.log(`Mudando tipo de gráfico ${chartName} para:`, type);
+            
+            // Atualizar configuração
+            chartConfigs[chartName].type = type;
+            
+            // Atualizar UI dos botões
+            const container = document.getElementById(`${chartName}Settings`);
+            container.querySelectorAll('.chart-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === type) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Aplicar mudança ao gráfico
+            let chart = chartName === 'speed' ? windSpeedChart : windDirectionChart;
+            
+            if (!chart) {
+                console.warn(`Gráfico ${chartName} não encontrado`);
+                return;
+            }
+            
+            // area = line com fill, line = line sem fill, bar = bar
+            if (type === 'area') {
+                chart.config.type = 'line';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = true;
+                        dataset.backgroundColor = dataset.borderColor + '33';
+                    });
+                }
+            } else if (type === 'bar') {
+                chart.config.type = 'bar';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = false;
+                    });
+                }
+            } else { // type === 'line'
+                chart.config.type = 'line';
+                if (chart.data && chart.data.datasets) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.fill = false;
+                    });
+                }
+            }
+            
+            chart.update();
+            saveChartPreferences();
+        }
+        
+        // Toggle grid
+        function toggleChartGrid(chartName) {
+            const toggle = document.getElementById(`${chartName}GridToggle`);
+            const isActive = toggle.classList.toggle('active');
+            chartConfigs[chartName].showGrid = isActive;
+            
+            const chart = chartName === 'speed' ? windSpeedChart : windDirectionChart;
+            
+            if (chart && chart.options && chart.options.scales) {
+                chart.options.scales.x.grid = { display: isActive };
+                chart.options.scales.y.grid = { display: isActive };
+                chart.update();
+            }
+            
+            saveChartPreferences();
+        }
+        
+        // Toggle pontos
+        function toggleChartPoints(chartName) {
+            const toggle = document.getElementById(`${chartName}PointsToggle`);
+            const isActive = toggle.classList.toggle('active');
+            chartConfigs[chartName].showPoints = isActive;
+            
+            const chart = chartName === 'speed' ? windSpeedChart : windDirectionChart;
+            
+            if (chart && chart.data && chart.data.datasets) {
+                chart.data.datasets.forEach(dataset => {
+                    dataset.pointRadius = isActive ? 3 : 0;
+                    dataset.pointHoverRadius = isActive ? 6 : 0;
+                });
+                chart.update();
+            }
+            
+            saveChartPreferences();
+        }
+        
+        // Toggle preenchimento
+        function toggleChartFill(chartName) {
+            const toggle = document.getElementById(`${chartName}FillToggle`);
+            const isActive = toggle.classList.toggle('active');
+            
+            // Se ativar fill, muda para 'area'. Se desativar, muda para 'line'
+            const newType = isActive ? 'area' : 'line';
+            chartConfigs[chartName].type = newType;
+            
+            // Atualizar UI dos botões de tipo
+            const container = document.getElementById(`${chartName}Settings`);
+            container.querySelectorAll('.chart-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.type === newType) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            const chart = chartName === 'speed' ? windSpeedChart : windDirectionChart;
+            
+            if (chart && chart.config && chart.config.type === 'line' && chart.data && chart.data.datasets) {
+                chart.data.datasets.forEach(dataset => {
+                    dataset.fill = isActive;
+                    if (isActive) {
+                        dataset.backgroundColor = dataset.borderColor + '20';
+                    } else {
+                        dataset.backgroundColor = 'transparent';
+                    }
+                });
+                chart.update();
+            }
+            
+            saveChartPreferences();
+        }
+        
+        // Mudar limite de registros
+        function changeChartMaxRecords(chartName, value) {
+            chartConfigs[chartName].maxRecords = parseInt(value);
+            saveChartPreferences();
+            
+            // Atualizar gráfico
+            if (chartName === 'speed') {
+                updateSpeedChart();
+            } else if (chartName === 'direction') {
+                updateDirectionChart();
+            }
+        }
+        
+        // Salvar preferências no localStorage
+        function saveChartPreferences() {
+            try {
+                localStorage.setItem('windChartConfigs', JSON.stringify(chartConfigs));
+            } catch (error) {
+                console.error('Erro ao salvar preferências:', error);
+            }
+        }
+        
+        // Carregar preferências do localStorage
+        function loadChartPreferences() {
+            try {
+                const saved = localStorage.getItem('windChartConfigs');
+                if (saved) {
+                    const savedConfigs = JSON.parse(saved);
+                    Object.assign(chartConfigs, savedConfigs);
+                    
+                    // Aplicar preferências salvas aos controles da UI
+                    Object.keys(chartConfigs).forEach(chartName => {
+                        const config = chartConfigs[chartName];
+                        
+                        // Atualizar inputs de maxRecords
+                        const maxRecordsInput = document.getElementById(`${chartName}MaxRecords`);
+                        if (maxRecordsInput) {
+                            maxRecordsInput.value = config.maxRecords || 100;
+                        }
+                        
+                        // Atualizar filtros de período
+                        const filterSelect = document.getElementById(`${chartName}Filter`);
+                        if (filterSelect) {
+                            filterSelect.value = config.period || '24h';
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar preferências:', error);
+            }
+        }
+        
+        // Fechar dropdowns ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.chart-control-btn') && !e.target.closest('.chart-settings-dropdown')) {
+                document.querySelectorAll('.chart-settings-dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+        });
+
         // Inicializar página quando DOM estiver pronto
         document.addEventListener('DOMContentLoaded', function() {
             initWindPage();
             handleDisabledLinks();
+            loadChartPreferences(); // Carregar preferências salvas
             
             // Event listener para o botão de logout
             const logoutBtn = document.getElementById('logoutBtn');
@@ -1613,11 +2546,11 @@
         // Handler de resize dos gráficos
         function handleResize() {
             // Ajustar gráficos quando a tela redimensiona
-            if (speedChart) {
-                speedChart.resize();
+            if (windSpeedChart) {
+                windSpeedChart.resize();
             }
-            if (directionChart) {
-                directionChart.resize();
+            if (windDirectionChart) {
+                windDirectionChart.resize();
             }
             if (windRoseChart) {
                 windRoseChart.resize();
